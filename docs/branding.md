@@ -4,6 +4,13 @@
 - `assets/logo/GrowCTRL-Logo.svg` – Vektor-Original
 - `assets/logo/logo.png` – PNG (687×687)
 
+## Kann das Logo einfach in `custom_components/` liegen? — Nein.
+Home Assistant **ignoriert Bilddateien im Integrationsordner vollständig**. Eine
+`icon.png` neben der `manifest.json` wird nirgends angezeigt. Das Frontend laedt
+Integrations-Logos ausschliesslich vom zentralen CDN `brands.home-assistant.io`.
+Der einzige Weg zum eigenen Logo in der Integrations-Uebersicht ist der brands-PR (unten).
+Das grosse Logo im README und das `logo:`-Feld der Hero-Karte funktionieren dagegen sofort.
+
 ## Integrations-Logo in Home Assistant (wichtig zu wissen)
 HA lädt Integrations-Logos **nicht aus dem eigenen Repo**, sondern zentral von
 `brands.home-assistant.io`. Damit GROWCTRL dort mit Logo erscheint, ist ein

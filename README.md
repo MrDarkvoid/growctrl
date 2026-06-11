@@ -99,7 +99,19 @@ Packages aus `legacy/packages/` + Blueprints aus `legacy/blueprints/` wie bisher
 3. **Lokale Installation als Test (ohne HACS):** Ordner `custom_components/growctrl/` nach
    `/config/custom_components/growctrl/` kopieren → HA neu starten → Einstellungen → Geräte & Dienste →
    Integration hinzufügen → „GROWCTRL".
-4. **Logs prüfen:** Einstellungen → System → Protokolle, nach `growctrl` filtern. Die konkrete
+4. **Fehler „Invalid handler specified" beim Einrichten:** HA konnte den Config-Flow-Handler
+   nicht laden. In dieser Reihenfolge prüfen:
+   - `/config/custom_components/growctrl/manifest.json` öffnen: steht dort `"version": "2.2.0"`
+     und `"config_flow": true`? Wenn eine ältere Version drinsteht, ist noch eine **alte Kopie
+     installiert** → Ordner komplett ersetzen.
+   - Nach jedem Dateitausch HA **vollständig neu starten** (Reload reicht nicht — Flow-Handler
+     werden beim Start geladen).
+   - Direkt nach dem Fehlversuch in Einstellungen → System → Protokolle nach
+     `growctrl` filtern: Die Zeile „Error occurred loading flow for integration growctrl"
+     enthält den echten Traceback. Diese Zeile bitte bei einer Fehlermeldung mitschicken.
+   - Alle v2.2-Module bestehen einen Import-Smoke-Test (`tests/test_imports.py`) —
+     ein Importfehler im ausgelieferten Code ist damit weitgehend ausgeschlossen.
+5. **Logs prüfen:** Einstellungen → System → Protokolle, nach `growctrl` filtern. Die konkrete
    Fehlermeldung sagt, ob HACS (Repo nicht gefunden) oder HA (Setup-Fehler) das Problem ist.
 
 ## Zelt + Stationen (v2.2)
