@@ -23,19 +23,26 @@ from .const import (
     ENTRY_TENT, SYSTEM_DWC, SYSTEM_GENERIC, SYSTEM_SOIL,
 )
 
-_SW_MULTI = selector.EntitySelector(selector.EntitySelectorConfig(domain="switch", multiple=True))
-_SENSOR = selector.EntitySelector(selector.EntitySelectorConfig(domain="sensor"))
+def _sw_multi():
+    return selector.EntitySelector(selector.EntitySelectorConfig(domain="switch", multiple=True))
 
-TENT_SCHEMA = vol.Schema({
-    vol.Required(CONF_TENT_NAME): str,
-    vol.Optional(CONF_TEMP_SENSOR): _SENSOR,
-    vol.Optional(CONF_HUM_SENSOR): _SENSOR,
-    vol.Optional(CONF_LUX_SENSOR): _SENSOR,
-    vol.Optional(CONF_HUMIDIFIER_SWITCHES, default=[]): _SW_MULTI,
-    vol.Optional(CONF_DEHUMIDIFIER_SWITCHES, default=[]): _SW_MULTI,
-    vol.Optional(CONF_EXHAUST_SWITCHES, default=[]): _SW_MULTI,
-    vol.Optional(CONF_HEATER_SWITCHES, default=[]): _SW_MULTI,
-})
+
+def _sensor():
+    return selector.EntitySelector(selector.EntitySelectorConfig(domain="sensor"))
+
+
+def _tent_schema() -> vol.Schema:
+    """Lazy gebaut: ein Selector-Problem bricht so nie den Flow-Import."""
+    return vol.Schema({
+        vol.Required(CONF_TENT_NAME): str,
+        vol.Optional(CONF_TEMP_SENSOR): _sensor(),
+        vol.Optional(CONF_HUM_SENSOR): _sensor(),
+        vol.Optional(CONF_LUX_SENSOR): _sensor(),
+        vol.Optional(CONF_HUMIDIFIER_SWITCHES, default=[]): _sw_multi(),
+        vol.Optional(CONF_DEHUMIDIFIER_SWITCHES, default=[]): _sw_multi(),
+        vol.Optional(CONF_EXHAUST_SWITCHES, default=[]): _sw_multi(),
+        vol.Optional(CONF_HEATER_SWITCHES, default=[]): _sw_multi(),
+    })
 
 
 def _station_schema(tents: list[str]) -> vol.Schema:
@@ -46,24 +53,24 @@ def _station_schema(tents: list[str]) -> vol.Schema:
     return vol.Schema({
         vol.Required(CONF_TENT): tent_field,
         vol.Required(CONF_STATION): str,
-        vol.Required(CONF_LIGHT_SWITCHES): _SW_MULTI,
-        vol.Optional(CONF_PUMP_SWITCHES, default=[]): _SW_MULTI,
-        vol.Optional(CONF_O2_SWITCHES, default=[]): _SW_MULTI,
-        vol.Optional(CONF_FAN_SWITCHES, default=[]): _SW_MULTI,
-        vol.Optional(CONF_TEMP_SENSOR): _SENSOR,
-        vol.Optional(CONF_HUM_SENSOR): _SENSOR,
+        vol.Required(CONF_LIGHT_SWITCHES): _sw_multi(),
+        vol.Optional(CONF_PUMP_SWITCHES, default=[]): _sw_multi(),
+        vol.Optional(CONF_O2_SWITCHES, default=[]): _sw_multi(),
+        vol.Optional(CONF_FAN_SWITCHES, default=[]): _sw_multi(),
+        vol.Optional(CONF_TEMP_SENSOR): _sensor(),
+        vol.Optional(CONF_HUM_SENSOR): _sensor(),
         vol.Optional(CONF_PUMP_247, default=False): bool,
         vol.Required(CONF_SYSTEM_TYPE, default=SYSTEM_GENERIC): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[SYSTEM_GENERIC, SYSTEM_DWC, SYSTEM_SOIL],
                 translation_key="system_type",
                 mode=selector.SelectSelectorMode.DROPDOWN)),
-        vol.Optional(CONF_EC_SENSOR): _SENSOR,
-        vol.Optional(CONF_PH_SENSOR): _SENSOR,
-        vol.Optional(CONF_WATER_TEMP_SENSOR): _SENSOR,
-        vol.Optional(CONF_LEVEL_SENSOR): _SENSOR,
-        vol.Optional(CONF_SOIL_MOISTURE_SENSOR): _SENSOR,
-        vol.Optional(CONF_SOIL_TEMP_SENSOR): _SENSOR,
+        vol.Optional(CONF_EC_SENSOR): _sensor(),
+        vol.Optional(CONF_PH_SENSOR): _sensor(),
+        vol.Optional(CONF_WATER_TEMP_SENSOR): _sensor(),
+        vol.Optional(CONF_LEVEL_SENSOR): _sensor(),
+        vol.Optional(CONF_SOIL_MOISTURE_SENSOR): _sensor(),
+        vol.Optional(CONF_SOIL_TEMP_SENSOR): _sensor(),
     })
 
 
@@ -84,7 +91,7 @@ class GrowctrlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 title=f"GROWCTRL Zelt {name}",
                 data={**user_input, CONF_TENT_NAME: name, CONF_ENTRY_TYPE: ENTRY_TENT},
             )
-        return self.async_show_form(step_id="tent", data_schema=TENT_SCHEMA)
+        return self.async_show_form(step_id="tent", data_schema=_tent_schema())
 
     async def async_step_station(self, user_input=None):
         tents = sorted({

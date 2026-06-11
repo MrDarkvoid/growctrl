@@ -2,11 +2,31 @@
   "config": {
     "step": {
       "user": {
+        "title": "Add GROWCTRL",
+        "menu_options": {
+          "tent": "Add tent (climate, DLI, tasks)",
+          "station": "Add station (light, pump, O₂)"
+        }
+      },
+      "tent": {
+        "title": "Add GROWCTRL tent",
+        "data": {
+          "tent_name": "Tent name (e.g. gross)",
+          "temp_sensor": "Temperature sensor (tent)",
+          "hum_sensor": "Humidity sensor (tent)",
+          "lux_sensor": "Light sensor in lux (e.g. TSL2591, for DLI)",
+          "humidifier_switches": "Humidifier switches",
+          "dehumidifier_switches": "Dehumidifier switches",
+          "exhaust_switches": "Exhaust switches",
+          "heater_switches": "Heater switches"
+        }
+      },
+      "station": {
         "title": "Add GROWCTRL station",
         "data": {
-          "tent": "Tent name (e.g. mittel)",
+          "tent": "Tent (select or type a new one)",
           "station": "Station name (e.g. main1)",
-          "light_switches": "Light switches (required)",
+          "light_switches": "Light switches (required, may be shared between stations)",
           "pump_switches": "Pump switches (optional)",
           "o2_switches": "O₂ switches (optional)",
           "fan_switches": "Circulation switches (optional)",
@@ -14,8 +34,8 @@
           "hum_sensor": "Humidity sensor (optional)",
           "pump_247": "Pump 24/7 (NFT/aeroponics)",
           "system_type": "System type",
-          "ec_sensor": "EC sensor (DWC/soil, optional)",
-          "ph_sensor": "pH sensor (DWC/soil, optional)",
+          "ec_sensor": "EC sensor (optional)",
+          "ph_sensor": "pH sensor (optional)",
           "water_temp_sensor": "Water temperature (DWC, optional)",
           "level_sensor": "Water level (DWC, optional)",
           "soil_moisture_sensor": "Soil moisture (optional)",
@@ -24,7 +44,7 @@
       }
     },
     "abort": {
-      "already_configured": "This station is already configured."
+      "already_configured": "This tent / station is already configured."
     }
   },
   "selector": {

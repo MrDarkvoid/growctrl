@@ -11,10 +11,17 @@ from homeassistant.components.switch import SwitchEntity
 
 from .const import DOMAIN
 from .entity import GrowctrlEntity
+from .runtime import TentRuntime
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     rt = hass.data[DOMAIN][entry.entry_id]
+    if isinstance(rt, TentRuntime):
+        async_add_entities([
+            _RtSwitch(entry.entry_id, rt, "tent_enabled", "Zelt aktiv", "enabled"),
+            _RtSwitch(entry.entry_id, rt, "climate_enabled", "Klima-Automatik", "climate_on"),
+        ])
+        return
     async_add_entities([
         _RtSwitch(entry.entry_id, rt, "auto", "Automatik", "auto"),
         _RtSwitch(entry.entry_id, rt, "maintenance", "Wartung", "maintenance"),

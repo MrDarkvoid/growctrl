@@ -13,10 +13,13 @@ from homeassistant.components.time import TimeEntity
 
 from .const import DOMAIN
 from .entity import GrowctrlEntity
+from .runtime import StationRuntime
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     rt = hass.data[DOMAIN][entry.entry_id]
+    if not isinstance(rt, StationRuntime):
+        return
     async_add_entities([
         LightTime(entry.entry_id, rt, "light_on", "Licht AN", "light_on_min"),
         LightTime(entry.entry_id, rt, "light_off_sv", "Licht AUS Seedling/Veg", "light_off_sv_min"),

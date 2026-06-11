@@ -2,11 +2,31 @@
   "config": {
     "step": {
       "user": {
-        "title": "GROWCTRL Station hinzufügen",
+        "title": "GROWCTRL hinzufügen",
+        "menu_options": {
+          "tent": "Zelt anlegen (Klima, DLI, Aufgaben)",
+          "station": "Station anlegen (Licht, Pumpe, O₂)"
+        }
+      },
+      "tent": {
+        "title": "GROWCTRL Zelt anlegen",
         "data": {
-          "tent": "Zelt-Name (z.B. mittel)",
+          "tent_name": "Zelt-Name (z.B. gross)",
+          "temp_sensor": "Temperatursensor (Zelt)",
+          "hum_sensor": "Feuchtesensor (Zelt)",
+          "lux_sensor": "Lichtsensor in Lux (z.B. TSL2591, für DLI)",
+          "humidifier_switches": "Befeuchter-Switches",
+          "dehumidifier_switches": "Entfeuchter-Switches",
+          "exhaust_switches": "Abluft-Switches",
+          "heater_switches": "Heizungs-Switches"
+        }
+      },
+      "station": {
+        "title": "GROWCTRL Station anlegen",
+        "data": {
+          "tent": "Zelt (auswählen oder neu eintippen)",
           "station": "Stations-Name (z.B. main1)",
-          "light_switches": "Licht-Switches (Pflicht)",
+          "light_switches": "Licht-Switches (Pflicht, dürfen mit anderen Stationen geteilt sein)",
           "pump_switches": "Pumpen-Switches (optional)",
           "o2_switches": "O₂-Switches (optional)",
           "fan_switches": "Umluft-Switches (optional)",
@@ -14,8 +34,8 @@
           "hum_sensor": "Feuchtesensor (optional)",
           "pump_247": "Pumpe 24/7 (NFT/Aeroponik)",
           "system_type": "Systemtyp",
-          "ec_sensor": "EC-Sensor (DWC/Erde, optional)",
-          "ph_sensor": "pH-Sensor (DWC/Erde, optional)",
+          "ec_sensor": "EC-Sensor (optional)",
+          "ph_sensor": "pH-Sensor (optional)",
           "water_temp_sensor": "Wassertemperatur (DWC, optional)",
           "level_sensor": "Füllstand (DWC, optional)",
           "soil_moisture_sensor": "Bodenfeuchte (Erde, optional)",
@@ -24,7 +44,7 @@
       }
     },
     "abort": {
-      "already_configured": "Diese Station ist bereits konfiguriert."
+      "already_configured": "Dieses Zelt / diese Station ist bereits konfiguriert."
     }
   },
   "selector": {
