@@ -1,4 +1,6 @@
 <p align="center">
+
+<p align="center"><img src="assets/logo/logo.png" alt="GROWCTRL" width="160"/></p>
   <img src="assets/growctrl_logo.png" alt="GROWCTRL Logo" width="280">
 </p>
 
@@ -100,6 +102,16 @@ Packages aus `legacy/packages/` + Blueprints aus `legacy/blueprints/` wie bisher
    Integration hinzufügen → „GROWCTRL".
 4. **Logs prüfen:** Einstellungen → System → Protokolle, nach `growctrl` filtern. Die konkrete
    Fehlermeldung sagt, ob HACS (Repo nicht gefunden) oder HA (Setup-Fehler) das Problem ist.
+
+## Zelt + Stationen (v2.2)
+
+Die Integration kennt **zwei Entry-Typen**: erst ein **Zelt** anlegen (Klima-Automatik
+VPD- oder RH-geführt, Lux→DLI-Berechnung, zeltweites Informationssystem, Aufgabenliste),
+dann **Stationen**, die das Zelt im Dropdown auswählen. Das Zelt ist Master:
+„Zelt aktiv" AUS stoppt alle Stationen. Geteilte Lichter sind erlaubt — derselbe
+Licht-Switch darf in mehreren Stationen stehen, die Integration verodert die Anforderungen.
+Fehlerfälle (manueller Eingriff, Licht-Failsafe, unvollständige Zeiten) erscheinen als
+`binary_sensor`-Problem-Entitäten je Station und gesammelt im Zelt-Status-Sensor.
 
 ## Roadmap
 

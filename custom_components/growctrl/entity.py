@@ -12,22 +12,23 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN
-from .runtime import StationRuntime
+from .runtime import StationRuntime, TentRuntime
 
 
 class GrowctrlEntity(RestoreEntity, Entity):
     _attr_has_entity_name = True
 
-    def __init__(self, entry_id: str, rt: StationRuntime, role: str, name: str) -> None:
+    def __init__(self, entry_id: str, rt: StationRuntime | TentRuntime, role: str, name: str) -> None:
         self._entry_id = entry_id
         self.rt = rt
         self._role = role
         self._attr_name = name
         self._attr_unique_id = f"{DOMAIN}_{rt.slug}_{role}"
+        dev_name = f"GROWCTRL Zelt {rt.tent}" if rt.model == "Zelt" else f"GROWCTRL {rt.tent} {rt.station}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, rt.slug)},
-            name=f"GROWCTRL {rt.tent} {rt.station}",
-            manufacturer="GROWCTRL", model="Station",
+            name=dev_name,
+            manufacturer="GROWCTRL", model=rt.model,
         )
 
     @property

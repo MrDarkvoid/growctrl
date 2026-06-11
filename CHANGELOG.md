@@ -1,5 +1,32 @@
 # Changelog – GROWCTRL
 
+## [2.2.0-dev]
+
+### Integration
+- **Zelt als eigener Entry-Typ:** Menü „Zelt anlegen / Station anlegen"; Stationen wählen ihr Zelt im Dropdown
+- **Zelt-Master:** „Zelt aktiv" stoppt alle Stationen; „Klima-Automatik" separat zuschaltbar
+- **Klima VPD- ODER RH-geführt** (Select „Klima-Modus"), Sollwerte als Number-Entities, Hysterese gegen Flattern, Befeuchter/Entfeuchter nie gleichzeitig, Abluft-Boost
+- **DLI automatisch aus Lux** (TSL2591 o.ä.): Sensoren „DLI heute" + „DLI Prognose" (Lux→PPFD-Faktor und Lichtstunden/Tag konfigurierbar)
+- **Geteilte Lichter:** derselbe Licht-Switch in mehreren Stationen erlaubt — ODER-Koordination
+- **Informationssystem:** binary_sensors je Station (Manueller Eingriff, Licht-Failsafe „Licht lief zu lange", Lichtzeiten unvollständig) + zeltweiter Status-Sensor mit Problemliste
+- **Keimstart** als date-Entity → Sensoren „Alter seit Keimung" und „Phasen-Empfehlung" (generische Richtwerte, sortenabhängig)
+- **Aufgabenliste (ToDo) je Zelt**, Phasen-Empfehlungen landen automatisch als Aufgabe
+- **Neue Phase „Trocknung"** (nach Spülen): Licht + Pumpe aus, Umluft bleibt an
+
+### Karten (jetzt 11)
+- **NEU Hero-Karte:** Logo, globale Schalter (Zelt/Klima), Klima-KPIs, VPD-24h-Chart mit Sollband, Informationssystem mit Problemliste
+- **NEU Checkup-Karte:** eine Ampel-Zeile je Zelt/Station mit Klartext-Auswertung
+- **NEU Tank-Karte:** DWC-Füllstand mit animiertem Tank, Mindeststand-Linie, Liter-Anzeige
+- **NEU History-Karte:** 24h-Mehrserien-Diagramm (z.B. Temp + RH) mit Grid, Achsenwerten, Legende
+- **NEU Metric-Karte:** EC/pH groß mit Chart, Sollband und „zu hoch/zu niedrig"-Ampel
+- **Controls v3:** Icon-zentrierte Touch-Kacheln im Vivosun-Stil — keine separate Schalter-Pille mehr
+- Ausklapper „Konfiguration"/„Experte" durch dezente Icon-Buttons im Header ersetzt
+- Plants-Karte: **Kamera-Livebild** (10s-Refresh, Klick → Stream) oder statisches Bild je Pflanze
+- Phase „Trocknung" überall (Chips, Farben)
+
+### Branding
+- Logo ins Repo übernommen; brands-PR-Paket vorbereitet (`docs/brands/…`), Anleitung in `docs/branding.md`
+
 ## [2.1.0-dev] – 2026-06-11 · Große Reorganisation (Phase 0–1)
 
 ### Hinzugefügt (Design-Refresh v2.1)

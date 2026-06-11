@@ -18,6 +18,8 @@ const ROW = [
   SEL.text("strain", "Sorte (optional)"),
   SEL.entity("germination_helper", "Keimdatum-Helper (optional)", ["input_datetime", "date", "datetime"]),
   SEL.entities("sensors", "Sensoren der Pflanze (optional)", "sensor"),
+  SEL.entity("camera", "Kamera (Live-Bild, optional)", "camera"),
+  SEL.text("image", "Bild-URL (optional, statt Kamera)"),
 ];
 
 export class GrowctrlPlantsEditor extends GrowctrlEditorBase {

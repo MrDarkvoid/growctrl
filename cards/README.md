@@ -126,3 +126,47 @@ dwc:
 # Erde analog: system: soil + soil: { moisture, soil_temp, ec, ph }
 ```
 Werte außerhalb des Sollbereichs färben Kachel **und Kartenrahmen** (Ampel-Prinzip).
+
+## Neue Karten (v2.2)
+
+```yaml
+# Hero – ganz oben, über allen Zelten/Stationen
+type: custom:growctrl-hero-card
+title: Growroom
+logo: /local/growctrl/logo.png
+temperature: sensor.us_grow_zelt_gross_temperature
+humidity: sensor.us_grow_zelt_gross_humidity
+tent_enable: switch.growctrl_zelt_gross_zelt_aktiv
+climate_enable: switch.growctrl_zelt_gross_klima_automatik
+problem_sensors:
+  - binary_sensor.growctrl_gross_main1_manueller_eingriff
+  - binary_sensor.growctrl_gross_main1_licht_failsafe
+logs:
+  - { entity: input_text.hydro_log_gross_main1, name: Main 1 }
+
+# Checkup – eine Zeile je Quelle
+type: custom:growctrl-checkup-card
+rows:
+  - { name: Main 1, entity: input_text.hydro_log_gross_main1, type: station }
+  - { name: Klima,  entity: input_text.hydro_klima_log_gross,  type: climate }
+  - { name: Licht,  entity: binary_sensor.growctrl_gross_main1_licht_failsafe, type: problem }
+
+# DWC-Füllstand
+type: custom:growctrl-tank-card
+entity: sensor.gc_slot1_level1
+min: 30
+volume_l: 60
+
+# 24h Temp + RH
+type: custom:growctrl-history-card
+sensors:
+  - { entity: sensor.us_grow_zelt_gross_temperature, name: Temp }
+  - { entity: sensor.us_grow_zelt_gross_humidity, name: RH }
+
+# EC groß mit Chart + Sollband
+type: custom:growctrl-metric-card
+entity: sensor.gc_slot1_ec1
+name: EC
+min: 1.2
+max: 2.2
+```

@@ -13,4 +13,5 @@ export * from "./loglang";
 export * from "./resolver";
 export * from "./data";
 export * from "./theme";
+export * from "./chart";
 export * from "./base-card";

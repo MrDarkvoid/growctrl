@@ -29,7 +29,7 @@ interface StationConfig {
   show_settings?: boolean; show_stage_chips?: boolean;
   style?: StyleConfig;
 }
-const STAGES = ["Seedling","Veg","Bloom","Flush"];
+const STAGES = ["Seedling","Veg","Bloom","Flush","Trocknung"];
 const DWC_DEFS: Array<[keyof DwcConfig, string, string]> = [
   ["ec", "EC", "mS/cm"], ["ph", "pH", ""], ["water_temp", "Wasser", "\u00b0C"], ["level", "F\u00fcllstand", "%"],
 ];
@@ -135,6 +135,12 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
             ${licht ? "box-shadow:0 0 8px #FFD700aa" : ""}"></span>
           <span style="font-size:11px;font-weight:700;color:${licht ? "rgba(255,255,255,.9)" : auto ? "#B0BED4" : "rgba(255,255,255,.3)"}">
             ${licht ? "Licht AN" : auto ? "Nacht" : "Inaktiv"}</span>
+          ${c.show_settings !== false && settingsTiles.length ? html`<button class="gc"
+              title="Konfiguration" style="width:26px;height:26px;border-radius:8px;display:flex;align-items:center;
+                justify-content:center;background:${this._open ? "rgba(255,255,255,.12)" : "rgba(255,255,255,.05)"};
+                border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6)"
+              @click=${() => { this._open = !this._open; }}>
+              <ha-icon icon="mdi:tune-variant" style="--mdc-icon-size:14px"></ha-icon></button>` : nothing}
           ${get("auto") ? html`<button class="gc stagebadge"
               style="background:${auto ? "rgba(77,255,195,.14)" : "rgba(255,107,107,.14)"};
                 border:1px solid ${auto ? "rgba(77,255,195,.3)" : "rgba(255,107,107,.3)"};
@@ -173,9 +179,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
           })}
         </div>` : nothing}
       ${c.show_settings !== false && settingsTiles.length ? html`
-        <button class="gc seclbl" style="display:block;width:100%;text-align:left"
-          @click=${() => { this._open = !this._open; }}>Konfiguration ${this._open ? "\u25B4" : "\u25BE"}</button>
-        ${this._open ? html`<div class="grid" style="grid-template-columns:repeat(${Math.min(4, settingsTiles.length)},1fr);margin-top:0">
+        ${this._open ? html`<div class="grid" style="grid-template-columns:repeat(${Math.min(4, settingsTiles.length)},1fr);margin-top:10px">
           ${settingsTiles.map(tl => html`<button class="gc tile" style="text-align:left;padding:9px 11px"
               @click=${() => this.moreInfo(tl.eid!)}>
             <div class="lbl">${tl.name}</div><div class="val sm">${tl.val || "\u2013"}</div></button>`)}

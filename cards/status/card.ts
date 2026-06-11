@@ -44,7 +44,16 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${worstLevel(levels)} style="${cardVars(c.style)};position:relative">
       <div class="hdr" style="align-items:center">
         <div class="title" style="font-size:15px">${c.title ?? "Status"}</div>
-        <span class="stagebadge" style="background:rgba(0,0,0,.25);color:${warn.color}">${warn.label}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="stagebadge" style="background:rgba(0,0,0,.25);color:${warn.color}">${warn.label}</span>
+          ${c.expert ? html`<button class="gc" title="Experten-Modus"
+            style="width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+              background:${this._expert ? "rgba(255,165,0,.18)" : "rgba(255,255,255,.05)"};
+              border:1px solid ${this._expert ? "rgba(255,165,0,.4)" : "rgba(255,255,255,.1)"};
+              color:${this._expert ? "#FFD166" : "rgba(255,255,255,.5)"}"
+            @click=${() => { this._expert = !this._expert; }}>
+            <ha-icon icon="mdi:wrench-outline" style="--mdc-icon-size:14px"></ha-icon></button>` : nothing}
+        </div>
       </div>
       ${rows.map(({ l, r }) => html`
         <div class="logrow" style="background:${LOG_BG[r.level]};margin-top:6px">
@@ -53,8 +62,6 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
           ${r.ts ? html`<span class="ts">${r.ts}</span>` : nothing}
         </div>`)}
       ${c.expert ? html`
-        <button class="gc seclbl" style="display:block;width:100%;text-align:left"
-          @click=${() => { this._expert = !this._expert; }}>Experte ${this._expert ? "\u25B2" : "\u25BC"}</button>
         ${this._expert ? html`
           ${(c.expert.controls ?? []).length ? html`<div class="grid" style="grid-template-columns:repeat(2,1fr)">
             ${c.expert.controls!.map(it => {

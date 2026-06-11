@@ -27,11 +27,43 @@ CONF_LEVEL_SENSOR = "level_sensor"             # DWC Fuellstand
 CONF_SOIL_MOISTURE_SENSOR = "soil_moisture_sensor"  # Erde
 CONF_SOIL_TEMP_SENSOR = "soil_temp_sensor"          # Erde
 
-STAGES = ["Seedling", "Veg", "Bloom", "Flush"]
-STAGE_KEYS = {"Seedling": "seedling", "Veg": "veg", "Bloom": "bloom", "Flush": "bloom"}
+STAGES = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"]
+STAGE_KEYS = {"Seedling": "seedling", "Veg": "veg", "Bloom": "bloom", "Flush": "bloom", "Trocknung": "bloom"}
 
 EVENT_GROWCTRL = "growctrl_event"
 SIGNAL_UPDATE = "growctrl_update_{}"
 
 DEFAULT_MAX_LIGHT_ON_MIN = 1440
 DEFAULT_MAX_PUMP_ON_MIN = 180
+
+# ── Entry-Typen ──
+CONF_ENTRY_TYPE = "entry_type"
+ENTRY_TENT, ENTRY_STATION = "tent_entry", "station_entry"
+
+# ── Zelt-Entry: Klima + DLI ──
+CONF_TENT_NAME = "tent_name"
+CONF_HUMIDIFIER_SWITCHES = "humidifier_switches"
+CONF_DEHUMIDIFIER_SWITCHES = "dehumidifier_switches"
+CONF_EXHAUST_SWITCHES = "exhaust_switches"
+CONF_HEATER_SWITCHES = "heater_switches"
+CONF_LUX_SENSOR = "lux_sensor"
+
+CLIMATE_MODES = ["VPD", "RH"]
+DEFAULT_VPD_MIN, DEFAULT_VPD_MAX = 0.8, 1.2
+DEFAULT_RH_MIN, DEFAULT_RH_MAX = 55.0, 65.0
+DEFAULT_LEAF_OFFSET = -1.5
+DEFAULT_LUX_FACTOR = 0.015      # Lux -> PPFD (LED-Vollspektrum); TSL2591 liefert Lux
+DEFAULT_LIGHT_HOURS = 18.0
+LUX_LIGHT_THRESHOLD = 500       # ab hier zaehlt Licht als "an" fuer DLI
+
+# DLI-Ziele je Phase (mol/m2/Tag)
+DLI_TARGETS = {"Seedling": 12.0, "Veg": 25.0, "Bloom": 40.0, "Flush": 30.0, "Trocknung": 0.0}
+
+# Phasen-Empfehlung: Tag-Obergrenzen ab Keimung (generische Richtwerte, sortenabhaengig!)
+STAGE_MAX_DAYS = {"Seedling": 14, "Veg": 45, "Bloom": 100, "Flush": 110}
+STAGE_ORDER = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"]
+
+# Reservierte Schluessel in hass.data[DOMAIN]
+DATA_TENTS = "_tents"
+DATA_STATIONS = "_stations"
+DATA_LIGHT_VOTES = "_light_votes"

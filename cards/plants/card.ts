@@ -11,14 +11,16 @@ import "./editor";
 import { GrowctrlBaseCard, sharedStyles, daysSince, num, fetchCalendar, cardVars, type StyleConfig } from "../core/index";
 
 type PlantSensor = string | { entity: string; name?: string };
-interface PlantItem { name: string; strain?: string; germination_helper?: string; sensors?: PlantSensor[]; }
+interface PlantItem { name: string; strain?: string; germination_helper?: string; sensors?: PlantSensor[]; camera?: string; image?: string; }
 interface PlantsConfig { type: string; title?: string; plants: PlantItem[]; calendar?: string; columns?: number; style?: StyleConfig; }
 
 export class GrowctrlPlantsCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
-  static properties = { ...GrowctrlBaseCard.properties, _events: { state: true } };
+  static properties = { ...GrowctrlBaseCard.properties, _events: { state: true }, _tick: { state: true } };
   private _events: any[] = [];
   private _timer?: number;
+  private _tick = 0;
+  private _mediaTimer?: number;
 
   protected validateConfig(c: PlantsConfig) {
     if (!Array.isArray(c.plants) || !c.plants.length)
@@ -31,8 +33,9 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
     super.connectedCallback();
     this._load();
     this._timer = window.setInterval(() => this._load(), 10 * 60_000);
+    this._mediaTimer = window.setInterval(() => { this._tick++; }, 10_000);
   }
-  disconnectedCallback() { super.disconnectedCallback(); if (this._timer) clearInterval(this._timer); }
+  disconnectedCallback() { super.disconnectedCallback(); if (this._timer) clearInterval(this._timer); if (this._mediaTimer) clearInterval(this._mediaTimer); }
   private async _load() {
     const c = this._config as PlantsConfig;
     if (!c.calendar) return;
@@ -49,7 +52,15 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
         ${c.plants.map(p => {
           const germ = p.germination_helper ? this.st(p.germination_helper) : undefined;
           const age = germ ? daysSince(germ) : null;
-          return html`<div class="tile">
+          const pic = p.camera
+            ? (this.hass.states[p.camera]?.attributes?.entity_picture
+                ? `${this.hass.states[p.camera].attributes.entity_picture}&t=${this._tick}` : undefined)
+            : p.image;
+          return html`<div class="tile" style="overflow:hidden">
+            ${pic ? html`<button class="gc" style="display:block;width:calc(100% + 26px);margin:-11px -13px 9px"
+                @click=${() => p.camera && this.moreInfo(p.camera)}>
+                <img src=${pic} style="width:100%;height:120px;object-fit:cover;display:block" loading="lazy"
+                  alt=${p.name} /></button>` : nothing}
             <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap">
               <span style="font-size:13px;font-weight:800">\u{1F331} ${p.name}</span>
               ${p.strain ? html`<span style="font-size:10px;color:rgba(255,255,255,.55)">${p.strain}</span>` : nothing}

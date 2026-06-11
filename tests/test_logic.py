@@ -86,3 +86,79 @@ def test_stage_off_selection():
 def test_failsafe():
     assert logic.failsafe_tripped(1441, 1440) is True
     assert logic.failsafe_tripped(1440, 1440) is False
+
+
+# ════════════════ v2.2: Klima, DLI, Empfehlung, Trocknung, geteilte Lichter ════════════════
+
+def test_vpd_kpa_plausibel():
+    # 25 Grad / 60 % RH liegt typisch um ~1.2-1.3 kPa
+    v = logic.vpd_kpa(25.0, 60.0)
+    assert 1.0 < v < 1.5
+    # Negativer Blatt-Offset senkt das VPD
+    assert logic.vpd_kpa(25.0, 60.0, -1.5) < v
+
+
+def test_climate_actions_vpd_hysterese():
+    # VPD zu hoch (zu trocken) -> Befeuchter AN
+    h, d = logic.climate_actions("VPD", 1.4, None, 0.8, 1.2, 55, 65, False, False)
+    assert h is True and d is False
+    # Knapp unter Max, Befeuchter laeuft: bleibt AN (Hysterese)
+    h, d = logic.climate_actions("VPD", 1.18, None, 0.8, 1.2, 55, 65, True, False)
+    assert h is True
+    # Deutlich unter Max - Hysterese: AUS
+    h, d = logic.climate_actions("VPD", 1.1, None, 0.8, 1.2, 55, 65, True, False)
+    assert h is False
+
+
+def test_climate_actions_rh_und_nie_beide():
+    h, d = logic.climate_actions("RH", None, 50.0, 0.8, 1.2, 55, 65, False, False)
+    assert h is True and d is False
+    h, d = logic.climate_actions("RH", None, 70.0, 0.8, 1.2, 55, 65, False, False)
+    assert h is False and d is True
+    # Pathologischer Fall: beide gewollt -> beide AUS (Sicherheit)
+    h, d = logic.climate_actions("RH", None, 50.0, 0.8, 1.2, 55, 40, False, False)
+    assert h is False and d is False
+
+
+def test_exhaust_desired():
+    assert logic.exhaust_desired(72.0, 65.0) is True
+    assert logic.exhaust_desired(66.0, 65.0) is False
+    assert logic.exhaust_desired(None, 65.0) is False
+
+
+def test_dli_increment_und_forecast():
+    # 30000 Lux * 0.015 = 450 PPFD; ueber 1 h: 450*3600/1e6 = 1.62 mol
+    inc = logic.dli_increment(30000, 0.015, 3600)
+    assert abs(inc - 1.62) < 0.01
+    assert logic.dli_increment(0, 0.015, 3600) == 0.0
+    # Prognose: 10 mol erreicht, 450 PPFD, 12 h von 18 h Licht gelaufen
+    f = logic.dli_forecast(10.0, 450.0, 12 * 3600, 18.0)
+    assert abs(f - (10.0 + 450 * 6 * 3600 / 1e6)) < 0.05
+
+
+def test_trocknung_schaltet_licht_und_pumpe_ab():
+    assert logic.lights_enabled("Bloom") is True
+    assert logic.lights_enabled("Trocknung") is False
+    assert logic.pump_enabled("Trocknung") is False
+
+
+def test_stage_recommendation():
+    md = {"Seedling": 14, "Veg": 45, "Bloom": 100, "Flush": 110}
+    order = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"]
+    rec, note = logic.stage_recommendation(10, "Seedling", md, order)
+    assert rec == "Seedling" and note is None
+    rec, note = logic.stage_recommendation(20, "Seedling", md, order)
+    assert rec == "Veg" and note is not None
+    rec, note = logic.stage_recommendation(115, "Flush", md, order)
+    assert rec == "Trocknung"
+    # Keine Empfehlung "zurueck": Bloom an Tag 20 bleibt Bloom
+    rec, note = logic.stage_recommendation(20, "Bloom", md, order)
+    assert rec == "Bloom" and note is None
+    rec, note = logic.stage_recommendation(None, "Veg", md, order)
+    assert rec == "Veg" and note is None
+
+
+def test_aggregate_light_votes():
+    assert logic.aggregate_light_votes({"a": False, "b": True}) is True
+    assert logic.aggregate_light_votes({"a": False, "b": False}) is False
+    assert logic.aggregate_light_votes({}) is False

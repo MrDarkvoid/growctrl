@@ -29,6 +29,7 @@ export const STAGE_COLORS: Record<string,{bg:string;color:string}> = {
   Veg:      { bg: "rgba(126,232,126,0.16)", color: "#7EE87E" },
   Bloom:    { bg: "rgba(255,180,50,0.18)",  color: "#FFB432" },
   Flush:    { bg: "rgba(255,180,50,0.18)",  color: "#FFB432" },
+  Trocknung:{ bg: "rgba(201,155,95,0.18)",  color: "#C99B5F" },
 };
 
 /** Vom Nutzer einstellbarer Karten-Stil (alle Karten, GUI-Editor-Sektion "Stil"). */
