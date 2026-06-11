@@ -37,7 +37,6 @@ def _tent_schema() -> vol.Schema:
         vol.Required(CONF_TENT_NAME): str,
         vol.Optional(CONF_TEMP_SENSOR): _sensor(),
         vol.Optional(CONF_HUM_SENSOR): _sensor(),
-        vol.Optional(CONF_LUX_SENSOR): _sensor(),
         vol.Optional(CONF_HUMIDIFIER_SWITCHES, default=[]): _sw_multi(),
         vol.Optional(CONF_DEHUMIDIFIER_SWITCHES, default=[]): _sw_multi(),
         vol.Optional(CONF_EXHAUST_SWITCHES, default=[]): _sw_multi(),
@@ -59,6 +58,7 @@ def _station_schema(tents: list[str]) -> vol.Schema:
         vol.Optional(CONF_FAN_SWITCHES, default=[]): _sw_multi(),
         vol.Optional(CONF_TEMP_SENSOR): _sensor(),
         vol.Optional(CONF_HUM_SENSOR): _sensor(),
+        vol.Optional(CONF_LUX_SENSOR): _sensor(),
         vol.Optional(CONF_PUMP_247, default=False): bool,
         vol.Required(CONF_SYSTEM_TYPE, default=SYSTEM_GENERIC): selector.SelectSelector(
             selector.SelectSelectorConfig(

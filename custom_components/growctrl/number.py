@@ -30,8 +30,6 @@ _TENT_DEFS = [
     ("rh_min", "RH Min", "rh_min", 20, 90, 1, "%"),
     ("rh_max", "RH Max", "rh_max", 25, 95, 1, "%"),
     ("leaf_offset", "Blatt-Offset", "leaf_offset", -5, 5, 0.1, "K"),
-    ("lux_factor", "Lux\u2192PPFD-Faktor", "lux_factor", 0.005, 0.05, 0.001, None),
-    ("light_hours", "Lichtstunden/Tag (DLI-Prognose)", "light_hours", 1, 24, 0.5, "h"),
 ]
 
 
@@ -40,9 +38,15 @@ async def async_setup_entry(hass, entry, async_add_entities):
     if isinstance(rt, TentRuntime):
         async_add_entities([TentNumber(entry.entry_id, rt, *d) for d in _TENT_DEFS])
         return
-    if not rt.has_pump:
-        return  # Optionale Funktion ohne Zuordnung -> keine Entitaeten
-    async_add_entities([PumpNumber(entry.entry_id, rt, *d) for d in _DEFS])
+    ents = []
+    if rt.has_pump:
+        ents += [PumpNumber(entry.entry_id, rt, *d) for d in _DEFS]
+    if rt.lux_sensor:  # Lux-Faktor nur, wenn die Station einen Lichtsensor hat
+        ents.append(TentNumber(entry.entry_id, rt,
+                    "lux_factor", "Lux\u2192PPFD-Faktor", "lux_factor",
+                    0.005, 0.05, 0.001, None))
+    if ents:
+        async_add_entities(ents)
 
 
 class PumpNumber(GrowctrlEntity, NumberEntity):

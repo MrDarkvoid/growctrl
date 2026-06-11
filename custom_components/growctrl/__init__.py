@@ -45,7 +45,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             tent=d[CONF_TENT_NAME],
             temp_sensor=d.get(CONF_TEMP_SENSOR),
             hum_sensor=d.get(CONF_HUM_SENSOR),
-            lux_sensor=d.get(CONF_LUX_SENSOR),
             humidifier_switches=list(d.get(CONF_HUMIDIFIER_SWITCHES, [])),
             dehumidifier_switches=list(d.get(CONF_DEHUMIDIFIER_SWITCHES, [])),
             exhaust_switches=list(d.get(CONF_EXHAUST_SWITCHES, [])),
@@ -61,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             o2_switches=list(d.get(CONF_O2_SWITCHES, [])),
             fan_switches=list(d.get(CONF_FAN_SWITCHES, [])),
             pump_247=bool(d.get(CONF_PUMP_247, False)),
+            lux_sensor=d.get(CONF_LUX_SENSOR),
         )
         root[DATA_STATIONS].setdefault(rt.tent, {})[rt.station] = rt
         controller = StationController(hass, rt)

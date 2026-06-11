@@ -14,7 +14,6 @@
           "tent_name": "Tent name (e.g. gross)",
           "temp_sensor": "Temperature sensor (tent)",
           "hum_sensor": "Humidity sensor (tent)",
-          "lux_sensor": "Light sensor in lux (e.g. TSL2591, for DLI)",
           "humidifier_switches": "Humidifier switches",
           "dehumidifier_switches": "Dehumidifier switches",
           "exhaust_switches": "Exhaust switches",
@@ -39,7 +38,8 @@
           "water_temp_sensor": "Water temperature (DWC, optional)",
           "level_sensor": "Water level (DWC, optional)",
           "soil_moisture_sensor": "Soil moisture (optional)",
-          "soil_temp_sensor": "Soil temperature (optional)"
+          "soil_temp_sensor": "Soil temperature (optional)",
+          "lux_sensor": "Light sensor in lux (e.g. TSL2591, for DLI – may be shared)"
         }
       }
     },

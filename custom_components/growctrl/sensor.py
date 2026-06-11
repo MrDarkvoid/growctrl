@@ -23,17 +23,21 @@ async def async_setup_entry(hass, entry, async_add_entities):
     rt = hass.data[DOMAIN][entry.entry_id]
     if isinstance(rt, TentRuntime):
         async_add_entities([
-            TentVpd(entry.entry_id, rt), TentDli(entry.entry_id, rt),
-            TentDliForecast(entry.entry_id, rt), TentStatus(hass, entry.entry_id, rt),
+            TentVpd(entry.entry_id, rt),
+            TentStatus(hass, entry.entry_id, rt),
+            LastEvent(entry.entry_id, rt),
         ])
         return
     ents: list[SensorEntity] = [
         LightRest(entry.entry_id, rt),
         PlantAge(entry.entry_id, rt),
         StageRecommendation(entry.entry_id, rt),
+        LastEvent(entry.entry_id, rt),
     ]
     if rt.has_pump:
         ents.append(PumpRest(entry.entry_id, rt))
+    if rt.lux_sensor:
+        ents += [StationDli(entry.entry_id, rt), StationDliForecast(entry.entry_id, rt)]
     async_add_entities(ents)
 
 
@@ -139,7 +143,8 @@ class TentVpd(_TentBase):
                 "leaf_offset": self.rt.leaf_offset, "modus": self.rt.climate_mode}
 
 
-class TentDli(_TentBase):
+class StationDli(_RestBase):
+    """DLI heute aus dem Stations-Lichtsensor (darf zwischen Stationen geteilt sein)."""
     _attr_native_unit_of_measurement = "mol/m\u00b2\u00b7d"
 
     def __init__(self, entry_id, rt):
@@ -151,22 +156,67 @@ class TentDli(_TentBase):
 
     @property
     def extra_state_attributes(self):
+        target = DLI_TARGETS.get(self.rt.stage)
         return {**super().extra_state_attributes,
                 "ppfd_aktuell": round(self.rt.ppfd_now, 1),
                 "lichtzeit_heute_h": round(self.rt.lit_seconds_today / 3600, 2),
-                "ziele": DLI_TARGETS}
+                "ziel_aktuelle_phase": target, "ziele": DLI_TARGETS}
 
 
-class TentDliForecast(_TentBase):
+class StationDliForecast(_RestBase):
+    """Prognose ueber den KONFIGURIERTEN Lichtplan der Station (Phase-abhaengige AUS-Zeit)."""
     _attr_native_unit_of_measurement = "mol/m\u00b2\u00b7d"
 
     def __init__(self, entry_id, rt):
         super().__init__(entry_id, rt, "dli_forecast", "DLI Prognose")
 
+    def _planned_seconds(self) -> int:
+        rt = self.rt
+        if rt.light_on_min is None or rt.light_off_sv_min is None or rt.light_off_bloom_min is None:
+            return 0
+        if not logic.lights_enabled(rt.stage):
+            return 0
+        off = logic.off_min_for_stage(rt.stage, rt.light_off_sv_min, rt.light_off_bloom_min)
+        return logic.planned_light_seconds(rt.light_on_min, off)
+
     @property
     def native_value(self):
-        return logic.dli_forecast(self.rt.dli_today, self.rt.ppfd_now,
-                                  self.rt.lit_seconds_today, self.rt.light_hours)
+        return logic.dli_forecast(self.rt.dli_today, self.rt.lit_seconds_today,
+                                  self._planned_seconds())
+
+    @property
+    def extra_state_attributes(self):
+        return {**super().extra_state_attributes,
+                "geplante_lichtzeit_h": round(self._planned_seconds() / 3600, 2),
+                "ziel_aktuelle_phase": DLI_TARGETS.get(self.rt.stage)}
+
+
+class LastEvent(GrowctrlEntity, SensorEntity):
+    """Letztes Ereignis mit Verlauf (Quelle der Bewertungen, fuer Station UND Zelt)."""
+    _attr_should_poll = False
+
+    def __init__(self, entry_id, rt):
+        super().__init__(entry_id, rt, "last_event", "Letztes Ereignis")
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        self.async_on_remove(async_dispatcher_connect(
+            self.hass, SIGNAL_UPDATE.format(self._entry_id), self.async_write_ha_state))
+
+    @property
+    def native_value(self) -> str:
+        return (self.rt.last_event or "Noch keine Ereignisse")[:255]
+
+    @property
+    def extra_state_attributes(self):
+        worst = "ok"
+        for e in self.rt.log:
+            if e["level"] == "critical":
+                worst = "critical"
+            elif e["level"] == "warning" and worst != "critical":
+                worst = "warning"
+        return {**super().extra_state_attributes,
+                "verlauf": list(self.rt.log), "schweregrad": worst}
 
 
 class TentStatus(_TentBase):

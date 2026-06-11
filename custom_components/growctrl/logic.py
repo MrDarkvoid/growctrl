@@ -135,11 +135,23 @@ def dli_increment(lux: float, factor: float, seconds: float) -> float:
     return (lux * factor) * seconds / 1_000_000.0
 
 
-def dli_forecast(dli_today: float, ppfd_now: float,
-                 lit_seconds_today: float, planned_light_hours: float) -> float:
-    """Hochrechnung Tages-DLI: heutiger Stand + aktueller PPFD ueber die Rest-Lichtzeit."""
-    remaining = max(0.0, planned_light_hours * 3600.0 - lit_seconds_today)
-    return round(dli_today + ppfd_now * remaining / 1_000_000.0, 2)
+def planned_light_seconds(on_min: int, off_min: int) -> int:
+    """Geplante Lichtdauer pro Tag in Sekunden aus dem Stations-Lichtplan
+    (inkl. Mitternachtsueberlauf, z.B. 18:00 -> 12:00)."""
+    return ((off_min - on_min) % 1440) * 60
+
+
+def dli_forecast(dli_today: float, lit_seconds_today: float,
+                 planned_seconds: float) -> float:
+    """Hochrechnung Tages-DLI aus dem bisherigen Mittel ueber die GEPLANTE
+    Lichtzeit der Station (kompatibel mit dem konfigurierten Lichtplan).
+
+    Beispiel: 6 h Licht gelaufen, 5 mol erreicht, 18 h geplant -> 15 mol Prognose.
+    """
+    if lit_seconds_today <= 0 or planned_seconds <= 0:
+        return round(dli_today, 2)
+    avg_ppfd_mol_s = dli_today / lit_seconds_today
+    return round(avg_ppfd_mol_s * max(planned_seconds, lit_seconds_today), 2)
 
 
 def lights_enabled(stage: str) -> bool:

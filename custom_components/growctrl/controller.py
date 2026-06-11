@@ -10,9 +10,26 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import date, datetime
 
 from homeassistant.core import HomeAssistant
+
+_LOGGER = logging.getLogger(__name__)
+
+# Klartext fuer das Ereignis-Log (Quelle der Status-/Checkup-Bewertungen)
+_LOG_TEXT = {
+    "light": lambda d: ("Licht AN" if d.get("soll") == "on" else "Licht AUS", "info"),
+    "pump": lambda d: ("Pumpe AN" if d.get("soll") == "on" else "Pumpe AUS", "info"),
+    "o2": lambda d: ("O2 AN", "info"),
+    "fan": lambda d: ("Umluft AN", "info"),
+    "humidifier": lambda d: ("Befeuchter AN" if d.get("soll") == "on" else "Befeuchter AUS", "info"),
+    "dehumidifier": lambda d: ("Entfeuchter AN" if d.get("soll") == "on" else "Entfeuchter AUS", "info"),
+    "exhaust": lambda d: ("Abluft-Boost AN" if d.get("soll") == "on" else "Abluft-Boost AUS", "info"),
+    "manual_override": lambda d: (f"Manueller Eingriff erkannt (Ist={d.get('ist')})", "warning"),
+    "light_failsafe": lambda d: (f"FAILSAFE: Licht lief {d.get('on_minutes')} min -> Not-Aus", "critical"),
+    "time_invalid": lambda d: ("Lichtzeiten unvollstaendig - Automatik pausiert", "warning"),
+}
 
 from . import logic
 from .const import (
@@ -63,6 +80,10 @@ class StationController(_Base):
         self.hass.bus.async_fire(EVENT_GROWCTRL, {
             "tent": self.rt.tent, "station": self.rt.station, "kind": kind, **data,
         })
+        text, level = _LOG_TEXT.get(kind, (lambda d: (kind, "info")))(data)
+        self.rt.add_log(text, level)
+        getattr(_LOGGER, "warning" if level != "info" else "info")(
+            "[%s/%s] %s", self.rt.tent, self.rt.station, text)
 
     def _tent(self) -> TentRuntime | None:
         return self.hass.data.get(DOMAIN, {}).get(DATA_TENTS, {}).get(self.rt.tent)
@@ -101,6 +122,17 @@ class StationController(_Base):
         now = datetime.now()
         now_min = now.hour * 60 + now.minute
         off_min = logic.off_min_for_stage(rt.stage, rt.light_off_sv_min, rt.light_off_bloom_min)
+
+        # ── DLI je Station: eigener Lux-Sensor (darf geteilt sein), Tagesreset ──
+        if rt.lux_sensor:
+            today = date.today().isoformat()
+            if rt.dli_date != today:
+                rt.dli_date, rt.dli_today, rt.lit_seconds_today = today, 0.0, 0.0
+            lux = self._num(rt.lux_sensor) or 0.0
+            rt.ppfd_now = lux * rt.lux_factor
+            if lux > LUX_LIGHT_THRESHOLD:
+                rt.lit_seconds_today += 60.0
+                rt.dli_today += logic.dli_increment(lux, rt.lux_factor, 60.0)
         want_light = logic.lights_enabled(rt.stage) and logic.light_desired(
             now_min, rt.light_on_min, off_min)
 
@@ -167,6 +199,10 @@ class TentController(_Base):
         self.hass.bus.async_fire(EVENT_GROWCTRL, {
             "tent": self.rt.tent, "station": "zelt", "kind": kind, **data,
         })
+        text, level = _LOG_TEXT.get(kind, (lambda d: (kind, "info")))(data)
+        self.rt.add_log(text, level)
+        getattr(_LOGGER, "warning" if level != "info" else "info")(
+            "[Zelt %s] %s", self.rt.tent, text)
 
     async def async_run(self) -> None:
         rt = self.rt
@@ -179,16 +215,6 @@ class TentController(_Base):
         rt.climate_problem = None
         if rt.climate_on and rt.current_vpd is None:
             rt.climate_problem = "Klima aktiv, aber Temp/RH-Sensor liefert keine Werte"
-
-        # ── DLI-Akkumulation (Tageswechsel-Reset) ──
-        today = date.today().isoformat()
-        if rt.dli_date != today:
-            rt.dli_date, rt.dli_today, rt.lit_seconds_today = today, 0.0, 0.0
-        lux = self._num(rt.lux_sensor) or 0.0
-        rt.ppfd_now = lux * rt.lux_factor
-        if lux > LUX_LIGHT_THRESHOLD:
-            rt.lit_seconds_today += 60.0
-            rt.dli_today += logic.dli_increment(lux, rt.lux_factor, 60.0)
 
         if not rt.enabled:
             for grp in (rt.humidifier_switches, rt.dehumidifier_switches,
