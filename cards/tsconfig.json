@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES2021", "module": "ESNext", "moduleResolution": "bundler",
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "strict": true, "noUnusedLocals": false, "skipLibCheck": true,
+    "useDefineForClassFields": false
+  },
+  "include": ["core/**/*.ts", "tent/**/*.ts", "station/**/*.ts", "controls/**/*.ts",
+              "sensors/**/*.ts", "plants/**/*.ts", "status/**/*.ts", "bundle.ts"]
+}

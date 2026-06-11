@@ -2,6 +2,15 @@
 
 ## [2.0.0-dev] – 2026-06-11 · Große Reorganisation (Phase 0–1)
 
+### Hinzugefügt (Phase 2)
+- Karten-Cluster implementiert: `cards/core` (types, format, vpd, loglang, resolver, data, theme, base-card)
+  + 6 Karten (tent, station, controls, sensors, plants, status) als EIN Bundle `dist/growctrl-cards.js`
+- Entity-Resolver mit Rollen-Geltungsbereich Zelt/Station/Pflanze: explizit > Profil-Namensschema (`hydro_*`,
+  via `templates` überschreibbar) > Integration (Phase 3); fehlende Rollen blenden Features stumm aus
+- Genau EINE VPD-Implementierung (Magnus, Issue #5 ✅) und EIN Log-Übersetzer (Issue #6 ✅) in `cards/core`
+- HACS-Zweitrepo-Vorlage `growctrl-cards` (Bundle + hacs.json + README)
+- Hinweis: GUI-Editoren folgen; Konfiguration zunächst per YAML (Beispiele in `cards/README.md`)
+
 ### Hinzugefügt
 - Monorepo-Struktur: `assets/ cards/ custom_components/ docs/ firmware/ legacy/`
 - Einheitliche Kopfblöcke (Projekt, Zweck, Bezug, Version, Autor MrDarkvoid + Claude, MIT) in allen Dateien

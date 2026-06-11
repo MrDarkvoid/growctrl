@@ -1,0 +1,14 @@
+{
+  "name": "growctrl-cards",
+  "version": "2.0.0",
+  "private": true,
+  "description": "GROWCTRL Karten-Cluster fuer Home Assistant (ein HACS-Bundle)",
+  "license": "MIT",
+  "author": "MrDarkvoid - entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "esbuild bundle.ts --bundle --minify --format=esm --outfile=dist/growctrl-cards.js"
+  },
+  "dependencies": { "lit": "^3.1.0" },
+  "devDependencies": { "esbuild": "^0.21.0", "typescript": "^5.4.0" }
+}
