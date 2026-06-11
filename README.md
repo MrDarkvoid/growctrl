@@ -131,8 +131,8 @@ Fehlerfälle (manueller Eingriff, Licht-Failsafe, unvollständige Zeiten) ersche
 | 0 | Bestandsaufnahme & Issue-Liste | ✅ abgeschlossen (`docs/phase0_bestandsaufnahme.md`) |
 | 1 | Monorepo, Vereinheitlichung, Kopfblöcke | ✅ dieses Repo |
 | 2 | Karten-Cluster (core + 6 Karten, ein Bundle) | ✅ implementiert (`cards/`, Build: `dist/growctrl-cards.js`) |
-| 3 | GROWCTRL-Integration (Config Flow, Entitäten, Logik in Python, Events) | 🟡 Skeleton implementiert, logic.py pytest-grün (`custom_components/growctrl/`) |
-| 4 | Vollständige Doku, Migration, Release | geplant |
+| 3 | GROWCTRL-Integration (Zelt+Station, Klima VPD/RH, DLI, Informationssystem) | ✅ v2.3 implementiert, 21 Tests grün — Live-HA-Test ausstehend |
+| 4 | Vollständige Doku, Migration, Release | ✅ Doku fertig (`docs/migration.md`, `docs/informationssystem.md`) — Release-Schritte: siehe Checkliste |
 
 Bekannte Probleme: siehe Issue-Liste in `docs/phase0_bestandsaufnahme.md` (Abschnitt 4).
 

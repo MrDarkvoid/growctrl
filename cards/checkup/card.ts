@@ -14,7 +14,7 @@ import {
   translateStationLog, translateKlimaLog,
 } from "../core/index";
 
-interface CheckupRow { name: string; entity: string; type?: "station" | "climate" | "problem"; }
+interface CheckupRow { name: string; entity: string; type?: "station" | "climate" | "problem" | "event"; }
 interface CheckupConfig { type: string; title?: string; rows: CheckupRow[]; compact?: boolean; style?: StyleConfig; }
 
 export class GrowctrlCheckupCard extends GrowctrlBaseCard {
@@ -30,6 +30,13 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
     const c = this._config as CheckupConfig;
     if (!this.hass) return nothing;
     const rows = c.rows.map(row => {
+      if (row.type === "event") {
+        // Ereignis-Sensor der Integration: Klartext-State + Schweregrad-Attribut
+        const s = this.hass.states[row.entity];
+        const lvl = (s?.attributes?.schweregrad as string) ?? "ok";
+        return { row, level: lvl === "ok" ? "ok" : lvl,
+                 label: s?.state ?? "\u2013", ts: "" };
+      }
       if (row.type === "problem") {
         const on = this.isOn(row.entity);
         return { row, level: on ? "warning" : "ok", label: on ? "Problem erkannt" : "OK", ts: "" };

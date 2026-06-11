@@ -12,11 +12,12 @@ import { GrowctrlEditorBase, SEL } from "../core/editor-base";
 const MAIN = [SEL.text("title", "Titel"), SEL.bool("compact", "Kompakte Zeilen")];
 const ROW = [
   SEL.text("name", "Name (z.B. Main 1)"),
-  SEL.entity("entity", "Quelle (Log oder Problem-Sensor)", ["input_text", "binary_sensor", "sensor"]),
+  SEL.entity("entity", "Quelle (Log / Problem- / Ereignis-Sensor)", ["input_text", "binary_sensor", "sensor"]),
   SEL.select("type", "Typ", [
     { value: "station", label: "Stations-Log" },
     { value: "climate", label: "Klima-Log" },
-    { value: "problem", label: "Problem-Sensor" }]),
+    { value: "problem", label: "Problem-Sensor" },
+    { value: "event", label: "Ereignis-Sensor (Integration)" }]),
 ];
 
 export class GrowctrlCheckupEditor extends GrowctrlEditorBase {

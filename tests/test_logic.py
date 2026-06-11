@@ -131,9 +131,22 @@ def test_dli_increment_und_forecast():
     inc = logic.dli_increment(30000, 0.015, 3600)
     assert abs(inc - 1.62) < 0.01
     assert logic.dli_increment(0, 0.015, 3600) == 0.0
-    # Prognose: 10 mol erreicht, 450 PPFD, 12 h von 18 h Licht gelaufen
-    f = logic.dli_forecast(10.0, 450.0, 12 * 3600, 18.0)
-    assert abs(f - (10.0 + 450 * 6 * 3600 / 1e6)) < 0.05
+    # Prognose auf Lichtplan-Basis: 5 mol nach 6 h, 18 h geplant -> 15 mol
+    f = logic.dli_forecast(5.0, 6 * 3600, 18 * 3600)
+    assert abs(f - 15.0) < 0.01
+    # Ohne Lichtzeit bisher: Prognose = Ist-Stand
+    assert logic.dli_forecast(2.5, 0, 18 * 3600) == 2.5
+    # Bereits laenger gelaufen als geplant (geteiltes Licht): nicht runterrechnen
+    assert logic.dli_forecast(20.0, 19 * 3600, 18 * 3600) >= 20.0
+
+
+def test_planned_light_seconds():
+    # 06:00 -> 24:00 = 18 h
+    assert logic.planned_light_seconds(6 * 60, 0) == 18 * 3600
+    # Mitternachtsueberlauf: 18:00 -> 12:00 = 18 h
+    assert logic.planned_light_seconds(18 * 60, 12 * 60) == 18 * 3600
+    # 12/12 Bloom
+    assert logic.planned_light_seconds(8 * 60, 20 * 60) == 12 * 3600
 
 
 def test_trocknung_schaltet_licht_und_pumpe_ab():

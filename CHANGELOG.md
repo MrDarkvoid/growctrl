@@ -1,5 +1,27 @@
 # Changelog – GROWCTRL
 
+## [2.3.0-dev]
+
+### Geändert (Feedback)
+- **DLI in die Station verlegt:** Lux-Sensor wird je Station konfiguriert (darf zwischen
+  Stationen geteilt sein, mehrere Sensoren pro Zelt möglich); „DLI heute" + „DLI Prognose"
+  sind jetzt Stations-Sensoren. Die **Prognose nutzt den konfigurierten Lichtplan der
+  Station** (AN-Zeit + phasenabhängige AUS-Zeit, inkl. Mitternachtsüberlauf) — die
+  Zelt-Number „Lichtstunden/Tag" entfällt ersatzlos
+- Lux→PPFD-Faktor ist jetzt eine Stations-Number (nur sichtbar mit Lichtsensor)
+
+### Hinzugefügt (Informationssystem)
+- **Ereignis-Sensor „Letztes Ereignis"** je Station UND je Zelt: Klartext-Zustand,
+  Attribut `verlauf` (letzte 30 Einträge mit Zeit + Schweregrad), Attribut `schweregrad`
+  — damit haben Status-/Checkup-Bewertungen eine echte Quelle aus der Integration
+- Alle Schaltvorgänge/Fehler landen zusätzlich im HA-Systemprotokoll (Logger `growctrl`)
+- Checkup-Karte: neuer Zeilentyp **„Ereignis-Sensor"** liest die neuen Sensoren direkt
+- `docs/informationssystem.md`: alle Fehlererkennungen, Failsafe-Maßnahmen und Log-Kanäle
+
+### Phase 4
+- `docs/migration.md`: Mapping-Tabelle Legacy→Integration, Parallelbetrieb je Station,
+  Rollback, Karten-Umstellung, Release-Checkliste; Roadmap im README aktualisiert
+
 ## [2.2.0-dev]
 
 ### Integration
