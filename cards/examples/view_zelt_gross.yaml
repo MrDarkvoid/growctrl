@@ -1,0 +1,40 @@
+# GROWCTRL Beispiel-View "Zelt Gross" – 4 Stationen + Hierarchie-Demo (Zelt/Station/Pflanze)
+title: GZ Gross (GROWCTRL Test)
+path: gz-gross-test
+cards:
+  - type: custom:growctrl-tent-card
+    title: Zelt Groß
+    subtitle: Blattgemüse · Main 2–4
+    gradient: "#7B4FBE,#52309A"
+    temperature: sensor.us_grow_zelt_gross_temperature
+    humidity: sensor.us_grow_zelt_gross_humidity
+    climate_auto: input_boolean.hydro_climate_auto_gross
+    maintenance: input_boolean.hydro_maintenance_gross
+    dehum_request: input_boolean.hydro_dehum_request_gross
+    logs:
+      - entity: input_text.hydro_log_gross_main1
+      - entity: input_text.hydro_log_gross_main2
+      - entity: input_text.hydro_log_gross_main3
+      - entity: input_text.hydro_log_gross_main4
+      - entity: input_text.hydro_climate_log_gross
+        type: climate
+
+  - type: custom:growctrl-station-card
+    name: Blattgemüse
+    station: { tent: gross, station: main1, light_switch: switch.fs_gz_gross_licht_main1 }
+  - type: custom:growctrl-station-card
+    name: Main 2
+    station: { tent: gross, station: main2, light_switch: switch.fs_gz_gross_licht_main2 }
+
+  # Hierarchie-Demo: zentrale Zelt-Aktoren und Pro-Pflanze-Aktoren in EINER Karte
+  - type: custom:growctrl-controls-card
+    title: Aktoren
+    columns: 2
+    controls:
+      - entity: input_boolean.hydro_climate_auto_gross
+        name: Klima-Automatik
+        group: Zelt
+      - entity: switch.fs_gz_gross_licht_main1
+        name: Licht Blattgemüse
+        group: Station
+        confirm: true

@@ -1,0 +1,145 @@
+# Zelt Mittel – fertige Konfiguration mit deinen echten Entitäten.
+# Einfach als YAML in die Karte kopieren (oder alles im GUI-Editor nachbauen).
+type: custom:growctrl-tent-card
+name: Zelt Mittel
+mode: dwc
+chart_hours: 24
+climate:
+  temperature: sensor.us_grow_zelt_mittel_temperature
+  humidity: sensor.us_grow_zelt_mittel_humidity
+  leaf_offset: 0 # 0 = Luft-VPD wie bisher; -2 = Blatt-VPD
+badges:
+  - entity: input_boolean.hydro_climate_auto_mittel
+    name: Klima Auto
+    icon: mdi:fan-auto
+  - entity: input_boolean.hydro_auto_mittel_main1
+    name: Auto Main
+    icon: mdi:sprout
+  - entity: input_boolean.hydro_maintenance_mittel
+    name: Wartung
+    icon: mdi:toolbox-outline
+stats:
+  - entity: sensor.growzelt_mittel_leistungsbezug
+    name: Leistung
+    icon: mdi:flash
+status:
+  dehum_entity: input_boolean.hydro_dehum_request_mittel
+  temp_min: 18
+  temp_max: 30
+logs:
+  - entity: input_text.hydro_climate_log_mittel
+    name: Klima
+    kind: climate
+  - entity: input_text.hydro_log_mittel_main1
+    name: Station
+    kind: station
+controls:
+  - entity: switch.fs_gz_mittel_licht
+    name: Licht Main
+    icon: mdi:lightbulb
+    group: Licht · Direktschalten
+  - entity: input_boolean.hydro_auto_mittel_main1
+    name: Auto Main
+    icon: mdi:sprout
+    group: Automatik · Station
+  - entity: input_boolean.hydro_climate_auto_mittel
+    name: Klima Auto
+    icon: mdi:fan-auto
+    group: Automatik · Station
+  - entity: switch.fs_gz_mittel_heizmatte
+    name: Heizmatte
+    icon: mdi:radiator
+    group: Geräte · Manuell
+  - entity: switch.fs_gz_mittel_sauerstoff
+    name: Sauerstoff
+    icon: mdi:thought-bubble
+    group: Geräte · Manuell
+  - entity: switch.fs_gz_mittel_luftbefeuchter
+    name: Befeuchter
+    icon: mdi:air-humidifier
+    group: Geräte · Manuell
+  - entity: switch.fs_gz_mittel_lufter
+    name: Lüfter
+    icon: mdi:fan
+    group: Geräte · Manuell
+light_schedule:
+  entity: switch.fs_gz_mittel_licht
+  on_helper: input_datetime.hydro_light_on_mittel_main1
+  off_helper: input_datetime.hydro_light_off_sv_mittel_main1
+  off_helper_bloom: input_datetime.hydro_light_off_bloom_mittel_main1
+  remaining_helper: sensor.mittel_main1_licht_restzeit
+pump_schedule:
+  remaining_helper: sensor.mittel_main1_pumpe_restzeit
+  log_helper: input_text.hydro_log_mittel_main1
+  on_seedling: input_number.hydro_pump_on_seedling_mittel_main1
+  off_seedling: input_number.hydro_pump_off_seedling_mittel_main1
+  on_veg: input_number.hydro_pump_on_veg_mittel_main1
+  off_veg: input_number.hydro_pump_off_veg_mittel_main1
+  on_bloom: input_number.hydro_pump_on_bloom_mittel_main1
+  off_bloom: input_number.hydro_pump_off_bloom_mittel_main1
+grow:
+  phase_helper: input_select.hydro_stage_mittel_main1
+  # Optional, sobald angelegt – dann erscheinen "Tag X / Y" und Grow-Tag:
+  # phase_start_helper: input_datetime.hydro_stage_start_mittel_main1
+  # grow_start_helper: input_datetime.hydro_grow_start_mittel
+  phases:
+    - name: Seedling
+      days: 14
+    - name: Veg
+      days: 28
+    - name: Bloom
+      days: 56
+    - name: Flush
+      days: 10
+settings:
+  - title: Lichtzeiten
+    items:
+      - entity: input_datetime.hydro_light_on_mittel_main1
+        name: Licht AN
+        icon: mdi:lightbulb-on-outline
+      - entity: input_datetime.hydro_light_off_sv_mittel_main1
+        name: AUS Sämling/Wachstum
+        icon: mdi:weather-night
+      - entity: input_datetime.hydro_light_off_bloom_mittel_main1
+        name: AUS Blüte/Spülung
+        icon: mdi:weather-night
+  - title: Pumpenzeiten · Sämling
+    items:
+      - entity: input_number.hydro_pump_on_seedling_mittel_main1
+        name: Pumpe AN
+        icon: mdi:water
+      - entity: input_number.hydro_pump_off_seedling_mittel_main1
+        name: Pumpe AUS
+        icon: mdi:water-off
+  - title: Pumpenzeiten · Wachstum
+    items:
+      - entity: input_number.hydro_pump_on_veg_mittel_main1
+        name: Pumpe AN
+        icon: mdi:water
+      - entity: input_number.hydro_pump_off_veg_mittel_main1
+        name: Pumpe AUS
+        icon: mdi:water-off
+  - title: Pumpenzeiten · Blüte/Spülung
+    items:
+      - entity: input_number.hydro_pump_on_bloom_mittel_main1
+        name: Pumpe AN
+        icon: mdi:water
+      - entity: input_number.hydro_pump_off_bloom_mittel_main1
+        name: Pumpe AUS
+        icon: mdi:water-off
+plants: []
+# Pflanzen kannst du im GUI-Editor anlegen (Name, Sorte, Keimdatum-Helper,
+# Kalender, eigene Sensoren) – z.B. Wurzelzonen-Temp vom DS18B20.
+expert:
+  controls:
+    - entity: input_boolean.hydro_maintenance_mittel
+      name: Wartungsmodus
+      icon: mdi:toolbox
+    - entity: input_boolean.hydro_testmode_mittel
+      name: Testmodus
+      icon: mdi:flask
+  logs:
+    - entity: input_text.hydro_climate_log_mittel
+      name: Klima Log (roh)
+    - entity: input_text.hydro_log_mittel_main1
+      name: Station Log (roh)

@@ -1,0 +1,48 @@
+# Beispiel: Erd-Zelt – Substratfeuchte pro Pflanze statt Reservoir-Sensorik
+type: custom:growctrl-tent-card
+name: Growzelt 2 (Erde)
+mode: soil
+climate:
+  temperature: sensor.zelt2_lufttemperatur
+  humidity: sensor.zelt2_luftfeuchte
+sensors:
+  - entity: sensor.zelt2_lichtstaerke
+    name: Licht
+    icon: mdi:white-balance-sunny
+  - entity: sensor.zelt2_eco2
+    name: eCO2
+    icon: mdi:molecule-co2
+controls:
+  - entity: switch.zelt2_licht
+    name: Licht
+  - entity: switch.zelt2_abluft
+    name: Abluft
+    icon: mdi:fan
+  - entity: switch.zelt2_bewaesserung
+    name: Bewässerung
+    icon: mdi:sprinkler-variant
+    confirm: true
+grow:
+  phase_helper: input_select.zelt2_phase
+  phase_start_helper: input_datetime.zelt2_phasenstart
+  grow_start_helper: input_datetime.zelt2_growstart
+plants:
+  - name: Topf 1
+    strain: Amnesia Haze
+    germination_helper: input_datetime.topf1_keimung
+    calendar: calendar.topf1
+    sensors:
+      - entity: sensor.topf1_substratfeuchte
+        name: Substrat
+        icon: mdi:water-percent
+      - entity: sensor.topf1_substrattemp
+        name: Substrat-Temp
+        icon: mdi:thermometer
+  - name: Topf 2
+    strain: Amnesia Haze
+    germination_helper: input_datetime.topf2_keimung
+    calendar: calendar.topf2
+    sensors:
+      - entity: sensor.topf2_substratfeuchte
+        name: Substrat
+        icon: mdi:water-percent

@@ -88,7 +88,7 @@ growctrl/
 | 0 | Bestandsaufnahme & Issue-Liste | ✅ abgeschlossen (`docs/phase0_bestandsaufnahme.md`) |
 | 1 | Monorepo, Vereinheitlichung, Kopfblöcke | ✅ dieses Repo |
 | 2 | Karten-Cluster (core + 6 Karten, ein Bundle) | ✅ implementiert (`cards/`, Build: `dist/growctrl-cards.js`) |
-| 3 | GROWCTRL-Integration (Config Flow, Entitäten, Logik in Python, Events) | geplant |
+| 3 | GROWCTRL-Integration (Config Flow, Entitäten, Logik in Python, Events) | 🟡 Skeleton implementiert, logic.py pytest-grün (`custom_components/growctrl/`) |
 | 4 | Vollständige Doku, Migration, Release | geplant |
 
 Bekannte Probleme: siehe Issue-Liste in `docs/phase0_bestandsaufnahme.md` (Abschnitt 4).

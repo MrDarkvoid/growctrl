@@ -2,6 +2,20 @@
 
 ## [2.0.0-dev] – 2026-06-11 · Große Reorganisation (Phase 0–1)
 
+### Hinzugefügt (Phase 3 – Skeleton)
+- Integrations-Konzept (`docs/integration_konzept.md`): 1 Config Entry = 1 Station, Pflicht- vs.
+  optionale Entitäten, Events statt input_text, Migrationspfad
+- `custom_components/growctrl/`: manifest, Config Flow (Zelt/Station + Entity-Zuordnung),
+  Controller-Loop (1 min), Plattformen switch/select/time/number/sensor, translations (de)
+- `logic.py`: reine Steuerlogik (Lichtfenster inkl. Mitternachtsüberlauf, Pumpen-Modulo-Zyklus,
+  Restzeiten, Failsafe) – **10/10 pytest grün** (`tests/test_logic.py`)
+- Strukturell gelöst: Issues #1/#1b (Switch-Listen vollständig), #2 (Snapshot vor Service-Call),
+  #4 (optionale Entitäten nur bei Zuordnung)
+- Karten-Test-Beispiele mit echten Entity-IDs: `cards/examples/` (Installationsanleitung + 2 Views)
+- v1.3-Tent-Card vollständig archiviert: `legacy/tent-card-v1/`
+- Offen (vor Produktivbetrieb): Options-Flow, Klima-Entry-Typ, Manual-Override,
+  Failsafe-Anbindung im Controller, Lauf in echter HA-Instanz
+
 ### Hinzugefügt (Phase 2)
 - Karten-Cluster implementiert: `cards/core` (types, format, vpd, loglang, resolver, data, theme, base-card)
   + 6 Karten (tent, station, controls, sensors, plants, status) als EIN Bundle `dist/growctrl-cards.js`

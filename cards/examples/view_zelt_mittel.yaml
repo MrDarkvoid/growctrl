@@ -1,0 +1,52 @@
+# GROWCTRL Beispiel-View "Zelt Mittel" – echte Entity-IDs aus docs/entitaeten_liste.html
+title: GZ Mittel (GROWCTRL Test)
+path: gz-mittel-test
+cards:
+  - type: custom:growctrl-tent-card
+    title: Zelt Mittel
+    subtitle: Grow · Main
+    gradient: "#E87B2E,#C45A10"
+    temperature: sensor.us_grow_zelt_mittel_temperature
+    humidity: sensor.us_grow_zelt_mittel_humidity
+    power: sensor.growzelt_mittel_leistungsbezug
+    leaf_offset: -1.5
+    climate_auto: input_boolean.hydro_climate_auto_mittel
+    maintenance: input_boolean.hydro_maintenance_mittel
+    dehum_request: input_boolean.hydro_dehum_request_mittel
+    logs:
+      - entity: input_text.hydro_log_mittel_main1
+      - entity: input_text.hydro_climate_log_mittel
+        type: climate
+
+  - type: custom:growctrl-station-card
+    name: Grow · Main
+    station:
+      tent: mittel
+      station: main1
+      light_switch: switch.fs_gz_mittel_licht
+
+  - type: custom:growctrl-sensors-card
+    title: Sensorik
+    sensors:
+      - entity: sensor.us_grow_zelt_mittel_temperature
+        name: Temperatur
+      - entity: sensor.us_grow_zelt_mittel_humidity
+        name: Luftfeuchte
+      - entity: sensor.growzelt_mittel_leistungsbezug
+        name: Leistung
+
+  - type: custom:growctrl-status-card
+    title: Status Zelt Mittel
+    logs:
+      - entity: input_text.hydro_log_mittel_main1
+        name: Main 1
+      - entity: input_text.hydro_climate_log_mittel
+        name: Klima
+        type: climate
+    expert:
+      controls:
+        - entity: input_boolean.hydro_maintenance_mittel
+          name: Wartung
+        - entity: input_boolean.hydro_testmode_mittel
+          name: Testmodus
+      show_raw: true

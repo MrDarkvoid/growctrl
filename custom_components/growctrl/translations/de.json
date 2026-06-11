@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "GROWCTRL Station hinzuf\u00fcgen",
+        "data": {
+          "tent": "Zelt-Name (z.B. mittel)",
+          "station": "Stations-Name (z.B. main1)",
+          "light_switches": "Licht-Switches (Pflicht)",
+          "pump_switches": "Pumpen-Switches (optional)",
+          "o2_switches": "O\u2082-Switches (optional)",
+          "fan_switches": "Umluft-Switches (optional)",
+          "temp_sensor": "Temperatursensor (optional)",
+          "hum_sensor": "Feuchtesensor (optional)",
+          "pump_247": "Pumpe 24/7 (NFT/Aeroponik)"
+        }
+      }
+    },
+    "abort": { "already_configured": "Diese Station ist bereits konfiguriert." }
+  }
+}

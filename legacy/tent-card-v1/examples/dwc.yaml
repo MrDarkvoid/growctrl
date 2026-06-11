@@ -1,0 +1,123 @@
+# Beispiel: DWC-Zelt (alle Entity-IDs sind Platzhalter –
+# im GUI-Editor wählst du einfach deine eigenen aus)
+type: custom:growctrl-tent-card
+name: Growzelt 1
+mode: dwc
+sparkline_hours: 24
+climate:
+  temperature: sensor.zelt1_lufttemperatur
+  humidity: sensor.zelt1_luftfeuchte
+  # vpd: sensor.zelt1_vpd        # optional – sonst wird berechnet
+  leaf_offset: -2
+sensors:
+  - entity: sensor.zelt1_wassertemperatur
+    name: Wassertemp
+    icon: mdi:water-thermometer
+  - entity: sensor.zelt1_ec
+    name: EC
+    icon: mdi:flash-outline
+  - entity: sensor.zelt1_ph
+    name: pH
+    icon: mdi:ph
+  - entity: sensor.zelt1_fuellstand
+    name: Füllstand
+    icon: mdi:waves-arrow-up
+  - entity: sensor.zelt1_lichtstaerke
+    name: Licht
+    icon: mdi:white-balance-sunny
+  - entity: sensor.zelt1_eco2
+    name: eCO2
+    icon: mdi:molecule-co2
+controls:
+  - entity: switch.zelt1_licht
+    name: Licht
+    icon: mdi:lightbulb-on-outline
+    group: Licht · Direktschalten
+  - entity: switch.zelt1_abluft
+    name: Abluft
+    icon: mdi:fan
+    group: Geräte · Manuell
+  - entity: switch.zelt1_heizmatte
+    name: Heizmatte
+    icon: mdi:heating-coil
+    group: Geräte · Manuell
+  - entity: switch.zelt1_pumpe        # "pumpe" im Namen => automatisch Bestätigung
+    name: Pumpe
+    icon: mdi:water-pump
+  - entity: switch.zelt1_co2_ventil   # "co2" im Namen => automatisch Bestätigung
+    name: CO2
+    icon: mdi:molecule-co2
+    confirm: true
+grow:
+  phase_helper: input_select.zelt1_phase
+  phase_start_helper: input_datetime.zelt1_phasenstart
+  grow_start_helper: input_datetime.zelt1_growstart
+  phases:
+    - name: Keimung
+      days: 7
+    - name: Steckling
+      days: 14
+    - name: Vegetativ
+      days: 28
+    - name: Blüte
+      days: 56
+    - name: Spülen
+      days: 10
+plants:
+  - name: Pflanze A
+    strain: Northern Lights
+    germination_helper: input_datetime.pflanze_a_keimung
+    calendar: calendar.pflanze_a
+    sensors:
+      - entity: sensor.pflanze_a_wurzeltemp
+        name: Wurzelzone
+        icon: mdi:thermometer-low
+  - name: Pflanze B
+    strain: White Widow
+    germination_helper: input_datetime.pflanze_b_keimung
+    calendar: calendar.pflanze_b
+
+# ---- Neu ab v1.1 ----
+stats:
+  - entity: sensor.zelt1_leistung
+    name: Leistung
+    icon: mdi:flash
+  - entity: sensor.zelt1_klima_status
+    name: Status
+    icon: mdi:water-percent
+light_schedule:
+  entity: switch.zelt1_licht
+  on_helper: input_datetime.zelt1_licht_an
+  off_helper: input_datetime.zelt1_licht_aus_veg
+  off_helper_bloom: input_datetime.zelt1_licht_aus_bloom
+settings:
+  - title: Lichtzeiten · Tippen zum Einstellen
+    items:
+      - entity: input_datetime.zelt1_licht_an
+        name: Licht AN
+        icon: mdi:lightbulb-on-outline
+      - entity: input_datetime.zelt1_licht_aus_veg
+        name: AUS Seed/Veg
+        icon: mdi:weather-night
+      - entity: input_datetime.zelt1_licht_aus_bloom
+        name: AUS Bloom/Flush
+        icon: mdi:weather-night
+  - title: Pumpenzeiten · Seedling
+    items:
+      - entity: input_number.zelt1_pumpe_an_seedling
+        name: Pumpe AN
+      - entity: input_number.zelt1_pumpe_aus_seedling
+        name: Pumpe AUS
+expert:
+  controls:
+    - entity: input_boolean.zelt1_wartungsmodus
+      name: Wartungsmodus
+      icon: mdi:toolbox-outline
+    - entity: input_boolean.zelt1_testmodus
+      name: Testmodus
+      icon: mdi:test-tube
+  logs:
+    - entity: sensor.zelt1_klima_log
+      name: Klima Log
+    - entity: sensor.zelt1_station_log
+      name: Station Log
