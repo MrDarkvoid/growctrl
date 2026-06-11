@@ -1,0 +1,1169 @@
+#==============================================================================
+# GROWCTRL – Blueprint Hydro Station v2.0 (LEGACY)
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Stationssteuerung: Licht, Pumpe (Zyklus je Phase), O2, Umluft. Failsafe,
+#           Manual-Override, IST/SOLL-Log. Bekannte Issues: #1 Multi-Entity nur [0]. Logik wandert
+#           in die Integration.
+# Bezug   : Benoetigt Helper aus legacy/packages/*; schreibt input_text-Logs (Format siehe
+#           docs/log_referenz.md)
+# Version : 2.0.0-dev  |  Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+
+###############################################################################
+# BLUEPRINT: Hydro Station v2.0
+# Autor:     Hydro Automation System
+# Zweck:     Vollautomatische Steuerung einer einzelnen Hydro-Station
+#            (Licht · Pumpe · O₂ · Umluft) mit Failsafe, Manual-Override
+#            und detailliertem IST/SOLL-Logging.
+###############################################################################
+
+blueprint:
+  name: "Hydro Zelt Station v2.0 – Licht · Pumpe · O₂ · Umluft | Failsafe | Manual-Override | IST/SOLL-Log"
+
+  description: >
+    ## 🌱 Hydro Station – Vollautomatische Stationssteuerung
+
+
+    Steuert **Licht, Pumpe, O₂ und Stationsumluft** einer einzelnen Hydroponik-Station
+    vollautomatisch nach Tageszeit, Wachstumsphase und Pumpenzyklus.
+
+
+    ---
+
+
+    ### ✅ Funktionen im Überblick
+
+
+    **💡 Lichtsteuerung**
+    - Schaltzeitpunkte getrennt für `Seedling/Veg` und `Bloom/Flush`
+    - Mitternachtsüberlauf korrekt behandelt (z.B. 22:00–06:00)
+    - Ungültige Zeitkonfiguration wird erkannt und geloggt
+
+
+    **💧 Pumpensteuerung** *(optional)*
+    - Zeitgesteuerter Zyklus (AN/AUS in Minuten) pro Wachstumsphase
+    - Alternativ: 24/7-Dauerbetrieb (z.B. NFT-Systeme)
+    - Unterstützt mehrere Pumpen-Switches gleichzeitig
+
+
+    **🫧 O₂-Versorgung** *(optional)*
+    - Wird bei aktiver Automatik dauerhaft eingeschaltet
+    - Unterstützt mehrere Switches (z.B. mehrere Luftpumpen)
+
+
+    **🌀 Stationsumluft** *(optional)*
+    - Dauerhaft AN bei aktiver Automatik
+    - Unabhängig vom Zelt-Klima-Blueprint (Stations-lokale Umluft)
+    - Unterstützt mehrere Switches
+
+
+    ---
+
+
+    ### 🛡️ Sicherheitsfunktionen
+
+
+    | Funktion | Verhalten |
+    |---|---|
+    | **Failsafe Licht** | Licht zu lange AN → Abschaltung + Automatik OFF |
+    | **Failsafe Pumpe** | Pumpe zu lange AN → Abschaltung + Automatik OFF |
+    | **Zeiten ungültig** | Log-Eintrag + Stopp (keine Schaltaktion) |
+    | **State-Bestätigung** | Nach jedem Schaltbefehl wird auf State-Change gewartet |
+    | **Mismatch-Erkennung** | Gerät weicht nach Grace-Period vom SOLL ab → Log-Warnung |
+
+
+    ---
+
+
+    ### ✋ Manual-Override (ohne Extra-Helper)
+
+
+    Wenn du das Licht **gegen den SOLL-Zustand** manuell schaltest, wird ein
+    Override-Marker (`OVRUNTIL=YYYY-MM-DD HH:MM`) im Log gespeichert.
+    Während des Overrides greift die Automatik nicht ins Licht ein.
+    Nach Ablauf übernimmt die Automatik wieder vollständig.
+
+
+    ---
+
+
+    ### 📝 Log-Format
+
+
+    Jeder Eintrag: `YYYY-MM-DD HH:MM EREIGNIS | OVR-Status | IST-Zustände | SOLL-Zustände`
+
+
+    Beispiel: `2024-03-15 14:00 LIGHT -> ON | OVR=OFF | IST L=on P=off F=n/a O2=on | SOLL L=ON P=OFF F=N/A O2=ON`
+
+
+    ---
+
+
+    ### ⚙️ Voraussetzungen
+
+
+    Für jede Station werden benötigt (aus dem jeweiligen Package):
+    - 1× `input_boolean` → Automatik
+    - 1× `input_boolean` → Maintenance (zeltübergreifend nutzbar)
+    - 1× `input_boolean` → Testmode (zeltübergreifend nutzbar)
+    - 1× `input_text` → Log (max. 255 Zeichen)
+    - 1× `input_select` → Wachstumsphase (Seedling/Veg/Bloom/Flush)
+    - 3× `input_datetime` → Licht AN, Licht AUS S/V, Licht AUS B/F
+    - 6× `input_number` → Pumpenzeiten pro Phase (nur wenn Pumpe aktiv)
+
+  domain: automation
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # INPUT-KONFIGURATION
+  # ═══════════════════════════════════════════════════════════════════════════
+  input:
+
+    # ─── 💡 LICHT ─────────────────────────────────────────────────────────────
+    switch_light:
+      name: "💡 Licht-Switch (Pflicht)"
+      description: >
+        Der Switch, der das Licht dieser Station steuert.
+        Kann ein einzelner Switch, eine Switch-Gruppe oder ein virtueller Switch sein.
+        **Pflichtfeld** – ohne Licht-Switch ist keine Stationsautomatik möglich.
+      selector:
+        entity:
+          domain: switch
+
+    # ─── 💧 PUMPE ─────────────────────────────────────────────────────────────
+    pump_enabled:
+      name: "💧 Pumpe vorhanden?"
+      description: >
+        Aktiviere diese Option, wenn die Station über eine steuerbare Pumpe verfügt.
+        Wenn deaktiviert, werden alle Pumpen-Einstellungen ignoriert.
+      default: false
+      selector:
+        boolean: {}
+
+    switch_pump:
+      name: "💧 Pumpen-Switches (optional, Mehrfachauswahl)"
+      description: >
+        Einer oder mehrere Switches für die Pumpe(n) dieser Station.
+        Alle ausgewählten Switches werden **gleichzeitig** geschaltet.
+        Leer lassen, wenn „Pumpe vorhanden?" deaktiviert ist.
+      default: []
+      selector:
+        entity:
+          domain: switch
+          multiple: true
+
+    pump_247_mode:
+      name: "♾️ Pumpe im 24/7-Dauerbetrieb?"
+      description: >
+        Aktiviere für Systeme, die Dauerdurchfluss benötigen (z.B. NFT, Aeroponik).
+        Im 24/7-Modus werden die Pumpen-Zeitprofile ignoriert – die Pumpe läuft
+        permanent, solange die Automatik aktiv ist.
+        Der Pumpen-Failsafe ist im 24/7-Modus deaktiviert.
+      default: false
+      selector:
+        boolean: {}
+
+    # ─── 🫧 O₂ ────────────────────────────────────────────────────────────────
+    oxygen_enabled:
+      name: "🫧 O₂-Versorgung vorhanden?"
+      description: >
+        Aktiviere, wenn diese Station über eine steuerbare O₂-Versorgung
+        (Luftpumpe, Belüftungsstein) verfügt. O₂ wird dauerhaft AN gehalten.
+      default: false
+      selector:
+        boolean: {}
+
+    switch_oxygen:
+      name: "🫧 O₂-Switches (optional, Mehrfachauswahl)"
+      description: >
+        Einer oder mehrere Switches für O₂/Luftpumpen dieser Station.
+        Alle ausgewählten Switches werden gleichzeitig dauerhaft eingeschaltet.
+        Leer lassen, wenn „O₂-Versorgung vorhanden?" deaktiviert ist.
+      default: []
+      selector:
+        entity:
+          domain: switch
+          multiple: true
+
+    # ─── 🌀 STATIONS-UMLUFT ───────────────────────────────────────────────────
+    fan_enabled:
+      name: "🌀 Stations-Umluft vorhanden?"
+      description: >
+        Aktiviere, wenn diese Station über eine eigene, steuerbare Umluft
+        (kleiner Ventilator, Luftumwälzer) verfügt.
+        **Hinweis:** Für die Zelt-weite Hauptumluft verwende den separaten
+        Klima-Blueprint. Dieser Eingang ist für stationslokaIe Lüfter.
+      default: false
+      selector:
+        boolean: {}
+
+    switch_fan:
+      name: "🌀 Umluft-Switches (optional, Mehrfachauswahl)"
+      description: >
+        Einer oder mehrere Switches für die Stations-Umluft.
+        Alle ausgewählten Switches werden dauerhaft eingeschaltet.
+        Leer lassen, wenn „Stations-Umluft vorhanden?" deaktiviert ist.
+      default: []
+      selector:
+        entity:
+          domain: switch
+          multiple: true
+
+    # ─── 🤖 BETRIEBSMODI ──────────────────────────────────────────────────────
+    input_boolean_auto:
+      name: "🤖 Automatik-Schalter"
+      description: >
+        Der `input_boolean`, der die Automatik dieser Station aktiviert/deaktiviert.
+        **AN** = Automation ist aktiv und steuert alle Geräte.
+        **AUS** = Automation stoppt sofort, Geräte bleiben im aktuellen Zustand.
+        Jede Station benötigt einen eigenen Automatik-Schalter.
+      selector:
+        entity:
+          domain: input_boolean
+
+    input_boolean_maintenance:
+      name: "🧰 Maintenance-Schalter"
+      description: >
+        Wenn dieser Schalter **AN** ist, pausiert die Automation und schreibt
+        einen Log-Eintrag. Geräte bleiben im aktuellen Zustand.
+        Ideal für Wartungsarbeiten, Transplantation, pH-Korrekturen.
+        Kann zeltübergreifend geteilt werden (alle Stationen eines Zeltes
+        nutzen denselben Maintenance-Schalter).
+      selector:
+        entity:
+          domain: input_boolean
+
+    input_boolean_testmode:
+      name: "🧪 Testmode-Schalter"
+      description: >
+        Im Testmode werden **keine Schaltaktionen** ausgeführt – die Automation
+        berechnet nur SOLL-Zustände und schreibt Log-Einträge.
+        Hilfreich zum Prüfen der Zeitkonfiguration ohne echte Gerätesteuerung.
+      selector:
+        entity:
+          domain: input_boolean
+
+    # ─── 📝 LOG ───────────────────────────────────────────────────────────────
+    input_text_log:
+      name: "📝 Stations-Log (input_text)"
+      description: >
+        Ein `input_text`-Helper (max. 255 Zeichen) für den Ereignis-Log dieser Station.
+        **Wichtig:** Dieser Helper dient gleichzeitig als Override-Speicher.
+        Wenn ein Manual-Override aktiv ist, enthält der Log-Text den Marker
+        `OVRUNTIL=YYYY-MM-DD HH:MM`. Nicht manuell löschen, wenn ein Override
+        aktiv sein soll.
+        Jede Station benötigt einen eigenen Log-Helper.
+      selector:
+        entity:
+          domain: input_text
+
+    # ─── 🌱 WACHSTUMSPHASE ────────────────────────────────────────────────────
+    input_select_stage:
+      name: "🌱 Wachstumsphase (input_select)"
+      description: >
+        Die aktuelle Wachstumsphase dieser Station.
+        Gültige Werte: `Seedling`, `Veg`, `Bloom`, `Flush`.
+        Die Phase beeinflusst Lichtzeiten (Seedling/Veg vs. Bloom/Flush)
+        und Pumpenzyklen (3 separate Profile).
+        `Flush` verwendet das Bloom-Zeitprofil.
+      selector:
+        entity:
+          domain: input_select
+
+    # ─── ⏰ LICHTZEITEN ────────────────────────────────────────────────────────
+    helper_light_on:
+      name: "⏰ Licht AN – Uhrzeit"
+      description: >
+        Uhrzeit, zu der das Licht täglich eingeschaltet wird.
+        Gilt für **alle Wachstumsphasen** – nur der Ausschaltzeitpunkt
+        variiert je nach Phase.
+        Format: `HH:MM` (24h). Mitternachtsüberlauf wird automatisch korrekt behandelt.
+      selector:
+        entity:
+          domain: input_datetime
+
+    helper_light_off_sv:
+      name: "⏰ Licht AUS – Seedling & Veg"
+      description: >
+        Ausschaltuhrzeit für die Phasen `Seedling` und `Veg`.
+        Typische Einstellung: 18h Lichttag (ON 06:00 → OFF 00:00) oder
+        20h (ON 04:00 → OFF 00:00).
+        Darf kleiner als „Licht AN" sein (Mitternachtsüberlauf, z.B. ON 22:00, OFF 18:00).
+      selector:
+        entity:
+          domain: input_datetime
+
+    helper_light_off_bloom:
+      name: "⏰ Licht AUS – Bloom & Flush"
+      description: >
+        Ausschaltuhrzeit für die Phasen `Bloom` und `Flush`.
+        Typische Einstellung: 12h Lichttag (ON 06:00 → OFF 18:00).
+        Wird auch für `Flush` verwendet.
+      selector:
+        entity:
+          domain: input_datetime
+
+    # ─── 🔁 PUMPENZEITEN ──────────────────────────────────────────────────────
+    helper_pump_on_seedling:
+      name: "🔁 Pumpe AN – Seedling (Minuten)"
+      description: >
+        Wie viele Minuten die Pumpe pro Zyklus läuft, wenn die Phase `Seedling` ist.
+        Der Zyklus beginnt täglich um 00:00 und wiederholt sich lückenlos.
+        Beispiel: AN=5, AUS=25 → Pumpe läuft 5 min, Pause 25 min (= 30 min Zyklus).
+      selector:
+        entity:
+          domain: input_number
+
+    helper_pump_off_seedling:
+      name: "🔁 Pumpe AUS – Seedling (Minuten)"
+      description: >
+        Pause-Dauer in Minuten nach jedem Pumpen-AN-Intervall in Phase `Seedling`.
+        Kleiner Wert = häufigere Bewässerung. Größerer Wert = trockenere Perioden.
+      selector:
+        entity:
+          domain: input_number
+
+    helper_pump_on_veg:
+      name: "🔁 Pumpe AN – Veg (Minuten)"
+      description: >
+        Pumpen-AN-Dauer in Minuten für Phase `Veg`.
+        In der Veg-Phase benötigen Pflanzen meist häufigere Bewässerung
+        als in der Seedling-Phase.
+      selector:
+        entity:
+          domain: input_number
+
+    helper_pump_off_veg:
+      name: "🔁 Pumpe AUS – Veg (Minuten)"
+      description: >
+        Pause-Dauer in Minuten für Phase `Veg`.
+      selector:
+        entity:
+          domain: input_number
+
+    helper_pump_on_bloom:
+      name: "🔁 Pumpe AN – Bloom/Flush (Minuten)"
+      description: >
+        Pumpen-AN-Dauer in Minuten für Phase `Bloom` und `Flush`.
+        Wird für beide Phasen verwendet.
+      selector:
+        entity:
+          domain: input_number
+
+    helper_pump_off_bloom:
+      name: "🔁 Pumpe AUS – Bloom/Flush (Minuten)"
+      description: >
+        Pause-Dauer in Minuten für Phase `Bloom` und `Flush`.
+      selector:
+        entity:
+          domain: input_number
+
+    # ─── 🛡️ FAILSAFE ──────────────────────────────────────────────────────────
+    max_light_on_minutes:
+      name: "🛡️ Failsafe – Licht max. AN-Dauer (Minuten)"
+      description: >
+        Maximale Zeit in Minuten, die das Licht ununterbrochen AN sein darf.
+        Überschreitet die AN-Zeit diesen Wert, schaltet die Automation
+        das Licht **sofort ab** und deaktiviert die Automatik.
+        Empfehlung: Etwas mehr als die längste geplante Lichtperiode setzen
+        (z.B. 20h-Lichttag + 60 min Puffer = 1260 min).
+        Standard: 1440 min (= 24h, praktisch kein Limit).
+      default: 1440
+      selector:
+        number:
+          min: 30
+          max: 1440
+          step: 30
+          unit_of_measurement: "min"
+
+    max_pump_on_minutes:
+      name: "🛡️ Failsafe – Pumpe max. AN-Dauer (Minuten)"
+      description: >
+        Maximale ununterbrochene AN-Zeit der Pumpe in Minuten.
+        Überschreitung → Pumpe AUS + Automatik OFF (Schutz vor Dauerlauf/Defekt).
+        Empfehlung: Deutlich größer als das längste geplante Pumpen-AN-Intervall.
+        Irrelevant, wenn „Pumpe 24/7" aktiv ist.
+        Standard: 180 min.
+      default: 180
+      selector:
+        number:
+          min: 10
+          max: 720
+          step: 10
+          unit_of_measurement: "min"
+
+    # ─── ⏳ TIMING ─────────────────────────────────────────────────────────────
+    auto_on_grace_seconds:
+      name: "⏳ Schonzeit nach Automatik-Start (Sekunden)"
+      description: >
+        Nach dem Einschalten der Automatik wartet die Mismatch-Erkennung
+        diese Zeit, bevor sie Abweichungen als Fehler wertet.
+        Verhindert Falsch-Alarme unmittelbar nach dem Start.
+        Empfehlung: Mindestens so lang wie die längste erwartete Schaltzeit
+        aller Geräte (Standard: 90 s).
+      default: 90
+      selector:
+        number:
+          min: 30
+          max: 600
+          step: 10
+          unit_of_measurement: "s"
+
+    mismatch_grace_seconds:
+      name: "⏳ Mismatch-Grace-Period (Sekunden)"
+      description: >
+        Ein Gerät muss mindestens so lange vom SOLL abweichen, bevor ein
+        MISMATCH-Log-Eintrag geschrieben wird.
+        Verhindert Log-Spam bei kurzen Schaltverzögerungen (z.B. Zigbee-Latenz).
+        Standard: 90 s. Erhöhe auf 120–180 s bei langsamen Geräten.
+      default: 90
+      selector:
+        number:
+          min: 30
+          max: 900
+          step: 10
+          unit_of_measurement: "s"
+
+    manual_override_minutes:
+      name: "✋ Manual-Override Dauer (Minuten)"
+      description: >
+        Wenn du das Licht **manuell gegen den SOLL-Zustand** schaltest,
+        respektiert die Automation diesen Zustand für diese Dauer.
+        Der Override-Marker wird im Log gespeichert (`OVRUNTIL=...`).
+        Nach Ablauf übernimmt die Automatik wieder.
+        Empfehlung: 10–30 Minuten für kurze Kontrollen,
+        bis zu 180 Minuten für längere manuelle Eingriffe.
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 180
+          step: 1
+          unit_of_measurement: "min"
+
+    state_confirm_timeout_seconds:
+      name: "⏱️ State-Bestätigungs-Timeout (Sekunden)"
+      description: >
+        Nach einem Schaltbefehl wartet die Automation auf die State-Bestätigung
+        durch Home Assistant. Bleibt der State aus (z.B. Gerät antwortet nicht),
+        wird nach diesem Timeout trotzdem geloggt.
+        Standard: 12 s. Erhöhe auf 20–30 s bei sehr langsamen Geräten (Z-Wave etc.).
+      default: 12
+      selector:
+        number:
+          min: 3
+          max: 60
+          step: 1
+          unit_of_measurement: "s"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AUTOMATION-KONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+mode: single
+max_exceeded: silent
+
+# ───────────────────────────────────────────────────────────────────────────────
+# TRIGGER
+# Läuft jede Minute (Zyklus) + reagiert sofort auf relevante Änderungen
+# ───────────────────────────────────────────────────────────────────────────────
+trigger:
+  - platform: time_pattern
+    minutes: "/1"
+    id: cycle
+
+  - platform: homeassistant
+    event: start
+    id: ha_start
+
+  - platform: state
+    entity_id: !input input_select_stage
+    id: stage_change
+
+  - platform: state
+    entity_id: !input input_boolean_auto
+    id: auto_change
+
+  - platform: state
+    entity_id: !input switch_light
+    id: light_changed
+
+# ───────────────────────────────────────────────────────────────────────────────
+# GLOBALE VARIABLEN (Blueprint-Inputs als Variablen für Template-Zugriff)
+# ───────────────────────────────────────────────────────────────────────────────
+variables:
+  # Licht
+  v_light: !input switch_light
+
+  # Pumpe – _raw Suffix, wird in Schritt 0a normalisiert
+  v_pump_enabled:  !input pump_enabled
+  v_pump_list_raw: !input switch_pump
+  v_pump_247:      !input pump_247_mode
+
+  # O₂ – _raw Suffix
+  v_o2_enabled:  !input oxygen_enabled
+  v_o2_list_raw: !input switch_oxygen
+
+  # Fan – _raw Suffix
+  v_fan_enabled:  !input fan_enabled
+  v_fan_list_raw: !input switch_fan
+
+  # Betriebsmodi
+  v_auto:  !input input_boolean_auto
+  v_maint: !input input_boolean_maintenance
+  v_test:  !input input_boolean_testmode
+  v_stage: !input input_select_stage
+  v_log:   !input input_text_log
+
+  # Lichtzeiten
+  ent_light_on:        !input helper_light_on
+  ent_light_off_sv:    !input helper_light_off_sv
+  ent_light_off_bloom: !input helper_light_off_bloom
+
+  # Pumpenzeiten
+  ent_p_on_s:  !input helper_pump_on_seedling
+  ent_p_off_s: !input helper_pump_off_seedling
+  ent_p_on_v:  !input helper_pump_on_veg
+  ent_p_off_v: !input helper_pump_off_veg
+  ent_p_on_b:  !input helper_pump_on_bloom
+  ent_p_off_b: !input helper_pump_off_bloom
+
+  # Schwellwerte & Timing
+  v_max_light:       !input max_light_on_minutes
+  v_max_pump:        !input max_pump_on_minutes
+  v_auto_grace:      !input auto_on_grace_seconds
+  v_mismatch_grace:  !input mismatch_grace_seconds
+  v_override_min:    !input manual_override_minutes
+  v_confirm_timeout: !input state_confirm_timeout_seconds
+
+# ───────────────────────────────────────────────────────────────────────────────
+# ACTION
+# ───────────────────────────────────────────────────────────────────────────────
+action:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 0a – Listen normalisieren (KRITISCH – immer zuerst!)
+  # Blueprint-Inputs mit multiple:true liefern je nach HA-Version und Anzahl
+  # der gewählten Entities entweder einen String ODER eine Liste.
+  # Dieser Schritt erzwingt immer eine echte Liste, damit list[0]
+  # den ersten Entity-String und NICHT den ersten Buchstaben liefert.
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      v_pump_list: >
+        {% if v_pump_list_raw is string %}
+          {{ [v_pump_list_raw] if v_pump_list_raw not in ['', 'none'] else [] }}
+        {% else %}
+          {{ v_pump_list_raw | list }}
+        {% endif %}
+      v_o2_list: >
+        {% if v_o2_list_raw is string %}
+          {{ [v_o2_list_raw] if v_o2_list_raw not in ['', 'none'] else [] }}
+        {% else %}
+          {{ v_o2_list_raw | list }}
+        {% endif %}
+      v_fan_list: >
+        {% if v_fan_list_raw is string %}
+          {{ [v_fan_list_raw] if v_fan_list_raw not in ['', 'none'] else [] }}
+        {% else %}
+          {{ v_fan_list_raw | list }}
+        {% endif %}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 0b – Basisvariablen berechnen
+  # Einmalig pro Lauf: SOLL, IST, Override-Status, Zeitberechnungen
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      ts: "{{ now().strftime('%Y-%m-%d %H:%M') }}"
+
+      # Entity-Listen → Alle Einträge als kommagetrennte Strings für service calls
+      pump_entities: "{{ v_pump_list | join(', ') if (v_pump_list | count) > 0 else '' }}"
+      o2_entities:   "{{ v_o2_list   | join(', ') if (v_o2_list   | count) > 0 else '' }}"
+      fan_entities:  "{{ v_fan_list  | join(', ') if (v_fan_list  | count) > 0 else '' }}"
+
+      # Einzelne Entities für State-Abfragen (erster Eintrag als Referenz)
+      pump_entity: "{{ v_pump_list[0] if (v_pump_list | count) > 0 else '' }}"
+      o2_entity:   "{{ v_o2_list[0]   if (v_o2_list   | count) > 0 else '' }}"
+      fan_entity:  "{{ v_fan_list[0]  if (v_fan_list  | count) > 0 else '' }}"
+
+      # Alter der Automatik (für Grace-Period)
+      auto_age_sec: "{{ as_timestamp(now()) - as_timestamp(states[v_auto].last_changed) }}"
+
+      # Wachstumsphase (mit Fallback auf Veg bei ungültigem Wert)
+      stage_raw: "{{ states(v_stage) }}"
+      stage: "{{ stage_raw if stage_raw in ['Seedling','Veg','Bloom','Flush'] else 'Veg' }}"
+
+      # ─── Lichtzeiten parsen ─────────────────────────────────────────────
+      # input_datetime gibt je nach Konfiguration "HH:MM:SS" oder "YYYY-MM-DD HH:MM:SS" zurück
+      # → letzter Teil nach split(' '), dann erste 5 Zeichen = "HH:MM"
+      light_on_str: >
+        {% set s = states(ent_light_on) %}
+        {{ s.split(' ')[-1][0:5] if s not in ['unknown','unavailable',''] else '' }}
+      light_off_sv_str: >
+        {% set s = states(ent_light_off_sv) %}
+        {{ s.split(' ')[-1][0:5] if s not in ['unknown','unavailable',''] else '' }}
+      light_off_bloom_str: >
+        {% set s = states(ent_light_off_bloom) %}
+        {{ s.split(' ')[-1][0:5] if s not in ['unknown','unavailable',''] else '' }}
+
+      # Validierung: Alle drei Zeitstrings müssen mindestens "HH:MM" (5 Zeichen) liefern
+      times_valid: >
+        {{ (light_on_str | length) >= 5
+           and (light_off_sv_str | length) >= 5
+           and (light_off_bloom_str | length) >= 5 }}
+
+      # Zeiten → Sekunden seit Mitternacht (für präzisen Vergleich inkl. Sekunden)
+      on_h:     "{{ light_on_str[0:2]      | int(0) }}"
+      on_min:   "{{ light_on_str[3:5]      | int(0) }}"
+      off_sv_h: "{{ light_off_sv_str[0:2]  | int(0) }}"
+      off_sv_m: "{{ light_off_sv_str[3:5]  | int(0) }}"
+      off_b_h:  "{{ light_off_bloom_str[0:2] | int(0) }}"
+      off_b_m:  "{{ light_off_bloom_str[3:5] | int(0) }}"
+
+      now_s: "{{ (now().hour * 3600) + (now().minute * 60) + now().second }}"
+      on_s:  "{{ (on_h * 3600) + (on_min * 60) }}"
+      off_s: >
+        {% if stage in ['Seedling','Veg'] %}
+          {{ (off_sv_h * 3600) + (off_sv_m * 60) }}
+        {% else %}
+          {{ (off_b_h * 3600) + (off_b_m * 60) }}
+        {% endif %}
+
+      # SOLL Licht: Berücksichtigt Mitternachtsüberlauf (on_s > off_s)
+      desired_light: >
+        {% if on_s == off_s %}
+          false
+        {% elif on_s < off_s %}
+          {{ now_s >= on_s and now_s < off_s }}
+        {% else %}
+          {{ now_s >= on_s or now_s < off_s }}
+        {% endif %}
+
+      # Zeit seit letzter SOLL-Grenze (für Mismatch-Grace-Period)
+      boundary_s: "{{ on_s if (desired_light | bool) else off_s }}"
+      light_boundary_age_sec: "{{ (now_s - boundary_s) % 86400 }}"
+
+      # ─── Pumpenzyklus berechnen ──────────────────────────────────────────
+      minutes_today: "{{ now().hour * 60 + now().minute }}"
+
+      p_on_s:  "{{ states(ent_p_on_s)  | int(10) }}"
+      p_off_s: "{{ states(ent_p_off_s) | int(15) }}"
+      p_on_v:  "{{ states(ent_p_on_v)  | int(10) }}"
+      p_off_v: "{{ states(ent_p_off_v) | int(15) }}"
+      p_on_b:  "{{ states(ent_p_on_b)  | int(10) }}"
+      p_off_b: "{{ states(ent_p_off_b) | int(15) }}"
+
+      cycle_s: "{{ p_on_s + p_off_s }}"
+      cycle_v: "{{ p_on_v + p_off_v }}"
+      cycle_b: "{{ p_on_b + p_off_b }}"
+
+      phase_s: "{{ minutes_today % cycle_s if cycle_s > 0 else 0 }}"
+      phase_v: "{{ minutes_today % cycle_v if cycle_v > 0 else 0 }}"
+      phase_b: "{{ minutes_today % cycle_b if cycle_b > 0 else 0 }}"
+
+      # SOLL Pumpe: none = nicht konfiguriert, true/false = SOLL-Zustand
+      desired_pump: >
+        {% if not (v_pump_enabled and pump_entity != '') %}
+          {{ none }}
+        {% elif v_pump_247 %}
+          {{ true }}
+        {% elif stage == 'Seedling' %}
+          {{ phase_s < p_on_s }}
+        {% elif stage == 'Veg' %}
+          {{ phase_v < p_on_v }}
+        {% else %}
+          {{ phase_b < p_on_b }}
+        {% endif %}
+
+      desired_fan: "{{ v_fan_enabled and (v_fan_list | count) > 0 }}"
+      desired_o2:  "{{ v_o2_enabled  and (v_o2_list  | count) > 0 }}"
+
+      # ─── Manual-Override aus Log extrahieren ────────────────────────────
+      # Format im Log: "... OVRUNTIL=YYYY-MM-DD HH:MM ..."
+      log_state: "{{ states(v_log) }}"
+      ovr_str: >
+        {% if 'OVRUNTIL=' in log_state %}
+          {% set idx = log_state.index('OVRUNTIL=') + 9 %}
+          {{ log_state[idx : idx + 16] }}
+        {% else %}
+          {{ '' }}
+        {% endif %}
+      ovr_format_ok: >
+        {{ (ovr_str | length == 16)
+           and ovr_str[4:5] == '-'
+           and ovr_str[7:8] == '-'
+           and ovr_str[10:11] == ' '
+           and ovr_str[13:14] == ':' }}
+      override_until_ts: >
+        {% if ovr_format_ok %}
+          {{ as_timestamp(strptime(ovr_str, '%Y-%m-%d %H:%M'), 0) }}
+        {% else %}
+          0
+        {% endif %}
+      override_active: "{{ override_until_ts > as_timestamp(now()) }}"
+      ovr_marker: "{{ 'OVRUNTIL=' ~ ovr_str if override_active else 'OVR=OFF' }}"
+
+      # ─── IST/SOLL Snapshot für Log ───────────────────────────────────────
+      ist_line: >
+        IST L={{ states(v_light) }}
+        P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+        F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+        O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+
+      soll_line: >
+        SOLL L={{ 'ON' if (desired_light | bool) else 'OFF' }}
+        P={% if desired_pump is none %}n/a{% elif desired_pump | bool %}ON{% else %}OFF{% endif %}
+        F={{ 'ON' if desired_fan else 'OFF' }}
+        O2={{ 'ON' if desired_o2 else 'OFF' }}
+
+      confirm_timeout_str: "{{ '00:00:%02d' | format(v_confirm_timeout | int) }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 1 – Ungültige Zeitkonfiguration → Log + Abbruch
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ not times_valid }}"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} ⚠️ TIME INVALID | {{ ovr_marker }} | {{ ist_line }} | {{ soll_line }}"
+          - stop: "time invalid – Lichtzeiten nicht konfiguriert"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 2 – Auto OFF → Log + Abbruch (keine Schaltaktionen)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: auto_change
+          - condition: state
+            entity_id: !input input_boolean_auto
+            state: "off"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🔴 AUTO OFF | {{ ovr_marker }} | {{ ist_line }} | {{ soll_line }}"
+          - stop: "auto off"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 3 – Ereignis-Log bei Auto ON und Stage-Wechsel
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: auto_change
+          - condition: state
+            entity_id: !input input_boolean_auto
+            state: "on"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🟢 AUTO ON | {{ ovr_marker }} | {{ ist_line }} | {{ soll_line }}"
+
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: stage_change
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🌱 STAGE → {{ stage }} | {{ ovr_marker }} | {{ ist_line }} | {{ soll_line }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 4 – Gate: Nur wenn Automatik aktiv
+  # ═══════════════════════════════════════════════════════════════════════════
+  - condition: state
+    entity_id: !input input_boolean_auto
+    state: "on"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 5 – Maintenance → Log + Abbruch
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input input_boolean_maintenance
+            state: "on"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🔧 MAINTENANCE | {{ ovr_marker }} | {{ ist_line }} | {{ soll_line }}"
+          - stop: "maintenance aktiv"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 6 – Testmode → Log + Abbruch (keine Schaltaktionen)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input input_boolean_testmode
+            state: "on"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🧪 TESTMODE | {{ ovr_marker }} | {{ ist_line }} | {{ soll_line }}"
+          - stop: "testmode aktiv – keine Schaltaktion"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 7 – Manual-Override: Licht gegen SOLL geschaltet
+  # Wenn Licht manuell gegen den SOLL-Zustand geschaltet wurde:
+  # Override-Marker im Log setzen und Lauf beenden.
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: light_changed
+          - condition: template
+            value_template: >
+              {{ trigger.to_state is not none
+                 and trigger.to_state.state in ['on','off']
+                 and ((trigger.to_state.state == 'on') != (desired_light | bool)) }}
+        sequence:
+          - variables:
+              new_until:  "{{ (now() + timedelta(minutes=(v_override_min | int))).strftime('%Y-%m-%d %H:%M') }}"
+              new_marker: "OVRUNTIL={{ (now() + timedelta(minutes=(v_override_min | int))).strftime('%Y-%m-%d %H:%M') }}"
+              ist_ovr: >
+                IST L={{ states(v_light) }}
+                P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+                F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} ✋ MANUAL OVERRIDE {{ v_override_min | int }}min | {{ new_marker }} | {{ ist_ovr }} | {{ soll_line }}"
+          - stop: "manual override gesetzt"
+
+  # Override abgelaufen → einmalig loggen (im 60s-Fenster)
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ override_until_ts > 0
+                 and (not override_active)
+                 and as_timestamp(now()) >= override_until_ts
+                 and as_timestamp(now()) < (override_until_ts + 60) }}
+        sequence:
+          - variables:
+              ist_ovr_end: >
+                IST L={{ states(v_light) }}
+                P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+                F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} ✅ OVERRIDE END | OVR=OFF | {{ ist_ovr_end }} | {{ soll_line }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 8 – Lichtsteuerung (nur ohne aktiven Override)
+  # Nach jedem Schaltbefehl: Warten auf State-Bestätigung, dann loggen.
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ not override_active }}"
+        sequence:
+          - choose:
+              # Licht AN
+              - conditions:
+                  - condition: template
+                    value_template: "{{ (desired_light | bool) and not is_state(v_light, 'on') }}"
+                sequence:
+                  - service: switch.turn_on
+                    target:
+                      entity_id: "{{ v_light }}"
+                  - wait_template: "{{ is_state(v_light, 'on') }}"
+                    timeout: "{{ confirm_timeout_str }}"
+                    continue_on_timeout: true
+                  - variables:
+                      ist_after: >
+                        IST L={{ states(v_light) }}
+                        P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+                        F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                        O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+                  - service: input_text.set_value
+                    target: { entity_id: !input input_text_log }
+                    data:
+                      value: "{{ ts }} 💡 LIGHT → ON | {{ ovr_marker }} | {{ ist_after }} | {{ soll_line }}"
+
+              # Licht AUS
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not (desired_light | bool) and not is_state(v_light, 'off') }}"
+                sequence:
+                  - service: switch.turn_off
+                    target:
+                      entity_id: "{{ v_light }}"
+                  - wait_template: "{{ is_state(v_light, 'off') }}"
+                    timeout: "{{ confirm_timeout_str }}"
+                    continue_on_timeout: true
+                  - variables:
+                      ist_after: >
+                        IST L={{ states(v_light) }}
+                        P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+                        F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                        O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+                  - service: input_text.set_value
+                    target: { entity_id: !input input_text_log }
+                    data:
+                      value: "{{ ts }} 🌑 LIGHT → OFF | {{ ovr_marker }} | {{ ist_after }} | {{ soll_line }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 9 – Failsafe Licht
+  # Licht zu lange AN → sofort AUS + Automatik OFF
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ (not override_active)
+                 and is_state(v_light, 'on')
+                 and ((as_timestamp(now()) - as_timestamp(states[v_light].last_changed)) / 60) > (v_max_light | int) }}
+        sequence:
+          - service: switch.turn_off
+            target:
+              entity_id: "{{ v_light }}"
+          - wait_template: "{{ is_state(v_light, 'off') }}"
+            timeout: "{{ confirm_timeout_str }}"
+            continue_on_timeout: true
+          - service: input_boolean.turn_off
+            target: { entity_id: !input input_boolean_auto }
+          - variables:
+              ist_fs_l: >
+                IST L={{ states(v_light) }}
+                P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+                F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🚨 FAILSAFE LIGHT → AUTO OFF | {{ ovr_marker }} | {{ ist_fs_l }} | {{ soll_line }}"
+          - stop: "failsafe licht ausgelöst"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 10 – Pumpensteuerung (optional)
+  # Alle konfigurierten Pumpen-Switches werden gleichzeitig geschaltet.
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ desired_pump is not none and (v_pump_list | count) > 0 }}"
+        sequence:
+          - choose:
+              # Pumpe AN
+              - conditions:
+                  - condition: template
+                    value_template: "{{ (desired_pump | bool) and not is_state(pump_entity, 'on') }}"
+                sequence:
+                  - service: switch.turn_on
+                    target:
+                      entity_id: "{{ v_pump_list }}"
+                  - wait_template: "{{ is_state(pump_entity, 'on') }}"
+                    timeout: "{{ confirm_timeout_str }}"
+                    continue_on_timeout: true
+                  - variables:
+                      ist_p: >
+                        IST L={{ states(v_light) }}
+                        P={{ states(pump_entity) }}
+                        F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                        O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+                  - service: input_text.set_value
+                    target: { entity_id: !input input_text_log }
+                    data:
+                      value: "{{ ts }} 💧 PUMP → ON | {{ ovr_marker }} | {{ ist_p }} | {{ soll_line }}"
+
+              # Pumpe AUS
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not (desired_pump | bool) and not is_state(pump_entity, 'off') }}"
+                sequence:
+                  - service: switch.turn_off
+                    target:
+                      entity_id: "{{ v_pump_list }}"
+                  - wait_template: "{{ is_state(pump_entity, 'off') }}"
+                    timeout: "{{ confirm_timeout_str }}"
+                    continue_on_timeout: true
+                  - variables:
+                      ist_p: >
+                        IST L={{ states(v_light) }}
+                        P={{ states(pump_entity) }}
+                        F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                        O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+                  - service: input_text.set_value
+                    target: { entity_id: !input input_text_log }
+                    data:
+                      value: "{{ ts }} ⏸️ PUMP → OFF | {{ ovr_marker }} | {{ ist_p }} | {{ soll_line }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 11 – Failsafe Pumpe (nur im Zyklus-Modus, nicht 24/7)
+  # Pumpe zu lange AN → sofort AUS + Automatik OFF
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ desired_pump is not none
+                 and (v_pump_list | count) > 0
+                 and not v_pump_247
+                 and is_state(pump_entity, 'on')
+                 and ((as_timestamp(now()) - as_timestamp(states[pump_entity].last_changed)) / 60) > (v_max_pump | int) }}
+        sequence:
+          - service: switch.turn_off
+            target:
+              entity_id: "{{ v_pump_list }}"
+          - wait_template: "{{ is_state(pump_entity, 'off') }}"
+            timeout: "{{ confirm_timeout_str }}"
+            continue_on_timeout: true
+          - service: input_boolean.turn_off
+            target: { entity_id: !input input_boolean_auto }
+          - variables:
+              ist_fs_p: >
+                IST L={{ states(v_light) }}
+                P={{ states(pump_entity) }}
+                F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🚨 FAILSAFE PUMP → AUTO OFF | {{ ovr_marker }} | {{ ist_fs_p }} | {{ soll_line }}"
+          - stop: "failsafe pumpe ausgelöst"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 12 – O₂-Versorgung dauerhaft AN
+  # Alle O₂-Switches einschalten (nur wenn noch nicht AN)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ desired_o2 and not is_state(o2_entity, 'on') }}"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: "{{ v_o2_list }}"
+          - wait_template: "{{ is_state(o2_entity, 'on') }}"
+            timeout: "{{ confirm_timeout_str }}"
+            continue_on_timeout: true
+          - variables:
+              ist_o2: >
+                IST L={{ states(v_light) }}
+                P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+                F={{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}
+                O2={{ states(o2_entity) }}
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🫧 O2 → ON | {{ ovr_marker }} | {{ ist_o2 }} | {{ soll_line }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 13 – Stations-Umluft dauerhaft AN
+  # Alle Fan-Switches einschalten (nur wenn noch nicht AN)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ desired_fan and not is_state(fan_entity, 'on') }}"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: "{{ v_fan_list }}"
+          - wait_template: "{{ is_state(fan_entity, 'on') }}"
+            timeout: "{{ confirm_timeout_str }}"
+            continue_on_timeout: true
+          - variables:
+              ist_fan: >
+                IST L={{ states(v_light) }}
+                P={{ states(pump_entity) if pump_entity != '' else 'n/a' }}
+                F={{ states(fan_entity) }}
+                O2={{ states(o2_entity)  if o2_entity   != '' else 'n/a' }}
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} 🌀 FAN → ON | {{ ovr_marker }} | {{ ist_fan }} | {{ soll_line }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 14 – Mismatch-Erkennung (nur Info-Log, kein Auto OFF)
+  # Gerät weicht nach Grace-Period vom SOLL ab → warnen, nicht abschalten.
+  # Das 60s-Fenster verhindert Log-Spam (nur einmalige Meldung pro Abweichung).
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      light_state_now: "{{ states(v_light) }}"
+      pump_state_now:  "{{ states(pump_entity) if pump_entity != '' else 'n/a' }}"
+      fan_state_now:   "{{ states(fan_entity)  if fan_entity  != '' else 'n/a' }}"
+      o2_state_now:    "{{ states(o2_entity)   if o2_entity   != '' else 'n/a' }}"
+
+      light_bad: >
+        {{ (not override_active) and (
+             light_state_now in ['unavailable','unknown']
+             or (light_state_now in ['on','off']
+                 and (light_state_now == 'on') != (desired_light | bool))
+           ) }}
+      pump_bad: >
+        {% if desired_pump is none or pump_entity == '' %}false
+        {% else %}
+          {{ pump_state_now in ['unavailable','unknown']
+             or (pump_state_now in ['on','off']
+                 and (pump_state_now == 'on') != (desired_pump | bool)) }}
+        {% endif %}
+      fan_bad: >
+        {{ desired_fan
+           and fan_entity != ''
+           and fan_state_now in ['off','unavailable','unknown'] }}
+      o2_bad: >
+        {{ desired_o2
+           and o2_entity != ''
+           and o2_state_now in ['off','unavailable','unknown'] }}
+
+      pump_age_s: >
+        {{ (as_timestamp(now()) - as_timestamp(states[pump_entity].last_changed))
+           if pump_entity != '' else 0 }}
+      fan_age_s: >
+        {{ (as_timestamp(now()) - as_timestamp(states[fan_entity].last_changed))
+           if fan_entity != '' else 0 }}
+      o2_age_s: >
+        {{ (as_timestamp(now()) - as_timestamp(states[o2_entity].last_changed))
+           if o2_entity != '' else 0 }}
+
+      # Fenster: [grace, grace+60s] → Einmalige Meldung pro Abweichungs-Ereignis
+      grace: "{{ v_mismatch_grace | int }}"
+      log_light: >
+        {{ light_bad
+           and light_boundary_age_sec >= grace
+           and light_boundary_age_sec < (grace + 60) }}
+      log_pump: >
+        {{ pump_bad
+           and pump_age_s >= grace
+           and pump_age_s < (grace + 60) }}
+      log_fan: >
+        {{ fan_bad
+           and fan_age_s >= grace
+           and fan_age_s < (grace + 60) }}
+      log_o2: >
+        {{ o2_bad
+           and o2_age_s >= grace
+           and o2_age_s < (grace + 60) }}
+
+      should_log_mismatch: >
+        {{ auto_age_sec > (v_auto_grace | int)
+           and (log_light or log_pump or log_fan or log_o2) }}
+      ist_mismatch: >
+        IST L={{ light_state_now }}
+        P={{ pump_state_now }}
+        F={{ fan_state_now }}
+        O2={{ o2_state_now }}
+
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ should_log_mismatch }}"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ ts }} ⚠️ MISMATCH | {{ ovr_marker }} | {{ ist_mismatch }} | {{ soll_line }}"

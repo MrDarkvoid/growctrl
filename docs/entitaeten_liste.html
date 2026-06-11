@@ -1,0 +1,429 @@
+<!--
+GROWCTRL – Entitaeten-Liste
+Zweck: Uebersicht aller 105 Legacy-Entity-IDs. Grundlage fuer die Migrations-Mapping-Tabelle (Phase 3).
+Version: 2.0.0-dev | Lizenz: MIT
+Autor: MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYDRO.SYS – Entitäten-Liste</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2330;--bg4:#222c3c;
+  --bdr:rgba(99,200,140,0.12);--bdr2:rgba(99,200,140,0.25);
+  --green:#3fb950;--g2:#56d364;--gdim:rgba(63,185,80,0.15);
+  --amber:#e3b341;--adim:rgba(227,179,65,0.15);
+  --red:#f85149;--rdim:rgba(248,81,73,0.15);
+  --blue:#58a6ff;--bdim:rgba(88,166,255,0.15);
+  --teal:#39d3bb;--tdim:rgba(57,211,187,0.12);
+  --purp:#bc8cff;--pdim:rgba(188,140,255,0.15);
+  --tx:#e6edf3;--tx2:#8b949e;--tx3:#484f58;
+  --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-height:100vh;line-height:1.6;font-size:14px;}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px;}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--bdr);flex-wrap:wrap;gap:12px;}
+.hdr-l{display:flex;align-items:center;gap:12px;}
+.logo{width:44px;height:44px;background:var(--gdim);border:1px solid var(--bdr2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo svg{width:22px;height:22px;}
+.htitle{font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:0.06em;}
+.hsub{font-size:11px;color:var(--tx2);letter-spacing:0.07em;text-transform:uppercase;font-family:var(--mono);}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+.badge{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:20px;letter-spacing:0.04em;white-space:nowrap;}
+.bg{background:var(--gdim);color:var(--g2);border:1px solid rgba(86,211,100,0.3);}
+.ba{background:var(--adim);color:var(--amber);border:1px solid rgba(227,179,65,0.3);}
+.bb{background:var(--bdim);color:var(--blue);border:1px solid rgba(88,166,255,0.3);}
+.br{background:var(--rdim);color:var(--red);border:1px solid rgba(248,81,73,0.3);}
+.bt{background:var(--tdim);color:var(--teal);border:1px solid rgba(57,211,187,0.3);}
+.bp{background:var(--pdim);color:var(--purp);border:1px solid rgba(188,140,255,0.3);}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:24px;}
+.sc{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:11px 13px;}
+.sl{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px;}
+.sv{font-family:var(--mono);font-size:20px;color:var(--tx);font-weight:700;}
+.su{font-size:11px;color:var(--tx2);margin-left:2px;}
+
+.filterbar{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.filter-btn{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid var(--bdr);background:var(--bg2);color:var(--tx2);transition:all .15s;user-select:none;}
+.filter-btn:hover{border-color:var(--bdr2);color:var(--tx);}
+.filter-btn.active{border-color:var(--bdr2);color:var(--tx);background:var(--bg4);}
+.filter-btn.f-klein.active{background:var(--gdim);color:var(--g2);border-color:rgba(63,185,80,0.4);}
+.filter-btn.f-mittel.active{background:var(--adim);color:var(--amber);border-color:rgba(227,179,65,0.4);}
+.filter-btn.f-gross.active{background:var(--bdim);color:var(--blue);border-color:rgba(88,166,255,0.4);}
+.filter-btn.f-sys.active{background:var(--pdim);color:var(--purp);border-color:rgba(188,140,255,0.4);}
+.search{flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--bdr);border-radius:20px;padding:5px 14px;color:var(--tx);font-family:var(--mono);font-size:12px;outline:none;}
+.search:focus{border-color:var(--bdr2);}
+.search::placeholder{color:var(--tx3);}
+
+.section{margin-bottom:28px;}
+.section-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;}
+.section-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.section-title{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:0.04em;}
+.section-sub{font-size:11px;color:var(--tx3);font-family:var(--mono);}
+.section-count{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--tx3);padding:2px 8px;background:var(--bg4);border-radius:10px;}
+
+.group-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--tx3);font-family:var(--mono);padding:6px 0 4px 2px;display:flex;align-items:center;gap:8px;}
+.group-lbl::after{content:'';flex:1;height:1px;background:var(--bdr);}
+
+.tbl-wrap{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--bg3);}
+th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--tx3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--bdr);}
+td{padding:7px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle;font-size:13px;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(99,200,140,0.04);}
+.eid{font-family:var(--mono);font-size:12px;color:var(--g2);}
+.eid .dom{color:var(--tx3);}
+.domain-badge{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:8px;white-space:nowrap;}
+.d-sensor{background:var(--bdim);color:var(--blue);}
+.d-switch{background:var(--adim);color:var(--amber);}
+.d-input_boolean{background:var(--gdim);color:var(--g2);}
+.d-input_number{background:var(--tdim);color:var(--teal);}
+.d-input_datetime{background:var(--pdim);color:var(--purp);}
+.d-input_select{background:rgba(255,200,80,0.15);color:#ffc850;}
+.d-input_text{background:rgba(255,120,100,0.12);color:#ff8877;}
+.d-automation{background:var(--rdim);color:var(--red);}
+.val-cell{font-family:var(--mono);font-size:12px;color:var(--amber);}
+.row-hidden{display:none;}
+
+.copy-eid{cursor:pointer;opacity:0;transition:opacity .15s;font-size:11px;color:var(--tx3);padding:1px 5px;border-radius:4px;border:1px solid transparent;background:transparent;font-family:var(--mono);}
+tr:hover .copy-eid{opacity:1;}
+.copy-eid:hover{color:var(--tx2);border-color:var(--bdr);}
+
+.footer{margin-top:32px;padding-top:14px;border-top:1px solid var(--bdr);display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);font-family:var(--mono);flex-wrap:wrap;gap:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round">
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2"/>
+          <path d="M12 8v8M8 12h8"/>
+          <circle cx="12" cy="12" r="3" fill="#3fb950" stroke="none" opacity="0.4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="htitle">HYDRO.SYS · Entitäten-Liste</div>
+        <div class="hsub">Stand: 21.03.2026 · 154 Entitäten</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <span class="badge bg">Zelt Klein</span>
+      <span class="badge ba">Zelt Mittel</span>
+      <span class="badge bb">Zelt Groß</span>
+      <span class="badge bp">Systemweit</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="sc"><div class="sl">Gesamt</div><div class="sv" id="cnt-total">154</div></div>
+    <div class="sc"><div class="sl">input_boolean</div><div class="sv" style="color:var(--g2)" id="cnt-ib">32</div></div>
+    <div class="sc"><div class="sl">input_number</div><div class="sv" style="color:var(--teal)" id="cnt-in">42</div></div>
+    <div class="sc"><div class="sl">input_datetime</div><div class="sv" style="color:var(--purp)" id="cnt-id">19</div></div>
+    <div class="sc"><div class="sl">input_select</div><div class="sv" style="color:#ffc850" id="cnt-is">6</div></div>
+    <div class="sc"><div class="sl">input_text</div><div class="sv" style="color:#ff8877" id="cnt-it">10</div></div>
+    <div class="sc"><div class="sl">sensor</div><div class="sv" style="color:var(--blue)" id="cnt-se">33</div></div>
+    <div class="sc"><div class="sl">switch</div><div class="sv" style="color:var(--amber)" id="cnt-sw">4</div></div>
+    <div class="sc"><div class="sl">automation</div><div class="sv" style="color:var(--red)" id="cnt-au">4</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filterbar">
+    <input class="search" type="text" placeholder="Suchen… (z.B. pump, klein, sensor)" id="search" oninput="filterAll()">
+    <div class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">Alle</div>
+    <div class="filter-btn f-sys" data-filter="sys" onclick="setFilter('sys',this)">Systemweit</div>
+    <div class="filter-btn f-klein" data-filter="klein" onclick="setFilter('klein',this)">Zelt Klein</div>
+    <div class="filter-btn f-mittel" data-filter="mittel" onclick="setFilter('mittel',this)">Zelt Mittel</div>
+    <div class="filter-btn f-gross" data-filter="gross" onclick="setFilter('gross',this)">Zelt Groß</div>
+  </div>
+
+  <!-- SYSTEMWEIT -->
+  <div class="section" data-zelt="sys">
+    <div class="section-hdr">
+      <div class="section-dot" style="background:var(--purp)"></div>
+      <div><div class="section-title" style="color:var(--purp)">SYSTEMWEIT</div><div class="section-sub">Zelt-übergreifende Entitäten</div></div>
+      <div class="section-count">2 Entitäten</div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+        <tr class="erow" data-zelt="sys" data-id="input_boolean.hydro_expert_mode">
+          <td class="eid"><span class="dom">input_boolean.</span>hydro_expert_mode</td>
+          <td><span class="domain-badge d-input_boolean">input_boolean</span></td>
+          <td>Experten-Modus Toggle (NEU, muss erstellt werden)</td>
+          <td><button class="copy-eid" onclick="copyId('input_boolean.hydro_expert_mode',this)">copy</button></td>
+        </tr>
+        <tr class="erow" data-zelt="sys" data-id="automation.hydro_zentraler_entfeuchter_aggregation">
+          <td class="eid"><span class="dom">automation.</span>hydro_zentraler_entfeuchter_aggregation</td>
+          <td><span class="domain-badge d-automation">automation</span></td>
+          <td>Zentrale Entfeuchter-Steuerung über alle Zelte</td>
+          <td><button class="copy-eid" onclick="copyId('automation.hydro_zentraler_entfeuchter_aggregation',this)">copy</button></td>
+        </tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ZELT KLEIN -->
+  <div class="section" data-zelt="klein">
+    <div class="section-hdr">
+      <div class="section-dot" style="background:var(--green)"></div>
+      <div><div class="section-title" style="color:var(--g2)">ZELT KLEIN</div><div class="section-sub">Anzucht · 2 Stationen (Oben + Unten)</div></div>
+      <div class="section-count">40 Entitäten</div>
+    </div>
+
+    <div class="group-lbl">Zelt-Aktivierung &amp; Modi</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="klein" data-id="input_boolean.grow_zelt_klein_aktivierung"><td class="eid"><span class="dom">input_boolean.</span>grow_zelt_klein_aktivierung</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Zelt Ein/Aus</td><td><button class="copy-eid" onclick="copyId('input_boolean.grow_zelt_klein_aktivierung',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_boolean.hydro_climate_auto_klein"><td class="eid"><span class="dom">input_boolean.</span>hydro_climate_auto_klein</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Klimaautomatik Ein/Aus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_climate_auto_klein',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_boolean.hydro_maintenance_klein"><td class="eid"><span class="dom">input_boolean.</span>hydro_maintenance_klein</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Wartungsmodus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_maintenance_klein',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_boolean.hydro_testmode_klein"><td class="eid"><span class="dom">input_boolean.</span>hydro_testmode_klein</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Testmodus (nur Diagnose)</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_testmode_klein',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_boolean.hydro_dehum_request_klein"><td class="eid"><span class="dom">input_boolean.</span>hydro_dehum_request_klein</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Entfeuchter-Anforderung</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_dehum_request_klein',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Klima-Sensorik (US · Zigbee)</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th>Livewert</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="klein" data-id="sensor.us_grow_zelt_klein_temperature"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_klein_temperature</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Temperatur im Zelt</td><td class="val-cell">21.59 °C</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_klein_temperature',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.us_grow_zelt_klein_humidity"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_klein_humidity</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Luftfeuchtigkeit</td><td class="val-cell">68.22 %</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_klein_humidity',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.us_grow_zelt_klein_battery"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_klein_battery</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Sensor-Batterie</td><td class="val-cell">100 %</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_klein_battery',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.us_grow_zelt_klein_linkquality"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_klein_linkquality</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Zigbee LQI Sensor</td><td class="val-cell">116 lqi</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_klein_linkquality',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.us_grow_zelt_klein_last_seen"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_klein_last_seen</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Letzter Kontakt Sensor</td><td class="val-cell">Timestamp</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_klein_last_seen',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Strom-Messung (FS · Smart Plug · Zigbee)</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th>Livewert</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="klein" data-id="switch.fs_growzelt_klein"><td class="eid"><span class="dom">switch.</span>fs_growzelt_klein</td><td><span class="domain-badge d-switch">switch</span></td><td>Smart Plug Schalter</td><td class="val-cell">—</td><td><button class="copy-eid" onclick="copyId('switch.fs_growzelt_klein',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_power"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_power</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Aktuelle Leistung</td><td class="val-cell">224.6 W</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_power',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_voltage"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_voltage</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Netzspannung</td><td class="val-cell">232.7 V</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_voltage',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_current"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_current</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Stromstärke</td><td class="val-cell">1.04 A</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_current',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_energy"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_energy</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Verbrauchte Energie</td><td class="val-cell">9.6 kWh</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_energy',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_linkquality"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_linkquality</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Zigbee LQI Plug</td><td class="val-cell">152 lqi</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_linkquality',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_last_seen"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_last_seen</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Letzter Kontakt Plug</td><td class="val-cell">Timestamp</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_last_seen',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_device_power"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_device_power</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Geräteleistung (Standby)</td><td class="val-cell">0.80 W</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_device_power',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.fs_growzelt_klein_device_energy"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_klein_device_energy</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Geräteenergie</td><td class="val-cell">0.0576 kWh</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_klein_device_energy',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.growzelt_klein_leistungsbezug"><td class="eid"><span class="dom">sensor.</span>growzelt_klein_leistungsbezug</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Leistungsbezug (erweitert)</td><td class="val-cell">225.4 W</td><td><button class="copy-eid" onclick="copyId('sensor.growzelt_klein_leistungsbezug',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.growzelt_klein_gesamt_energie"><td class="eid"><span class="dom">sensor.</span>growzelt_klein_gesamt_energie</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Gesamtenergie</td><td class="val-cell">8507.90 Wh</td><td><button class="copy-eid" onclick="copyId('sensor.growzelt_klein_gesamt_energie',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Hardware-Schalter</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="klein" data-id="switch.anzucht_oben"><td class="eid"><span class="dom">switch.</span>anzucht_oben</td><td><span class="domain-badge d-switch">switch</span></td><td>Anzucht 1 Hardware-Schalter</td><td><button class="copy-eid" onclick="copyId('switch.anzucht_oben',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="switch.anzucht_unten"><td class="eid"><span class="dom">switch.</span>anzucht_unten</td><td><span class="domain-badge d-switch">switch</span></td><td>Anzucht 2 Hardware-Schalter</td><td><button class="copy-eid" onclick="copyId('switch.anzucht_unten',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Station Anzucht 1 &amp; 2 – Konfiguration</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th>Livewert</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="klein" data-id="input_boolean.hydro_auto_klein_anzucht1"><td class="eid"><span class="dom">input_boolean.</span>hydro_auto_klein_anzucht1</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Automatik Anzucht Oben</td><td class="val-cell">on</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_auto_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_boolean.hydro_auto_klein_anzucht2"><td class="eid"><span class="dom">input_boolean.</span>hydro_auto_klein_anzucht2</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Automatik Anzucht Unten</td><td class="val-cell">on</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_auto_klein_anzucht2',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_select.hydro_stage_klein_anzucht1"><td class="eid"><span class="dom">input_select.</span>hydro_stage_klein_anzucht1</td><td><span class="domain-badge d-input_select">input_select</span></td><td>Wachstumsphase</td><td class="val-cell">Seedling</td><td><button class="copy-eid" onclick="copyId('input_select.hydro_stage_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_datetime.hydro_light_on_klein_anzucht1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_on_klein_anzucht1</td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht EIN-Zeitpunkt</td><td class="val-cell">15:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_on_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_datetime.hydro_light_off_sv_klein_anzucht1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_off_sv_klein_anzucht1</td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht AUS Seedling/Veg</td><td class="val-cell">07:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_off_sv_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_datetime.hydro_light_off_bloom_klein_anzucht1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_off_bloom_klein_anzucht1</td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht AUS Bloom/Flush</td><td class="val-cell">04:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_off_bloom_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.klein_anzucht_licht_restzeit"><td class="eid"><span class="dom">sensor.</span>klein_anzucht_licht_restzeit</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Verbleibende Lichtzeit</td><td class="val-cell">489 min</td><td><button class="copy-eid" onclick="copyId('sensor.klein_anzucht_licht_restzeit',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="sensor.klein_anzucht_pumpe_restzeit"><td class="eid"><span class="dom">sensor.</span>klein_anzucht_pumpe_restzeit</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Verbleibende Pumpenzeit</td><td class="val-cell">9 min</td><td><button class="copy-eid" onclick="copyId('sensor.klein_anzucht_pumpe_restzeit',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_number.hydro_pump_on_seedling_klein_anzucht1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_seedling_klein_anzucht1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Seedling</td><td class="val-cell">5.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_seedling_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_number.hydro_pump_off_seedling_klein_anzucht1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_seedling_klein_anzucht1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Seedling</td><td class="val-cell">15.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_seedling_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_number.hydro_pump_on_veg_klein_anzucht1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_veg_klein_anzucht1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Veg</td><td class="val-cell">10.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_veg_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_number.hydro_pump_off_veg_klein_anzucht1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_veg_klein_anzucht1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Veg</td><td class="val-cell">10.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_veg_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_number.hydro_pump_on_bloom_klein_anzucht1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_bloom_klein_anzucht1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Bloom/Flush</td><td class="val-cell">10.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_bloom_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_number.hydro_pump_off_bloom_klein_anzucht1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_bloom_klein_anzucht1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Bloom/Flush</td><td class="val-cell">15.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_bloom_klein_anzucht1',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Logging Klein</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="klein" data-id="input_text.hydro_climate_log_klein"><td class="eid"><span class="dom">input_text.</span>hydro_climate_log_klein</td><td><span class="domain-badge d-input_text">input_text</span></td><td>Klima-Protokoll</td><td><button class="copy-eid" onclick="copyId('input_text.hydro_climate_log_klein',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_text.hydro_log_klein_anzucht1"><td class="eid"><span class="dom">input_text.</span>hydro_log_klein_anzucht1</td><td><span class="domain-badge d-input_text">input_text</span></td><td>Station-Log Anzucht Oben</td><td><button class="copy-eid" onclick="copyId('input_text.hydro_log_klein_anzucht1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="input_text.hydro_log_klein_anzucht2"><td class="eid"><span class="dom">input_text.</span>hydro_log_klein_anzucht2</td><td><span class="domain-badge d-input_text">input_text</span></td><td>Station-Log Anzucht Unten</td><td><button class="copy-eid" onclick="copyId('input_text.hydro_log_klein_anzucht2',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Automationen Klein</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="klein" data-id="automation.hydro_station_anzucht_1_zelt_klein"><td class="eid"><span class="dom">automation.</span>hydro_station_anzucht_1_zelt_klein</td><td><span class="domain-badge d-automation">automation</span></td><td>Stations-Automatik Anzucht 1</td><td><button class="copy-eid" onclick="copyId('automation.hydro_station_anzucht_1_zelt_klein',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="automation.hydro_station_anzucht_2_zelt_klein"><td class="eid"><span class="dom">automation.</span>hydro_station_anzucht_2_zelt_klein</td><td><span class="domain-badge d-automation">automation</span></td><td>Stations-Automatik Anzucht 2</td><td><button class="copy-eid" onclick="copyId('automation.hydro_station_anzucht_2_zelt_klein',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="klein" data-id="automation.hydro_zelt_klima_growzelt_klein"><td class="eid"><span class="dom">automation.</span>hydro_zelt_klima_growzelt_klein</td><td><span class="domain-badge d-automation">automation</span></td><td>Klima-Regelung Zelt Klein</td><td><button class="copy-eid" onclick="copyId('automation.hydro_zelt_klima_growzelt_klein',this)">copy</button></td></tr>
+    </tbody></table></div>
+  </div>
+
+  <!-- ZELT MITTEL -->
+  <div class="section" data-zelt="mittel">
+    <div class="section-hdr">
+      <div class="section-dot" style="background:var(--amber)"></div>
+      <div><div class="section-title" style="color:var(--amber)">ZELT MITTEL</div><div class="section-sub">1 Station: Main 1</div></div>
+      <div class="section-count">25 Entitäten</div>
+    </div>
+
+    <div class="group-lbl">Zelt-Aktivierung &amp; Modi</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="mittel" data-id="input_boolean.grow_zelt_mittel_aktivierung"><td class="eid"><span class="dom">input_boolean.</span>grow_zelt_mittel_aktivierung</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Zelt Ein/Aus</td><td><button class="copy-eid" onclick="copyId('input_boolean.grow_zelt_mittel_aktivierung',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_boolean.hydro_climate_auto_mittel"><td class="eid"><span class="dom">input_boolean.</span>hydro_climate_auto_mittel</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Klimaautomatik Ein/Aus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_climate_auto_mittel',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_boolean.hydro_maintenance_mittel"><td class="eid"><span class="dom">input_boolean.</span>hydro_maintenance_mittel</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Wartungsmodus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_maintenance_mittel',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_boolean.hydro_testmode_mittel"><td class="eid"><span class="dom">input_boolean.</span>hydro_testmode_mittel</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Testmodus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_testmode_mittel',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_boolean.hydro_dehum_request_mittel"><td class="eid"><span class="dom">input_boolean.</span>hydro_dehum_request_mittel</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Entfeuchter-Anforderung</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_dehum_request_mittel',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Klima-Sensorik</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th>Livewert</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.us_grow_zelt_mittel_temperature"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_mittel_temperature</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Temperatur</td><td class="val-cell">18.87 °C</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_mittel_temperature',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.us_grow_zelt_mittel_humidity"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_mittel_humidity</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Luftfeuchtigkeit</td><td class="val-cell">56.24 %</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_mittel_humidity',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.us_grow_zelt_mittel_battery"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_mittel_battery</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Sensor-Batterie</td><td class="val-cell">100 %</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_mittel_battery',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.us_grow_zelt_mittel_linkquality"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_mittel_linkquality</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Zigbee LQI Sensor</td><td class="val-cell">172 lqi</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_mittel_linkquality',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.us_grow_zelt_mittel_last_seen"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_mittel_last_seen</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Letzter Kontakt</td><td class="val-cell">Timestamp</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_mittel_last_seen',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Strom-Messung</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th>Livewert</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="mittel" data-id="switch.fs_growzelt_mittel"><td class="eid"><span class="dom">switch.</span>fs_growzelt_mittel</td><td><span class="domain-badge d-switch">switch</span></td><td>Smart Plug Schalter</td><td class="val-cell">—</td><td><button class="copy-eid" onclick="copyId('switch.fs_growzelt_mittel',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_power"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_power</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Aktuelle Leistung</td><td class="val-cell">2.8 W</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_power',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_voltage"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_voltage</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Netzspannung</td><td class="val-cell">232.6 V</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_voltage',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_current"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_current</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Stromstärke</td><td class="val-cell">0.04 A</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_current',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_energy"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_energy</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Verbrauchte Energie</td><td class="val-cell">1.25 kWh</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_energy',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_linkquality"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_linkquality</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Zigbee LQI Plug</td><td class="val-cell">124 lqi</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_linkquality',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_last_seen"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_last_seen</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Letzter Kontakt Plug</td><td class="val-cell">Timestamp</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_last_seen',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_device_power"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_device_power</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Geräteleistung (Standby)</td><td class="val-cell">0.80 W</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_device_power',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.fs_growzelt_mittel_device_energy"><td class="eid"><span class="dom">sensor.</span>fs_growzelt_mittel_device_energy</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Geräteenergie</td><td class="val-cell">0.0576 kWh</td><td><button class="copy-eid" onclick="copyId('sensor.fs_growzelt_mittel_device_energy',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.growzelt_mittel_leistungsbezug"><td class="eid"><span class="dom">sensor.</span>growzelt_mittel_leistungsbezug</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Leistungsbezug (erweitert)</td><td class="val-cell">3.6 W</td><td><button class="copy-eid" onclick="copyId('sensor.growzelt_mittel_leistungsbezug',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.growzelt_mittel_gesamt_energie"><td class="eid"><span class="dom">sensor.</span>growzelt_mittel_gesamt_energie</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Gesamtenergie</td><td class="val-cell">744.39 Wh</td><td><button class="copy-eid" onclick="copyId('sensor.growzelt_mittel_gesamt_energie',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Lichtgruppen-Platzhalter · Logging</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="mittel" data-id="input_boolean.hydro_light_group_mittel_main1_placeholder"><td class="eid"><span class="dom">input_boolean.</span>hydro_light_group_mittel_main1_placeholder</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Platzhalter Lichtgruppe Main 1</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_light_group_mittel_main1_placeholder',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_text.hydro_climate_log_mittel"><td class="eid"><span class="dom">input_text.</span>hydro_climate_log_mittel</td><td><span class="domain-badge d-input_text">input_text</span></td><td>Klima-Protokoll</td><td><button class="copy-eid" onclick="copyId('input_text.hydro_climate_log_mittel',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Station Main 1</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th>Livewert</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="mittel" data-id="input_boolean.hydro_auto_mittel_main1"><td class="eid"><span class="dom">input_boolean.</span>hydro_auto_mittel_main1</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Automatik Main 1</td><td class="val-cell">off</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_auto_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_select.hydro_stage_mittel_main1"><td class="eid"><span class="dom">input_select.</span>hydro_stage_mittel_main1</td><td><span class="domain-badge d-input_select">input_select</span></td><td>Wachstumsphase Main 1</td><td class="val-cell">—</td><td><button class="copy-eid" onclick="copyId('input_select.hydro_stage_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_datetime.hydro_light_on_mittel_main1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_on_mittel_main1</td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht EIN Main 1</td><td class="val-cell">15:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_on_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_datetime.hydro_light_off_sv_mittel_main1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_off_sv_mittel_main1</td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht AUS S/V Main 1</td><td class="val-cell">07:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_off_sv_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_datetime.hydro_light_off_bloom_mittel_main1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_off_bloom_mittel_main1</td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht AUS Bloom Main 1</td><td class="val-cell">03:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_off_bloom_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.mittel_main1_licht_restzeit"><td class="eid"><span class="dom">sensor.</span>mittel_main1_licht_restzeit</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Licht Restzeit Main 1</td><td class="val-cell">489 min</td><td><button class="copy-eid" onclick="copyId('sensor.mittel_main1_licht_restzeit',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="sensor.mittel_main1_pumpe_restzeit"><td class="eid"><span class="dom">sensor.</span>mittel_main1_pumpe_restzeit</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Pumpe Restzeit Main 1</td><td class="val-cell">1 min</td><td><button class="copy-eid" onclick="copyId('sensor.mittel_main1_pumpe_restzeit',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_number.hydro_pump_on_seedling_mittel_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_seedling_mittel_main1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Seedling Main 1</td><td class="val-cell">1.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_seedling_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_number.hydro_pump_off_seedling_mittel_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_seedling_mittel_main1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Seedling Main 1</td><td class="val-cell">1.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_seedling_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_number.hydro_pump_on_bloom_mittel_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_bloom_mittel_main1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Bloom Main 1</td><td class="val-cell">1.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_bloom_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_number.hydro_pump_off_bloom_mittel_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_bloom_mittel_main1</td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Bloom Main 1</td><td class="val-cell">1.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_bloom_mittel_main1',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="mittel" data-id="input_text.hydro_log_mittel_main1"><td class="eid"><span class="dom">input_text.</span>hydro_log_mittel_main1</td><td><span class="domain-badge d-input_text">input_text</span></td><td>Station-Log Main 1</td><td class="val-cell">—</td><td><button class="copy-eid" onclick="copyId('input_text.hydro_log_mittel_main1',this)">copy</button></td></tr>
+    </tbody></table></div>
+  </div>
+
+  <!-- ZELT GROSS -->
+  <div class="section" data-zelt="gross">
+    <div class="section-hdr">
+      <div class="section-dot" style="background:var(--blue)"></div>
+      <div><div class="section-title" style="color:var(--blue)">ZELT GROSS</div><div class="section-sub">Hauptzucht · 4 Stationen: Main 1–4 · kein Smart Plug</div></div>
+      <div class="section-count">87 Entitäten</div>
+    </div>
+
+    <div class="group-lbl">Zelt-Aktivierung &amp; Modi</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.grow_zelt_gross_aktivierung"><td class="eid"><span class="dom">input_boolean.</span>grow_zelt_gross_aktivierung</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Zelt Ein/Aus</td><td><button class="copy-eid" onclick="copyId('input_boolean.grow_zelt_gross_aktivierung',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_climate_auto_gross"><td class="eid"><span class="dom">input_boolean.</span>hydro_climate_auto_gross</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Klimaautomatik Ein/Aus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_climate_auto_gross',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_maintenance_gross"><td class="eid"><span class="dom">input_boolean.</span>hydro_maintenance_gross</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Wartungsmodus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_maintenance_gross',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_testmode_gross"><td class="eid"><span class="dom">input_boolean.</span>hydro_testmode_gross</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Testmodus</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_testmode_gross',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_dehum_request_gross"><td class="eid"><span class="dom">input_boolean.</span>hydro_dehum_request_gross</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Entfeuchter-Anforderung</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_dehum_request_gross',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Klima-Sensorik</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th>Livewert</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="gross" data-id="sensor.us_grow_zelt_gross_temperature"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_gross_temperature</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Temperatur</td><td class="val-cell">18.35 °C</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_gross_temperature',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="sensor.us_grow_zelt_gross_humidity"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_gross_humidity</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Luftfeuchtigkeit</td><td class="val-cell">59.08 %</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_gross_humidity',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="sensor.us_grow_zelt_gross_battery"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_gross_battery</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Sensor-Batterie</td><td class="val-cell">100 %</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_gross_battery',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="sensor.us_grow_zelt_gross_linkquality"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_gross_linkquality</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Zigbee LQI Sensor</td><td class="val-cell">152 lqi</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_gross_linkquality',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="sensor.us_grow_zelt_gross_last_seen"><td class="eid"><span class="dom">sensor.</span>us_grow_zelt_gross_last_seen</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Letzter Kontakt</td><td class="val-cell">Timestamp</td><td><button class="copy-eid" onclick="copyId('sensor.us_grow_zelt_gross_last_seen',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Lichtgruppen-Platzhalter · Logging</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID</th><th>Domain</th><th>Funktion</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_light_group_gross_main1_placeholder"><td class="eid"><span class="dom">input_boolean.</span>hydro_light_group_gross_main1_placeholder</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Platzhalter Lichtgruppe Main 1</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_light_group_gross_main1_placeholder',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_light_group_gross_main2_placeholder"><td class="eid"><span class="dom">input_boolean.</span>hydro_light_group_gross_main2_placeholder</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Platzhalter Lichtgruppe Main 2</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_light_group_gross_main2_placeholder',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_light_group_gross_main3_placeholder"><td class="eid"><span class="dom">input_boolean.</span>hydro_light_group_gross_main3_placeholder</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Platzhalter Lichtgruppe Main 3</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_light_group_gross_main3_placeholder',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_light_group_gross_main4_placeholder"><td class="eid"><span class="dom">input_boolean.</span>hydro_light_group_gross_main4_placeholder</td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Platzhalter Lichtgruppe Main 4</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_light_group_gross_main4_placeholder',this)">copy</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_text.hydro_climate_log_gross"><td class="eid"><span class="dom">input_text.</span>hydro_climate_log_gross</td><td><span class="domain-badge d-input_text">input_text</span></td><td>Klima-Protokoll</td><td><button class="copy-eid" onclick="copyId('input_text.hydro_climate_log_gross',this)">copy</button></td></tr>
+    </tbody></table></div>
+
+    <div class="group-lbl">Stationen Main 1 – 4 (je Station gleiches Schema)</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Entity ID (Schema)</th><th>Domain</th><th>Funktion</th><th>Livewert Main 1</th><th></th></tr></thead><tbody>
+      <tr class="erow" data-zelt="gross" data-id="input_boolean.hydro_auto_gross_main1"><td class="eid"><span class="dom">input_boolean.</span>hydro_auto_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_boolean">input_boolean</span></td><td>Automatik Main N</td><td class="val-cell">off</td><td><button class="copy-eid" onclick="copyId('input_boolean.hydro_auto_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_select.hydro_stage_gross_main1"><td class="eid"><span class="dom">input_select.</span>hydro_stage_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_select">input_select</span></td><td>Wachstumsphase Main N</td><td class="val-cell">Seedling</td><td><button class="copy-eid" onclick="copyId('input_select.hydro_stage_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_datetime.hydro_light_on_gross_main1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_on_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht EIN Main N</td><td class="val-cell">00:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_on_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_datetime.hydro_light_off_sv_gross_main1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_off_sv_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht AUS S/V Main N</td><td class="val-cell">00:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_off_sv_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_datetime.hydro_light_off_bloom_gross_main1"><td class="eid"><span class="dom">input_datetime.</span>hydro_light_off_bloom_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_datetime">input_datetime</span></td><td>Licht AUS Bloom Main N</td><td class="val-cell">00:00</td><td><button class="copy-eid" onclick="copyId('input_datetime.hydro_light_off_bloom_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="sensor.gross_main1_licht_restzeit"><td class="eid"><span class="dom">sensor.</span>gross_main<span style="color:var(--amber)">N</span>_licht_restzeit</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Licht Restzeit Main N</td><td class="val-cell">0 min</td><td><button class="copy-eid" onclick="copyId('sensor.gross_main1_licht_restzeit',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="sensor.gross_main1_pumpe_restzeit"><td class="eid"><span class="dom">sensor.</span>gross_main<span style="color:var(--amber)">N</span>_pumpe_restzeit</td><td><span class="domain-badge d-sensor">sensor</span></td><td>Pumpe Restzeit Main N</td><td class="val-cell">1 min</td><td><button class="copy-eid" onclick="copyId('sensor.gross_main1_pumpe_restzeit',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_number.hydro_pump_on_seedling_gross_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_seedling_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Seedling Main N</td><td class="val-cell">1.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_seedling_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_number.hydro_pump_off_seedling_gross_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_seedling_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Seedling Main N</td><td class="val-cell">1.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_seedling_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_number.hydro_pump_on_veg_gross_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_veg_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Veg Main N</td><td class="val-cell">1.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_veg_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_number.hydro_pump_off_veg_gross_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_veg_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Veg Main N</td><td class="val-cell">66.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_veg_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_number.hydro_pump_on_bloom_gross_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_on_bloom_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AN Bloom Main N</td><td class="val-cell">24.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_on_bloom_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_number.hydro_pump_off_bloom_gross_main1"><td class="eid"><span class="dom">input_number.</span>hydro_pump_off_bloom_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_number">input_number</span></td><td>Pumpe AUS Bloom Main N</td><td class="val-cell">65.0 min</td><td><button class="copy-eid" onclick="copyId('input_number.hydro_pump_off_bloom_gross_main1',this)">main1</button></td></tr>
+      <tr class="erow" data-zelt="gross" data-id="input_text.hydro_log_gross_main1"><td class="eid"><span class="dom">input_text.</span>hydro_log_gross_main<span style="color:var(--amber)">N</span></td><td><span class="domain-badge d-input_text">input_text</span></td><td>Station-Log Main N</td><td class="val-cell">—</td><td><button class="copy-eid" onclick="copyId('input_text.hydro_log_gross_main1',this)">main1</button></td></tr>
+    </tbody></table></div>
+    <div style="font-size:11px;color:var(--tx3);font-family:var(--mono);padding:4px 2px;margin-bottom:8px;">
+      ↳ Schema gilt für N = 1, 2, 3, 4 · also 14 Entitäten × 4 Stationen = 56 Entitäten
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>HYDRO.SYS · Entitäten-Liste · 21.03.2026</span>
+    <span id="visible-count">154 Entitäten · 4 Zelte/Bereiche</span>
+    <span style="color:var(--g2)">● Stand: Live-Abfrage + Package-Analyse</span>
+  </div>
+</div>
+
+<script>
+let activeFilter = 'all';
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterAll();
+}
+
+function filterAll() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const sections = document.querySelectorAll('.section[data-zelt]');
+  let visible = 0;
+
+  sections.forEach(sec => {
+    const zelt = sec.dataset.zelt;
+    const showSection = activeFilter === 'all' || activeFilter === zelt;
+    sec.style.display = showSection ? '' : 'none';
+    if (!showSection) return;
+
+    const rows = sec.querySelectorAll('tr.erow');
+    rows.forEach(row => {
+      const id = row.dataset.id || '';
+      const text = row.innerText.toLowerCase();
+      const match = !q || id.includes(q) || text.includes(q);
+      row.classList.toggle('row-hidden', !match);
+      if (match) visible++;
+    });
+  });
+
+  document.getElementById('visible-count').textContent =
+    visible + ' Entitäten sichtbar';
+}
+
+function copyId(id, btn) {
+  navigator.clipboard.writeText(id).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+</script>
+</body>
+</html>

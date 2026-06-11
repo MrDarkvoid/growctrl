@@ -1,0 +1,474 @@
+#==============================================================================
+# GROWCTRL – HA-Package Zelt Gross (LEGACY)
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Helper-Definitionen Zelt Gross: 4x Main. Wird durch die GROWCTRL-Integration ersetzt.
+#           ACHTUNG Issue #3: Friendly Names enthalten 'Gross' mit ß – Slugification
+#           versionsabhängig.
+# Bezug   : Wird referenziert von: legacy/blueprints/* (Instanzen),
+#           legacy/dashboard/checkup_gz_gross.yaml, cards/*
+# Version : 2.0.0-dev  |  Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+
+###############################################################################
+# packages/hydro_zelt_gross.yaml
+# GROSS: 4x MAIN
+###############################################################################
+
+input_boolean:
+  hydro_maintenance_gross:
+    name: Hydro Maintenance Zelt Groß
+    icon: mdi:toolbox
+  hydro_testmode_gross:
+    name: Hydro Testmode Zelt Groß
+    icon: mdi:flask
+
+  hydro_climate_auto_gross:
+    name: Hydro Klima Auto Zelt Groß
+    icon: mdi:home-thermometer
+
+  hydro_auto_gross_main1:
+    name: Auto Groß Main 1
+    icon: mdi:robot
+  hydro_auto_gross_main2:
+    name: Auto Groß Main 2
+    icon: mdi:robot
+  hydro_auto_gross_main3:
+    name: Auto Groß Main 3
+    icon: mdi:robot
+  hydro_auto_gross_main4:
+    name: Auto Groß Main 4
+    icon: mdi:robot
+
+  hydro_dehum_request_gross:
+    name: Hydro Entfeuchter Anforderung – Zelt Groß
+    icon: mdi:water-off
+
+input_text:
+  hydro_climate_log_gross:
+    name: Hydro Klima Log Zelt Groß
+    max: 255
+    icon: mdi:text-box
+
+  hydro_log_gross_main1:
+    name: Log Groß Main 1
+    max: 255
+  hydro_log_gross_main2:
+    name: Log Groß Main 2
+    max: 255
+  hydro_log_gross_main3:
+    name: Log Groß Main 3
+    max: 255
+  hydro_log_gross_main4:
+    name: Log Groß Main 4
+    max: 255
+
+input_select:
+  hydro_stage_gross_main1:
+    name: Stage Groß Main 1
+    options: [Seedling, Veg, Bloom, Flush]
+    icon: mdi:flower
+  hydro_stage_gross_main2:
+    name: Stage Groß Main 2
+    options: [Seedling, Veg, Bloom, Flush]
+    icon: mdi:flower
+  hydro_stage_gross_main3:
+    name: Stage Groß Main 3
+    options: [Seedling, Veg, Bloom, Flush]
+    icon: mdi:flower
+  hydro_stage_gross_main4:
+    name: Stage Groß Main 4
+    options: [Seedling, Veg, Bloom, Flush]
+    icon: mdi:flower
+
+input_datetime:
+  # --- MAIN1 ---
+  hydro_light_on_gross_main1:
+    name: Licht AN Groß Main 1
+    has_date: false
+    has_time: true
+  hydro_light_off_sv_gross_main1:
+    name: Licht AUS Seedling/Veg Groß Main 1
+    has_date: false
+    has_time: true
+  hydro_light_off_bloom_gross_main1:
+    name: Licht AUS Bloom/Flush Groß Main 1
+    has_date: false
+    has_time: true
+
+  # --- MAIN2 ---
+  hydro_light_on_gross_main2:
+    name: Licht AN Groß Main 2
+    has_date: false
+    has_time: true
+  hydro_light_off_sv_gross_main2:
+    name: Licht AUS Seedling/Veg Groß Main 2
+    has_date: false
+    has_time: true
+  hydro_light_off_bloom_gross_main2:
+    name: Licht AUS Bloom/Flush Groß Main 2
+    has_date: false
+    has_time: true
+
+  # --- MAIN3 ---
+  hydro_light_on_gross_main3:
+    name: Licht AN Groß Main 3
+    has_date: false
+    has_time: true
+  hydro_light_off_sv_gross_main3:
+    name: Licht AUS Seedling/Veg Groß Main 3
+    has_date: false
+    has_time: true
+  hydro_light_off_bloom_gross_main3:
+    name: Licht AUS Bloom/Flush Groß Main 3
+    has_date: false
+    has_time: true
+
+  # --- MAIN4 ---
+  hydro_light_on_gross_main4:
+    name: Licht AN Groß Main 4
+    has_date: false
+    has_time: true
+  hydro_light_off_sv_gross_main4:
+    name: Licht AUS Seedling/Veg Groß Main 4
+    has_date: false
+    has_time: true
+  hydro_light_off_bloom_gross_main4:
+    name: Licht AUS Bloom/Flush Groß Main 4
+    has_date: false
+    has_time: true
+
+input_number:
+  # --- MAIN1 ---
+  hydro_pump_on_seedling_gross_main1:
+    name: Pumpe AN Seedling Groß Main 1 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_seedling_gross_main1:
+    name: Pumpe AUS Seedling Groß Main 1 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_veg_gross_main1:
+    name: Pumpe AN Veg Groß Main 1 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_veg_gross_main1:
+    name: Pumpe AUS Veg Groß Main 1 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_bloom_gross_main1:
+    name: Pumpe AN Bloom/Flush Groß Main 1 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_bloom_gross_main1:
+    name: Pumpe AUS Bloom/Flush Groß Main 1 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+  # --- MAIN2 ---
+  hydro_pump_on_seedling_gross_main2:
+    name: Pumpe AN Seedling Groß Main 2 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_seedling_gross_main2:
+    name: Pumpe AUS Seedling Groß Main 2 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_veg_gross_main2:
+    name: Pumpe AN Veg Groß Main 2 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_veg_gross_main2:
+    name: Pumpe AUS Veg Groß Main 2 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_bloom_gross_main2:
+    name: Pumpe AN Bloom/Flush Groß Main 2 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_bloom_gross_main2:
+    name: Pumpe AUS Bloom/Flush Groß Main 2 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+  # --- MAIN3 ---
+  hydro_pump_on_seedling_gross_main3:
+    name: Pumpe AN Seedling Groß Main 3 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_seedling_gross_main3:
+    name: Pumpe AUS Seedling Groß Main 3 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_veg_gross_main3:
+    name: Pumpe AN Veg Groß Main 3 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_veg_gross_main3:
+    name: Pumpe AUS Veg Groß Main 3 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_bloom_gross_main3:
+    name: Pumpe AN Bloom/Flush Groß Main 3 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_bloom_gross_main3:
+    name: Pumpe AUS Bloom/Flush Groß Main 3 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+  # --- MAIN4 ---
+  hydro_pump_on_seedling_gross_main4:
+    name: Pumpe AN Seedling Groß Main 4 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_seedling_gross_main4:
+    name: Pumpe AUS Seedling Groß Main 4 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_veg_gross_main4:
+    name: Pumpe AN Veg Groß Main 4 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_veg_gross_main4:
+    name: Pumpe AUS Veg Groß Main 4 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_bloom_gross_main4:
+    name: Pumpe AN Bloom/Flush Groß Main 4 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_bloom_gross_main4:
+    name: Pumpe AUS Bloom/Flush Groß Main 4 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+template:
+  - sensor:
+      - name: "Groß Main1 Licht Restzeit"
+        unique_id: hydro_gross_main1_light_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main1') %}
+          {% set on_str  = states('input_datetime.hydro_light_on_gross_main1').split(' ')[-1][0:5] %}
+          {% set off_sv  = states('input_datetime.hydro_light_off_sv_gross_main1').split(' ')[-1][0:5] %}
+          {% set off_b   = states('input_datetime.hydro_light_off_bloom_gross_main1').split(' ')[-1][0:5] %}
+          {% set now_m = now().hour*60 + now().minute %}
+          {% set on_m = (on_str.split(':')[0]|int)*60 + (on_str.split(':')[1]|int) %}
+          {% set off_sv_m = (off_sv.split(':')[0]|int)*60 + (off_sv.split(':')[1]|int) %}
+          {% set off_b_m  = (off_b.split(':')[0]|int)*60 + (off_b.split(':')[1]|int) %}
+          {% set off_m = off_sv_m if stage in ['Seedling','Veg'] else off_b_m %}
+          {% if on_m == off_m %}0
+          {% elif on_m < off_m %}
+            {% if now_m < on_m %}{{ on_m-now_m }}
+            {% elif now_m < off_m %}{{ off_m-now_m }}
+            {% else %}{{ (24*60-now_m)+on_m }}{% endif %}
+          {% else %}
+            {% if now_m >= on_m or now_m < off_m %}
+              {% if now_m >= on_m %}{{ (24*60-now_m)+off_m }}{% else %}{{ off_m-now_m }}{% endif %}
+            {% else %}{{ on_m-now_m }}{% endif %}
+          {% endif %}
+
+      - name: "Groß Main1 Pumpe Restzeit"
+        unique_id: hydro_gross_main1_pump_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main1') %}
+          {% set on_s  = states('input_number.hydro_pump_on_seedling_gross_main1')|int(10) %}
+          {% set off_s = states('input_number.hydro_pump_off_seedling_gross_main1')|int(15) %}
+          {% set on_v  = states('input_number.hydro_pump_on_veg_gross_main1')|int(10) %}
+          {% set off_v = states('input_number.hydro_pump_off_veg_gross_main1')|int(15) %}
+          {% set on_b  = states('input_number.hydro_pump_on_bloom_gross_main1')|int(10) %}
+          {% set off_b = states('input_number.hydro_pump_off_bloom_gross_main1')|int(15) %}
+          {% set minutes_today = now().hour*60 + now().minute %}
+          {% if stage == 'Seedling' %}{% set on=on_s %}{% set off=off_s %}
+          {% elif stage == 'Veg' %}{% set on=on_v %}{% set off=off_v %}
+          {% else %}{% set on=on_b %}{% set off=off_b %}{% endif %}
+          {% set cycle = on+off %}
+          {% if cycle == 0 %}0{% else %}
+            {% set phase = minutes_today % cycle %}
+            {{ (on-phase) if phase < on else (cycle-phase) }}
+          {% endif %}
+
+      - name: "Groß Main2 Licht Restzeit"
+        unique_id: hydro_gross_main2_light_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main2') %}
+          {% set on_str  = states('input_datetime.hydro_light_on_gross_main2').split(' ')[-1][0:5] %}
+          {% set off_sv  = states('input_datetime.hydro_light_off_sv_gross_main2').split(' ')[-1][0:5] %}
+          {% set off_b   = states('input_datetime.hydro_light_off_bloom_gross_main2').split(' ')[-1][0:5] %}
+          {% set now_m = now().hour*60 + now().minute %}
+          {% set on_m = (on_str.split(':')[0]|int)*60 + (on_str.split(':')[1]|int) %}
+          {% set off_sv_m = (off_sv.split(':')[0]|int)*60 + (off_sv.split(':')[1]|int) %}
+          {% set off_b_m  = (off_b.split(':')[0]|int)*60 + (off_b.split(':')[1]|int) %}
+          {% set off_m = off_sv_m if stage in ['Seedling','Veg'] else off_b_m %}
+          {% if on_m == off_m %}0
+          {% elif on_m < off_m %}
+            {% if now_m < on_m %}{{ on_m-now_m }}
+            {% elif now_m < off_m %}{{ off_m-now_m }}
+            {% else %}{{ (24*60-now_m)+on_m }}{% endif %}
+          {% else %}
+            {% if now_m >= on_m or now_m < off_m %}
+              {% if now_m >= on_m %}{{ (24*60-now_m)+off_m }}{% else %}{{ off_m-now_m }}{% endif %}
+            {% else %}{{ on_m-now_m }}{% endif %}
+          {% endif %}
+
+      - name: "Groß Main2 Pumpe Restzeit"
+        unique_id: hydro_gross_main2_pump_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main2') %}
+          {% set on_s  = states('input_number.hydro_pump_on_seedling_gross_main2')|int(10) %}
+          {% set off_s = states('input_number.hydro_pump_off_seedling_gross_main2')|int(15) %}
+          {% set on_v  = states('input_number.hydro_pump_on_veg_gross_main2')|int(10) %}
+          {% set off_v = states('input_number.hydro_pump_off_veg_gross_main2')|int(15) %}
+          {% set on_b  = states('input_number.hydro_pump_on_bloom_gross_main2')|int(10) %}
+          {% set off_b = states('input_number.hydro_pump_off_bloom_gross_main2')|int(15) %}
+          {% set minutes_today = now().hour*60 + now().minute %}
+          {% if stage == 'Seedling' %}{% set on=on_s %}{% set off=off_s %}
+          {% elif stage == 'Veg' %}{% set on=on_v %}{% set off=off_v %}
+          {% else %}{% set on=on_b %}{% set off=off_b %}{% endif %}
+          {% set cycle = on+off %}
+          {% if cycle == 0 %}0{% else %}
+            {% set phase = minutes_today % cycle %}
+            {{ (on-phase) if phase < on else (cycle-phase) }}
+          {% endif %}
+
+      - name: "Groß Main3 Licht Restzeit"
+        unique_id: hydro_gross_main3_light_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main3') %}
+          {% set on_str  = states('input_datetime.hydro_light_on_gross_main3').split(' ')[-1][0:5] %}
+          {% set off_sv  = states('input_datetime.hydro_light_off_sv_gross_main3').split(' ')[-1][0:5] %}
+          {% set off_b   = states('input_datetime.hydro_light_off_bloom_gross_main3').split(' ')[-1][0:5] %}
+          {% set now_m = now().hour*60 + now().minute %}
+          {% set on_m = (on_str.split(':')[0]|int)*60 + (on_str.split(':')[1]|int) %}
+          {% set off_sv_m = (off_sv.split(':')[0]|int)*60 + (off_sv.split(':')[1]|int) %}
+          {% set off_b_m  = (off_b.split(':')[0]|int)*60 + (off_b.split(':')[1]|int) %}
+          {% set off_m = off_sv_m if stage in ['Seedling','Veg'] else off_b_m %}
+          {% if on_m == off_m %}0
+          {% elif on_m < off_m %}
+            {% if now_m < on_m %}{{ on_m-now_m }}
+            {% elif now_m < off_m %}{{ off_m-now_m }}
+            {% else %}{{ (24*60-now_m)+on_m }}{% endif %}
+          {% else %}
+            {% if now_m >= on_m or now_m < off_m %}
+              {% if now_m >= on_m %}{{ (24*60-now_m)+off_m }}{% else %}{{ off_m-now_m }}{% endif %}
+            {% else %}{{ on_m-now_m }}{% endif %}
+          {% endif %}
+
+      - name: "Groß Main3 Pumpe Restzeit"
+        unique_id: hydro_gross_main3_pump_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main3') %}
+          {% set on_s  = states('input_number.hydro_pump_on_seedling_gross_main3')|int(10) %}
+          {% set off_s = states('input_number.hydro_pump_off_seedling_gross_main3')|int(15) %}
+          {% set on_v  = states('input_number.hydro_pump_on_veg_gross_main3')|int(10) %}
+          {% set off_v = states('input_number.hydro_pump_off_veg_gross_main3')|int(15) %}
+          {% set on_b  = states('input_number.hydro_pump_on_bloom_gross_main3')|int(10) %}
+          {% set off_b = states('input_number.hydro_pump_off_bloom_gross_main3')|int(15) %}
+          {% set minutes_today = now().hour*60 + now().minute %}
+          {% if stage == 'Seedling' %}{% set on=on_s %}{% set off=off_s %}
+          {% elif stage == 'Veg' %}{% set on=on_v %}{% set off=off_v %}
+          {% else %}{% set on=on_b %}{% set off=off_b %}{% endif %}
+          {% set cycle = on+off %}
+          {% if cycle == 0 %}0{% else %}
+            {% set phase = minutes_today % cycle %}
+            {{ (on-phase) if phase < on else (cycle-phase) }}
+          {% endif %}
+
+      - name: "Groß Main4 Licht Restzeit"
+        unique_id: hydro_gross_main4_light_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main4') %}
+          {% set on_str  = states('input_datetime.hydro_light_on_gross_main4').split(' ')[-1][0:5] %}
+          {% set off_sv  = states('input_datetime.hydro_light_off_sv_gross_main4').split(' ')[-1][0:5] %}
+          {% set off_b   = states('input_datetime.hydro_light_off_bloom_gross_main4').split(' ')[-1][0:5] %}
+          {% set now_m = now().hour*60 + now().minute %}
+          {% set on_m = (on_str.split(':')[0]|int)*60 + (on_str.split(':')[1]|int) %}
+          {% set off_sv_m = (off_sv.split(':')[0]|int)*60 + (off_sv.split(':')[1]|int) %}
+          {% set off_b_m  = (off_b.split(':')[0]|int)*60 + (off_b.split(':')[1]|int) %}
+          {% set off_m = off_sv_m if stage in ['Seedling','Veg'] else off_b_m %}
+          {% if on_m == off_m %}0
+          {% elif on_m < off_m %}
+            {% if now_m < on_m %}{{ on_m-now_m }}
+            {% elif now_m < off_m %}{{ off_m-now_m }}
+            {% else %}{{ (24*60-now_m)+on_m }}{% endif %}
+          {% else %}
+            {% if now_m >= on_m or now_m < off_m %}
+              {% if now_m >= on_m %}{{ (24*60-now_m)+off_m }}{% else %}{{ off_m-now_m }}{% endif %}
+            {% else %}{{ on_m-now_m }}{% endif %}
+          {% endif %}
+
+      - name: "Groß Main4 Pumpe Restzeit"
+        unique_id: hydro_gross_main4_pump_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_gross_main4') %}
+          {% set on_s  = states('input_number.hydro_pump_on_seedling_gross_main4')|int(10) %}
+          {% set off_s = states('input_number.hydro_pump_off_seedling_gross_main4')|int(15) %}
+          {% set on_v  = states('input_number.hydro_pump_on_veg_gross_main4')|int(10) %}
+          {% set off_v = states('input_number.hydro_pump_off_veg_gross_main4')|int(15) %}
+          {% set on_b  = states('input_number.hydro_pump_on_bloom_gross_main4')|int(10) %}
+          {% set off_b = states('input_number.hydro_pump_off_bloom_gross_main4')|int(15) %}
+          {% set minutes_today = now().hour*60 + now().minute %}
+          {% if stage == 'Seedling' %}{% set on=on_s %}{% set off=off_s %}
+          {% elif stage == 'Veg' %}{% set on=on_v %}{% set off=off_v %}
+          {% else %}{% set on=on_b %}{% set off=off_b %}{% endif %}
+          {% set cycle = on+off %}
+          {% if cycle == 0 %}0{% else %}
+            {% set phase = minutes_today % cycle %}
+            {{ (on-phase) if phase < on else (cycle-phase) }}
+          {% endif %}

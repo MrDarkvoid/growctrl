@@ -1,0 +1,450 @@
+#==============================================================================
+# GROWCTRL – button-card Templates (LEGACY)
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Gemeinsame button_card_templates des alten Dashboards (hydro_panel_flat,
+#           hydro_cfg_section, ...). Zeilenenden auf LF normalisiert.
+# Bezug   : Wird von den Checkup-Karten und dem alten Dashboard genutzt
+# Version : 2.0.0-dev  |  Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+
+button_card_templates:
+  hydro_panel_flat:
+    show_name: false
+    show_icon: false
+    show_state: false
+    show_label: false
+    tap_action:
+      action: none
+    styles:
+      card:
+        - background: none
+        - border: none
+        - box-shadow: none
+        - padding: 0
+  hydro_cfg_section:
+    show_name: false
+    show_icon: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    styles:
+      card:
+        - background: none
+        - border: none
+        - box-shadow: none
+        - padding: 8px 2px 2px 2px
+      label:
+        - justify-self: start
+        - font-size: 10px
+        - text-transform: uppercase
+        - letter-spacing: 1px
+        - color: rgba(255,255,255,0.42)
+  hydro_control:
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - background: >
+            [[[ return entity.state === 'on' ? 'rgba(77,255,195,0.15)' :
+            'rgba(0,0,0,0.20)' ]]]
+        - border: >
+            [[[ return entity.state === 'on' ? '1px solid rgba(77,255,195,0.25)'
+            : '1px solid rgba(255,255,255,0.08)' ]]]
+        - border-radius: 11px
+        - padding: 10px
+        - height: 58px
+        - box-shadow: none
+      name:
+        - font-size: 11px
+        - color: >
+            [[[ return entity.state === 'on' ? '#4DFFC3' :
+            'rgba(255,255,255,0.5)' ]]]
+      icon:
+        - color: >
+            [[[ return entity.state === 'on' ? '#4DFFC3' :
+            'rgba(255,255,255,0.3)' ]]]
+        - width: 22px
+  hydro_control_mittel:
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - background: >
+            [[[ return entity.state === 'on' ? 'rgba(232,123,46,0.18)' :
+            'rgba(0,0,0,0.20)' ]]]
+        - border: >
+            [[[ return entity.state === 'on' ? '1px solid rgba(232,123,46,0.35)'
+            : '1px solid rgba(255,255,255,0.08)' ]]]
+        - border-radius: 11px
+        - padding: 10px
+        - height: 58px
+        - box-shadow: none
+      name:
+        - font-size: 11px
+        - color: >
+            [[[ return entity.state === 'on' ? '#E87B2E' :
+            'rgba(255,255,255,0.5)' ]]]
+      icon:
+        - color: >
+            [[[ return entity.state === 'on' ? '#E87B2E' :
+            'rgba(255,255,255,0.3)' ]]]
+        - width: 22px
+  hydro_control_gross:
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - background: >
+            [[[ return entity.state === 'on' ? 'rgba(123,79,190,0.22)' :
+            'rgba(0,0,0,0.20)' ]]]
+        - border: >
+            [[[ return entity.state === 'on' ? '1px solid rgba(123,79,190,0.4)'
+            : '1px solid rgba(255,255,255,0.08)' ]]]
+        - border-radius: 11px
+        - padding: 10px
+        - height: 58px
+        - box-shadow: none
+      name:
+        - font-size: 11px
+        - color: >
+            [[[ return entity.state === 'on' ? '#A87EE0' :
+            'rgba(255,255,255,0.5)' ]]]
+      icon:
+        - color: >
+            [[[ return entity.state === 'on' ? '#A87EE0' :
+            'rgba(255,255,255,0.3)' ]]]
+        - width: 22px
+  hydro_control_heat:
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - background: >
+            [[[ return entity.state === 'on' ? 'rgba(232,123,46,0.22)' :
+            'rgba(232,123,46,0.08)' ]]]
+        - border: >
+            [[[ return entity.state === 'on' ? '1px solid rgba(232,123,46,0.45)'
+            : '1px solid rgba(232,123,46,0.22)' ]]]
+        - border-radius: 11px
+        - padding: 10px
+        - height: 58px
+        - box-shadow: none
+      name:
+        - font-size: 11px
+        - color: >
+            [[[ return entity.state === 'on' ? '#E87B2E' :
+            'rgba(255,165,0,0.45)' ]]]
+      icon:
+        - color: >
+            [[[ return entity.state === 'on' ? '#E87B2E' :
+            'rgba(255,165,0,0.35)' ]]]
+        - width: 22px
+  hydro_control_blue:
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - background: >
+            [[[ return entity.state === 'on' ? 'rgba(79,195,247,0.15)' :
+            'rgba(0,0,0,0.20)' ]]]
+        - border: >
+            [[[ return entity.state === 'on' ? '1px solid rgba(79,195,247,0.3)'
+            : '1px solid rgba(255,255,255,0.08)' ]]]
+        - border-radius: 11px
+        - padding: 10px
+        - height: 58px
+        - box-shadow: none
+      name:
+        - font-size: 11px
+        - color: >
+            [[[ return entity.state === 'on' ? '#4FC3F7' :
+            'rgba(255,255,255,0.5)' ]]]
+      icon:
+        - color: >
+            [[[ return entity.state === 'on' ? '#4FC3F7' :
+            'rgba(255,255,255,0.3)' ]]]
+        - width: 22px
+  hydro_cfg_tile:
+    show_icon: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: more-info
+    hold_action:
+      action: more-info
+    styles:
+      card:
+        - background: rgba(77,255,195,0.10)
+        - border: 1px solid rgba(77,255,195,0.20)
+        - border-radius: 11px
+        - box-shadow: none
+        - padding: 10px
+        - height: 72px
+      name:
+        - justify-self: start
+        - align-self: start
+        - font-size: 11px
+        - font-weight: 600
+        - color: rgba(255,255,255,0.55)
+        - line-height: 1.2
+      label:
+        - justify-self: start
+        - align-self: end
+        - font-size: 18px
+        - font-weight: 700
+        - color: rgba(255,255,255,0.95)
+        - line-height: 1
+      grid:
+        - grid-template-areas: '"n" "l"'
+        - grid-template-rows: min-content 1fr
+        - grid-template-columns: 1fr
+  hydro_cfg_tile_sm:
+    template: hydro_cfg_tile
+    styles:
+      card:
+        - height: 68px
+      label:
+        - font-size: 17px
+  hydro_cfg_tile_mittel:
+    template: hydro_cfg_tile
+    styles:
+      card:
+        - background: rgba(232,123,46,0.10)
+        - border: 1px solid rgba(232,123,46,0.22)
+  hydro_cfg_tile_sm_mittel:
+    template: hydro_cfg_tile_mittel
+    styles:
+      card:
+        - height: 68px
+      label:
+        - font-size: 17px
+  hydro_cfg_tile_gross:
+    template: hydro_cfg_tile
+    styles:
+      card:
+        - background: rgba(123,79,190,0.12)
+        - border: 1px solid rgba(123,79,190,0.25)
+  hydro_cfg_tile_sm_gross:
+    template: hydro_cfg_tile_gross
+    styles:
+      card:
+        - height: 68px
+      label:
+        - font-size: 17px
+  hydro_cfg_stage:
+    show_state: false
+    show_label: false
+    tap_action:
+      action: call-service
+      service: input_select.select_option
+      target:
+        entity_id: input_select.hydro_stage_klein_anzucht1
+      data:
+        option: '[[[ return variables.stage ]]]'
+    styles:
+      card:
+        - border-radius: 11px
+        - box-shadow: none
+        - padding: 10px 6px
+        - height: 58px
+        - background: |
+            [[[
+              const cur = states['input_select.hydro_stage_klein_anzucht1']?.state;
+              const s = variables.stage;
+              const m = { Seedling:'rgba(126,200,255,0.16)', Veg:'rgba(126,232,126,0.16)', Bloom:'rgba(255,180,50,0.16)', Flush:'rgba(255,180,50,0.16)' };
+              return cur === s ? m[s] : 'rgba(125,255,210,0.07)';
+            ]]]
+        - border: |
+            [[[
+              const cur = states['input_select.hydro_stage_klein_anzucht1']?.state;
+              const s = variables.stage;
+              const m = { Seedling:'rgba(126,200,255,0.45)', Veg:'rgba(126,232,126,0.45)', Bloom:'rgba(255,180,50,0.45)', Flush:'rgba(255,180,50,0.45)' };
+              return cur === s ? `1px solid ${m[s]}` : '1px solid rgba(125,255,210,0.16)';
+            ]]]
+      name:
+        - font-size: 11px
+        - font-weight: 700
+        - color: |
+            [[[
+              const cur = states['input_select.hydro_stage_klein_anzucht1']?.state;
+              const s = variables.stage;
+              const m = { Seedling:'#7EC8FF', Veg:'#7EE87E', Bloom:'#FFB432', Flush:'#FFB432' };
+              return cur === s ? m[s] : 'rgba(255,255,255,0.50)';
+            ]]]
+  hydro_cfg_stage_mittel:
+    show_state: false
+    show_label: false
+    tap_action:
+      action: call-service
+      service: input_select.select_option
+      target:
+        entity_id: input_select.hydro_stage_mittel_main1
+      data:
+        option: '[[[ return variables.stage ]]]'
+    styles:
+      card:
+        - border-radius: 11px
+        - box-shadow: none
+        - padding: 10px 6px
+        - height: 58px
+        - background: |
+            [[[
+              const cur = states['input_select.hydro_stage_mittel_main1']?.state;
+              const s = variables.stage;
+              const m = { Seedling:'rgba(126,200,255,0.14)', Veg:'rgba(126,232,126,0.14)', Bloom:'rgba(255,180,50,0.14)', Flush:'rgba(255,180,50,0.14)' };
+              return cur === s ? m[s] : 'rgba(232,123,46,0.07)';
+            ]]]
+        - border: |
+            [[[
+              const cur = states['input_select.hydro_stage_mittel_main1']?.state;
+              const s = variables.stage;
+              const m = { Seedling:'rgba(126,200,255,0.45)', Veg:'rgba(126,232,126,0.45)', Bloom:'rgba(255,180,50,0.45)', Flush:'rgba(255,180,50,0.45)' };
+              return cur === s ? `1px solid ${m[s]}` : '1px solid rgba(232,123,46,0.18)';
+            ]]]
+      name:
+        - font-size: 11px
+        - font-weight: 700
+        - color: |
+            [[[
+              const cur = states['input_select.hydro_stage_mittel_main1']?.state;
+              const s = variables.stage;
+              const m = { Seedling:'#7EC8FF', Veg:'#7EE87E', Bloom:'#FFB432', Flush:'#FFB432' };
+              return cur === s ? m[s] : 'rgba(255,255,255,0.48)';
+            ]]]
+  hydro_cfg_stage_gross:
+    show_state: false
+    show_label: false
+    tap_action:
+      action: call-service
+      service: input_select.select_option
+      target:
+        entity_id: '[[[ return `input_select.hydro_stage_gross_${variables.station}` ]]]'
+      data:
+        option: '[[[ return variables.stage ]]]'
+    styles:
+      card:
+        - border-radius: 11px
+        - box-shadow: none
+        - padding: 10px 6px
+        - height: 58px
+        - background: |
+            [[[
+              const eid = `input_select.hydro_stage_gross_${variables.station}`;
+              const cur = states[eid]?.state;
+              const s = variables.stage;
+              const m = { Seedling:'rgba(126,200,255,0.14)', Veg:'rgba(126,232,126,0.14)', Bloom:'rgba(255,180,50,0.14)', Flush:'rgba(255,180,50,0.14)' };
+              return cur === s ? m[s] : 'rgba(123,79,190,0.07)';
+            ]]]
+        - border: |
+            [[[
+              const eid = `input_select.hydro_stage_gross_${variables.station}`;
+              const cur = states[eid]?.state;
+              const s = variables.stage;
+              const m = { Seedling:'rgba(126,200,255,0.45)', Veg:'rgba(126,232,126,0.45)', Bloom:'rgba(255,180,50,0.45)', Flush:'rgba(255,180,50,0.45)' };
+              return cur === s ? `1px solid ${m[s]}` : '1px solid rgba(123,79,190,0.20)';
+            ]]]
+      name:
+        - font-size: 11px
+        - font-weight: 700
+        - color: |
+            [[[
+              const eid = `input_select.hydro_stage_gross_${variables.station}`;
+              const cur = states[eid]?.state;
+              const s = variables.stage;
+              const m = { Seedling:'#7EC8FF', Veg:'#7EE87E', Bloom:'#FFB432', Flush:'#FFB432' };
+              return cur === s ? m[s] : 'rgba(255,255,255,0.48)';
+            ]]]
+  hydro_expert_toggle:
+    show_name: true
+    show_icon: true
+    show_label: true
+    tap_action:
+      action: toggle
+    label: '[[[ return entity.state === ''on'' ? ''▲ Ausblenden'' : ''▼ Einblenden'' ]]]'
+    styles:
+      card:
+        - background: >
+            [[[ return entity.state === 'on' ? 'rgba(255,165,0,0.13)' :
+            'rgba(0,0,0,0.18)' ]]]
+        - border: >
+            [[[ return entity.state === 'on' ? '1px solid rgba(255,165,0,0.32)'
+            : '1px solid rgba(255,255,255,0.08)' ]]]
+        - border-radius: 11px
+        - padding: 11px 14px
+        - box-shadow: none
+      name:
+        - font-size: 13px
+        - font-weight: 800
+        - color: >
+            [[[ return entity.state === 'on' ? '#FFD166' :
+            'rgba(255,255,255,0.55)' ]]]
+      label:
+        - font-size: 11px
+        - color: rgba(255,255,255,0.35)
+        - justify-self: end
+      icon:
+        - color: >
+            [[[ return entity.state === 'on' ? '#FFD166' :
+            'rgba(255,255,255,0.28)' ]]]
+        - width: 22px
+      grid:
+        - grid-template-areas: '"i n l"'
+        - grid-template-columns: 30px 1fr auto
+  hydro_control_expert:
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - background: >
+            [[[ return entity.state === 'on' ? 'rgba(255,165,0,0.18)' :
+            'rgba(0,0,0,0.18)' ]]]
+        - border: >
+            [[[ return entity.state === 'on' ? '1px solid rgba(255,165,0,0.38)'
+            : '1px solid rgba(255,165,0,0.15)' ]]]
+        - border-radius: 11px
+        - padding: 12px 10px
+        - height: 58px
+        - box-shadow: none
+      name:
+        - font-size: 11px
+        - color: >
+            [[[ return entity.state === 'on' ? '#FFD166' :
+            'rgba(255,255,255,0.45)' ]]]
+      icon:
+        - color: >
+            [[[ return entity.state === 'on' ? '#FFD166' :
+            'rgba(255,165,0,0.35)' ]]]
+        - width: 22px
+  hydro_log_card:
+    show_name: false
+    show_icon: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: |
+      [[[
+        const raw   = entity.state || '';
+        const title = variables.title || 'Log';
+        const color = variables.color || 'rgba(255,215,0,0.65)';
+        const lines = raw.match(/.{1,62}/g) || ['–'];
+        return `
+          <div style="text-align:left">
+            <div style="font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:${color};margin-bottom:6px">${title}</div>
+            <div style="background:rgba(0,0,0,0.28);border-radius:8px;padding:9px 11px">
+              ${lines.map(l=>`<div style="font-size:12px;color:rgba(255,255,255,0.72);font-family:monospace;line-height:1.65;word-break:break-all">${l}</div>`).join('')}
+            </div>
+          </div>`;
+      ]]]
+    styles:
+      card:
+        - background: rgba(10,12,20,0.55)
+        - border: 1px solid rgba(255,255,255,0.07)
+        - border-radius: 11px
+        - padding: 12px 14px
+        - box-shadow: none
+      label:
+        - width: 100%
+        - text-align: left

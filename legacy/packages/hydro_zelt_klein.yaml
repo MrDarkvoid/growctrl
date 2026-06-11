@@ -1,0 +1,176 @@
+#==============================================================================
+# GROWCTRL – HA-Package Zelt Klein (LEGACY)
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Helper-Definitionen Zelt Klein: 1x Anzucht (shared Konfig), 2 Unterbereiche oben/unten.
+#           Wird durch die GROWCTRL-Integration ersetzt.
+# Bezug   : Wird referenziert von: legacy/blueprints/* (Instanzen),
+#           legacy/dashboard/checkup_gz_klein.yaml, cards/*
+# Version : 2.0.0-dev  |  Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+
+###############################################################################
+# packages/hydro_zelt_klein.yaml
+# KLEIN: 1x ANZUCHT (gemeinsame Konfiguration) + 2 Unterbereiche (oben/unten)
+#
+# Gemeinsame Konfiguration (für beide Unterbereiche):
+#   - Stage
+#   - Pumpenzeiten
+#   - Lichtzeiten
+#
+# Pro Unterbereich getrennt:
+#   - Automatik oben / unten
+#   - Log oben / unten
+#
+# WICHTIG: untere Anzucht setzt voraus:
+#   input_boolean.hydro_auto_klein_anzucht2
+#   input_text.hydro_log_klein_anzucht2
+###############################################################################
+
+input_boolean:
+  hydro_maintenance_klein:
+    name: Hydro Maintenance Zelt Klein
+    icon: mdi:toolbox
+  hydro_testmode_klein:
+    name: Hydro Testmode Zelt Klein
+    icon: mdi:flask
+
+  hydro_climate_auto_klein:
+    name: Hydro Klima Auto Zelt Klein
+    icon: mdi:home-thermometer
+
+  # Unterbereiche (oben/unten)
+  hydro_auto_klein_anzucht1:
+    name: Auto Klein Anzucht Oben
+    icon: mdi:robot
+  hydro_auto_klein_anzucht2:
+    name: Auto Klein Anzucht Unten
+    icon: mdi:robot
+
+  hydro_dehum_request_klein:
+    name: Hydro Entfeuchter Anforderung – Zelt Klein
+    icon: mdi:water-off
+
+input_text:
+  hydro_climate_log_klein:
+    name: Hydro Klima Log Zelt Klein
+    max: 255
+    icon: mdi:text-box
+
+  # Unterbereiche (oben/unten)
+  hydro_log_klein_anzucht1:
+    name: Log Klein Anzucht Oben
+    max: 255
+    icon: mdi:text-box
+  hydro_log_klein_anzucht2:
+    name: Log Klein Anzucht Unten
+    max: 255
+    icon: mdi:text-box
+
+# Gemeinsame Konfiguration (für beide Unterbereiche)
+input_select:
+  hydro_stage_klein_anzucht1:
+    name: Stage Klein Anzucht (shared)
+    options: [Seedling, Veg, Bloom, Flush]
+    icon: mdi:flower
+
+input_datetime:
+  hydro_light_on_klein_anzucht1:
+    name: Licht AN Klein Anzucht (shared)
+    has_date: false
+    has_time: true
+  hydro_light_off_sv_klein_anzucht1:
+    name: Licht AUS Seedling/Veg Klein Anzucht (shared)
+    has_date: false
+    has_time: true
+  hydro_light_off_bloom_klein_anzucht1:
+    name: Licht AUS Bloom/Flush Klein Anzucht (shared)
+    has_date: false
+    has_time: true
+
+input_number:
+  hydro_pump_on_seedling_klein_anzucht1:
+    name: Pumpe AN Seedling Klein Anzucht (shared, min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_seedling_klein_anzucht1:
+    name: Pumpe AUS Seedling Klein Anzucht (shared, min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+  hydro_pump_on_veg_klein_anzucht1:
+    name: Pumpe AN Veg Klein Anzucht (shared, min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_veg_klein_anzucht1:
+    name: Pumpe AUS Veg Klein Anzucht (shared, min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+  hydro_pump_on_bloom_klein_anzucht1:
+    name: Pumpe AN Bloom/Flush Klein Anzucht (shared, min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_bloom_klein_anzucht1:
+    name: Pumpe AUS Bloom/Flush Klein Anzucht (shared, min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+template:
+  - sensor:
+      - name: "Klein Anzucht Licht Restzeit"
+        unique_id: hydro_klein_anzucht_light_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_klein_anzucht1') %}
+          {% set on_str  = states('input_datetime.hydro_light_on_klein_anzucht1').split(' ')[-1][0:5] %}
+          {% set off_sv  = states('input_datetime.hydro_light_off_sv_klein_anzucht1').split(' ')[-1][0:5] %}
+          {% set off_b   = states('input_datetime.hydro_light_off_bloom_klein_anzucht1').split(' ')[-1][0:5] %}
+          {% set now_m = now().hour*60 + now().minute %}
+          {% set on_m = (on_str.split(':')[0]|int)*60 + (on_str.split(':')[1]|int) %}
+          {% set off_sv_m = (off_sv.split(':')[0]|int)*60 + (off_sv.split(':')[1]|int) %}
+          {% set off_b_m  = (off_b.split(':')[0]|int)*60 + (off_b.split(':')[1]|int) %}
+          {% set off_m = off_sv_m if stage in ['Seedling','Veg'] else off_b_m %}
+          {% if on_m == off_m %}0
+          {% elif on_m < off_m %}
+            {% if now_m < on_m %}{{ on_m-now_m }}
+            {% elif now_m < off_m %}{{ off_m-now_m }}
+            {% else %}{{ (24*60-now_m)+on_m }}{% endif %}
+          {% else %}
+            {% if now_m >= on_m or now_m < off_m %}
+              {% if now_m >= on_m %}{{ (24*60-now_m)+off_m }}{% else %}{{ off_m-now_m }}{% endif %}
+            {% else %}{{ on_m-now_m }}{% endif %}
+          {% endif %}
+
+      - name: "Klein Anzucht Pumpe Restzeit"
+        unique_id: hydro_klein_anzucht_pump_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_klein_anzucht1') %}
+          {% set on_s  = states('input_number.hydro_pump_on_seedling_klein_anzucht1')|int(10) %}
+          {% set off_s = states('input_number.hydro_pump_off_seedling_klein_anzucht1')|int(15) %}
+          {% set on_v  = states('input_number.hydro_pump_on_veg_klein_anzucht1')|int(10) %}
+          {% set off_v = states('input_number.hydro_pump_off_veg_klein_anzucht1')|int(15) %}
+          {% set on_b  = states('input_number.hydro_pump_on_bloom_klein_anzucht1')|int(10) %}
+          {% set off_b = states('input_number.hydro_pump_off_bloom_klein_anzucht1')|int(15) %}
+          {% set minutes_today = now().hour*60 + now().minute %}
+          {% if stage == 'Seedling' %}{% set on=on_s %}{% set off=off_s %}
+          {% elif stage == 'Veg' %}{% set on=on_v %}{% set off=off_v %}
+          {% else %}{% set on=on_b %}{% set off=off_b %}{% endif %}
+          {% set cycle = on+off %}
+          {% if cycle == 0 %}0{% else %}
+            {% set phase = minutes_today % cycle %}
+            {{ (on-phase) if phase < on else (cycle-phase) }}
+          {% endif %}

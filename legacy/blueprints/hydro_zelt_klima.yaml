@@ -1,0 +1,945 @@
+#==============================================================================
+# GROWCTRL – Blueprint Hydro Zelt Klima v2.0 (LEGACY)
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Zeltklima: Umluft, Befeuchter (Hysterese/Anti-Flattern), Entfeuchter-Request. Bekannte
+#           Issues: #1b Multi-Entity nur [0], #2 Log-Race. Logik wandert in die Integration.
+# Bezug   : Benoetigt Helper aus legacy/packages/*; schreibt input_text-Logs (Format siehe
+#           docs/log_referenz.md)
+# Version : 2.0.0-dev  |  Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+
+###############################################################################
+# BLUEPRINT: Hydro Zelt Klima v2.0
+# Autor:     Hydro Automation System
+# Zweck:     Zelt-weite Klimasteuerung – Umluft, Befeuchter, Entfeuchter-Request
+#            mit Hysterese, Anti-Flattern, Sensor-Safety und Heartbeat-Logging
+###############################################################################
+
+blueprint:
+  name: "Hydro Zelt Klima v2.0 – Umluft · Befeuchter · Entfeuchter-Request | Anti-Flattern | Sensor-Safety | Heartbeat-Log"
+
+  description: >
+    ## 🌡️ Hydro Zelt Klima – Zeltweite Klimaautomatik
+
+
+    Regelt **Umluft, Befeuchter und Luftfeuchte** eines Grow-Zeltes vollautomatisch.
+    Der Entfeuchter wird nicht direkt geschaltet – stattdessen setzt dieser Blueprint
+    eine **Entfeuchter-Anforderung** (`input_boolean`), die von einer zentralen
+    Aggregations-Automation ausgewertet wird. So können mehrere Zelte einen
+    gemeinsamen Entfeuchter teilen.
+
+
+    ---
+
+
+    ### ✅ Funktionen im Überblick
+
+
+    **🌀 Umluft**
+    - Wird bei aktiver Automatik **dauerhaft eingeschaltet**
+    - Optional: Manuelle Umluft (Blueprint schaltet sie nicht, überwacht nur den Status)
+    - Unterstützt mehrere Fan-Switches
+
+
+    **💨 Befeuchter** *(optional)*
+    - Wird AN geschaltet, wenn Luftfeuchte unter `Zielwert − Toleranz` fällt
+    - Temperatursperre: Befeuchter bleibt AUS, wenn Temperatur zu niedrig
+    - Anti-Flattern: Konfigurierbare Mindest-EIN- und Mindest-AUS-Zeiten
+    - Unterstützt mehrere Befeuchter-Switches
+
+
+    **💧 Entfeuchter-Request** *(zentrales Modell)*
+    - Setzt `input_boolean` AN, wenn Luftfeuchte über `Zielwert + Toleranz` steigt
+    - Temperatursperre: Kein Request bei zu niedriger Temperatur
+    - Anti-Flattern auch für den Request (verhindert schnelles AN/AUS-Flackern)
+    - Der eigentliche Entfeuchter-Switch wird von einer separaten Automation gesteuert
+
+
+    ---
+
+
+    ### 🛡️ Sicherheitsfunktionen
+
+
+    | Funktion | Verhalten |
+    |---|---|
+    | **Sensor ungültig** | Befeuchter AUS + Request AUS + Umluft AN + Log |
+    | **Temp-Mindestgrenze Befeuchter** | Befeuchter sperren wenn Temp < Grenzwert |
+    | **Temp-Mindestgrenze Request** | Request sperren wenn Temp < Grenzwert |
+    | **Parallelbetrieb-Sperre** | Befeuchter gesperrt, wenn zentraler Entfeuchter läuft |
+    | **Konfliktstrategie** | Konfigurierbares Verhalten bei logisch unvereinbaren Zuständen |
+
+
+    ---
+
+
+    ### 📊 Hysterese-Logik
+
+
+    ```
+    RH < (Ziel − Toleranz)  →  Befeuchter AN
+    RH > (Ziel + Toleranz)  →  Entfeuchter-Request AN
+    Ziel − Toleranz ≤ RH ≤ Ziel + Toleranz  →  keine Änderung (Hysterese-Zone)
+    ```
+
+
+    ---
+
+
+    ### 📝 Log-Format
+
+
+    `YYYY-MM-DD HH:MM IST CIRC=on HUM=OFF REQ=ON | SOLL CIRC=ON HUM=OFF REQ=ON | RH=65.3% T=23.1C Target=60±3`
+
+
+    ---
+
+
+    ### ⚙️ Zentrales Entfeuchter-Modell – Erklärung
+
+
+    Statt jeden Zelt-Blueprint direkt den Entfeuchter schalten zu lassen,
+    setzt jeder Blueprint nur einen **Request-Boolean** pro Zelt.
+    Eine separate **Aggregations-Automation** (z.B. mit `group`-Helper oder Template)
+    entscheidet, wann der tatsächliche Entfeuchter läuft – ideal für Setups
+    mit mehreren Zelten und einem gemeinsamen Entfeuchtergerät.
+
+
+    ---
+
+
+    ### ⚙️ Voraussetzungen (pro Zelt, aus dem Package)
+
+
+    - 1× `input_boolean` → Klima-Automatik
+    - 1× `input_boolean` → Maintenance (zeltübergreifend nutzbar)
+    - 1× `input_boolean` → Testmode (zeltübergreifend nutzbar)
+    - 1× `input_boolean` → Entfeuchter-Anforderung (Request)
+    - 1× `input_text` → Klima-Log (max. 255 Zeichen)
+    - 1× `input_select` → Wachstumsphase (geteilt mit Stations-Blueprint)
+    - 1× Temperatursensor + 1× Luftfeuchte-Sensor
+
+  domain: automation
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # INPUT-KONFIGURATION
+  # ═══════════════════════════════════════════════════════════════════════════
+  input:
+
+    # ─── 🌀 UMLUFT ────────────────────────────────────────────────────────────
+    circulation_manual:
+      name: "🌀 Umluft ist manuell gesteuert?"
+      description: >
+        **AUS (Standard):** Die Automation schaltet die Umluft bei aktiver Automatik
+        dauerhaft ein.
+
+        **AN:** Die Umluft wird von der Automation **nicht geschaltet** – ihr Zustand
+        wird nur im Log protokolliert. Nützlich, wenn die Umluft über einen
+        separaten Controller (z.B. Temperaturregler, Zeitschalter) gesteuert wird
+        oder permanent läuft.
+      default: false
+      selector:
+        boolean: {}
+
+    switch_fan:
+      name: "🌀 Umluft-Switches (Pflicht wenn nicht manuell, Mehrfachauswahl)"
+      description: >
+        Einer oder mehrere Switches für die Zelt-Umluft (Hauptlüfter, Umluftventilator).
+        Alle ausgewählten Switches werden gleichzeitig geschaltet.
+
+        **Hinweis:** Dies ist die *Zelt-weite* Hauptumluft. Stations-lokale Kleinstlüfter
+        werden im Stations-Blueprint konfiguriert.
+
+        Wenn „Umluft ist manuell" aktiv ist, kann dieses Feld leer gelassen werden –
+        dann entfällt die Umluft-Statusanzeige im Log.
+      default: []
+      selector:
+        entity:
+          domain: switch
+          multiple: true
+
+    # ─── 💨 BEFEUCHTER ────────────────────────────────────────────────────────
+    humidifier_enabled:
+      name: "💨 Befeuchter vorhanden?"
+      description: >
+        Aktiviere, wenn dieses Zelt über einen steuerbaren Befeuchter verfügt.
+        Wenn deaktiviert, werden alle Befeuchter-Einstellungen ignoriert.
+
+        **Hinweis zu Steckdosen-Befeuchtern:** Funktioniert nur sinnvoll, wenn
+        das Gerät nach Wiederanlegen der Spannung automatisch in den Betrieb startet
+        (kein manuelles Einschalten nach Stromunterbrechung nötig).
+      default: false
+      selector:
+        boolean: {}
+
+    switch_humidifier:
+      name: "💨 Befeuchter-Switches (optional, Mehrfachauswahl)"
+      description: >
+        Einer oder mehrere Switches für den/die Befeuchter dieses Zeltes.
+        Alle ausgewählten Switches werden gleichzeitig geschaltet.
+        Leer lassen, wenn „Befeuchter vorhanden?" deaktiviert ist.
+      default: []
+      selector:
+        entity:
+          domain: switch
+          multiple: true
+
+    # ─── 💧 ENTFEUCHTER-REQUEST ───────────────────────────────────────────────
+    dehum_request_boolean:
+      name: "💧 Entfeuchter-Anforderung (input_boolean, Pflicht)"
+      description: >
+        Dieser `input_boolean` wird von der Automation auf **AN** gesetzt,
+        wenn das Zelt zu feucht ist (RH > Zielwert + Toleranz).
+
+        Er wird auf **AUS** gesetzt, wenn das Zelt ausreichend trocken ist
+        oder der Sensor ungültig ist.
+
+        **Wichtig:** Dieser Boolean steuert keinen Entfeuchter direkt.
+        Eine separate Aggregations-Automation wertet die Request-Booleans
+        aller Zelte aus und entscheidet, wann der zentrale Entfeuchter läuft.
+
+        Jedes Zelt benötigt einen eigenen Request-Boolean
+        (z.B. `input_boolean.hydro_dehum_request_gross`).
+      selector:
+        entity:
+          domain: input_boolean
+
+    central_dehumidifier_state:
+      name: "🏠 Zentraler Entfeuchter – Status-Entity (optional)"
+      description: >
+        Optional: Die Status-Entity des zentralen Entfeuchters (z.B. `switch.*`
+        oder `binary_sensor.*`).
+
+        Diese Entity wird **nicht geschaltet** – sie wird nur gelesen, um zu prüfen,
+        ob der Entfeuchter gerade läuft. Wenn ja, kann der Befeuchter bei aktiver
+        Parallelbetrieb-Sperre blockiert werden.
+
+        Leer lassen, wenn kein zentraler Entfeuchter vorhanden ist oder der
+        Parallelbetriebsschutz nicht benötigt wird.
+      default: ""
+      selector:
+        entity: {}
+
+    # ─── 🌡️/💦 SENSOREN ──────────────────────────────────────────────────────
+    sensor_temp:
+      name: "🌡️ Temperatursensor (Zelt)"
+      description: >
+        Temperatursensor im Grow-Zelt. Wird für Temperatur-Sicherheitsgrenzen
+        verwendet (Sperre des Befeuchters/Requests bei zu niedriger Temperatur).
+        Sollte in Pflanzenzone-Höhe platziert sein.
+        Einheit: °C.
+      selector:
+        entity:
+          domain: sensor
+
+    sensor_humidity:
+      name: "💦 Luftfeuchte-Sensor (Zelt)"
+      description: >
+        Luftfeuchte-Sensor im Grow-Zelt in Prozent (%).
+        Wird für die Befeuchter/Entfeuchter-Regelung verwendet.
+        Sollte in Pflanzenzone-Höhe platziert sein, nicht direkt neben dem Befeuchter.
+        Trigger: Die Automation reagiert sofort auf Sensor-Änderungen.
+      selector:
+        entity:
+          domain: sensor
+
+    # ─── 🌱 WACHSTUMSPHASE & BETRIEBSMODI ────────────────────────────────────
+    input_select_stage:
+      name: "🌱 Wachstumsphase (input_select)"
+      description: >
+        Die aktuelle Wachstumsphase des Zeltes.
+        Gültige Werte: `Seedling`, `Veg`, `Bloom`, `Flush`.
+        `Flush` verwendet das Bloom-Feuchtigkeitsziel.
+
+        Typische Zielfeuchtigkeiten:
+        - Seedling: 70–80 % (hohe Luftfeuchte für Keimling)
+        - Veg: 55–70 % (moderat feucht)
+        - Bloom/Flush: 40–55 % (trocken gegen Schimmel)
+      selector:
+        entity:
+          domain: input_select
+
+    input_boolean_auto:
+      name: "🤖 Klima-Automatik-Schalter"
+      description: >
+        **AN:** Klima-Automation ist aktiv.
+        **AUS:** Automation stoppt sofort, alle Geräte bleiben im aktuellen Zustand.
+        Jedes Zelt benötigt einen eigenen Klima-Automatik-Schalter.
+      selector:
+        entity:
+          domain: input_boolean
+
+    input_boolean_maintenance:
+      name: "🧰 Maintenance-Schalter"
+      description: >
+        Wenn **AN**: Klima-Regelung pausiert, Log-Eintrag wird geschrieben.
+        Alle Geräte bleiben im aktuellen Zustand.
+        Kann mit dem Maintenance-Schalter der Stations-Blueprints geteilt werden.
+      selector:
+        entity:
+          domain: input_boolean
+
+    input_boolean_testmode:
+      name: "🧪 Testmode-Schalter"
+      description: >
+        Wenn **AN**: Keine Schaltaktionen – die Automation berechnet nur
+        SOLL-Zustände und schreibt Log-Einträge.
+        Zum Prüfen der Regellogik ohne echte Gerätesteuerung.
+      selector:
+        entity:
+          domain: input_boolean
+
+    input_text_log:
+      name: "📝 Klima-Log (input_text)"
+      description: >
+        Ein `input_text`-Helper (max. 255 Zeichen) für den Klima-Ereignis-Log.
+        Zeigt den letzten Regelungs-Schritt mit IST/SOLL-Zuständen.
+        Jedes Zelt benötigt einen eigenen Klima-Log-Helper.
+      selector:
+        entity:
+          domain: input_text
+
+    # ─── 🎯 ZIELFEUCHTIGKEITEN ────────────────────────────────────────────────
+    target_humidity_seedling:
+      name: "🎯 Ziel-Luftfeuchte – Seedling (%)"
+      description: >
+        Angestrebte relative Luftfeuchte in der Seedling-Phase.
+        Befeuchter AN wenn RH < (Ziel − Toleranz),
+        Request AN wenn RH > (Ziel + Toleranz).
+        Typisch: 70–80 %.
+      default: 70
+      selector:
+        number:
+          min: 30
+          max: 90
+          step: 1
+          unit_of_measurement: "%"
+
+    target_humidity_veg:
+      name: "🎯 Ziel-Luftfeuchte – Veg (%)"
+      description: >
+        Angestrebte relative Luftfeuchte in der Veg-Phase.
+        Typisch: 55–65 %. Niedrigere Werte als Seedling, aber noch moderat feucht
+        für optimales Blatt-Wachstum und Nährstoffaufnahme.
+      default: 60
+      selector:
+        number:
+          min: 30
+          max: 90
+          step: 1
+          unit_of_measurement: "%"
+
+    target_humidity_bloom:
+      name: "🎯 Ziel-Luftfeuchte – Bloom & Flush (%)"
+      description: >
+        Angestrebte relative Luftfeuchte in der Bloom- und Flush-Phase.
+        Typisch: 40–50 %. Niedrig halten zur Schimmelprävention (Botrytis).
+        Wird auch für `Flush` verwendet.
+      default: 50
+      selector:
+        number:
+          min: 30
+          max: 90
+          step: 1
+          unit_of_measurement: "%"
+
+    humidity_tolerance:
+      name: "↔️ Hysterese-Toleranz (%)"
+      description: >
+        Pufferzone um den Zielwert. Verhindert schnelles Hin- und Herschalten
+        (Flattern) bei kleinen Feuchtigkeitsschwankungen.
+
+        Beispiel mit Ziel=60%, Toleranz=3%:
+        - Befeuchter AN wenn RH < 57 %
+        - Entfeuchter-Request AN wenn RH > 63 %
+        - Zwischen 57–63 %: keine Änderung
+
+        Empfehlung: 3–5 % (bei schwankenden Sensoren eher 5 %).
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 15
+          step: 1
+          unit_of_measurement: "%"
+
+    # ─── 🌡️ TEMPERATURGRENZEN ─────────────────────────────────────────────────
+    min_temp_humidifier:
+      name: "🌡️ Mindesttemperatur – Befeuchter (°C)"
+      description: >
+        Unter dieser Temperatur wird der Befeuchter **nicht eingeschaltet**,
+        auch wenn die Luftfeuchte zu niedrig ist.
+
+        Verhindert Kondensation auf Pflanzen bei niedrigen Temperaturen
+        und schützt vor Schimmel durch Feuchteaufbau in kalten Bereichen.
+
+        Empfehlung: 15–18 °C (Bewurzelung) bis 20 °C (Bloom).
+      default: 15
+      selector:
+        number:
+          min: 0
+          max: 30
+          step: 1
+          unit_of_measurement: "°C"
+
+    min_temp_dehum_request:
+      name: "🌡️ Mindesttemperatur – Entfeuchter-Request (°C)"
+      description: >
+        Unter dieser Temperatur wird **kein Entfeuchter-Request** gesetzt,
+        auch wenn die Luftfeuchte zu hoch ist.
+
+        Bei niedrigen Temperaturen ist hohe Luftfeuchte weniger schädlich
+        und der Entfeuchter würde die ohnehin niedrige Temperatur weiter senken.
+
+        Empfehlung: 18 °C. Niedrigeren Wert wählen, wenn kältere Phasen
+        trotzdem entfeuchtet werden sollen.
+      default: 18
+      selector:
+        number:
+          min: 0
+          max: 30
+          step: 1
+          unit_of_measurement: "°C"
+
+    # ─── ⏳ ANTI-FLATTERN ──────────────────────────────────────────────────────
+    humidifier_min_on_minutes:
+      name: "⏳ Befeuchter – Mindest-EIN-Zeit (Minuten)"
+      description: >
+        Der Befeuchter bleibt mindestens diese Zeit AN, auch wenn die
+        Ziel-Luftfeuchte bereits erreicht wurde.
+
+        Verhindert kurze AN/AUS-Zyklen und schützt das Gerät.
+        Empfehlung: 2–5 Minuten.
+      default: 2
+      selector:
+        number:
+          min: 0
+          max: 30
+          step: 1
+          unit_of_measurement: "min"
+
+    humidifier_min_off_minutes:
+      name: "⏳ Befeuchter – Mindest-AUS-Zeit (Minuten)"
+      description: >
+        Der Befeuchter bleibt mindestens diese Zeit AUS, auch wenn die
+        Luftfeuchte bereits wieder zu niedrig ist.
+
+        Gibt dem Zelt Zeit, die eingebrachte Feuchte zu verteilen,
+        bevor erneut befeuchtet wird. Empfehlung: 2–5 Minuten.
+      default: 2
+      selector:
+        number:
+          min: 0
+          max: 30
+          step: 1
+          unit_of_measurement: "min"
+
+    request_min_on_minutes:
+      name: "⏳ Entfeuchter-Request – Mindest-EIN-Zeit (Minuten)"
+      description: >
+        Der Entfeuchter-Request bleibt mindestens diese Zeit AN,
+        auch wenn die Luftfeuchte bereits unter den oberen Schwellwert gefallen ist.
+
+        Verhindert, dass der zentrale Entfeuchter für kurze Feuchtigkeitsspitzen
+        ständig an- und abschaltet. Empfehlung: 5–10 Minuten
+        (abgestimmt auf die Reaktionszeit des Entfeuchters).
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 60
+          step: 1
+          unit_of_measurement: "min"
+
+    request_min_off_minutes:
+      name: "⏳ Entfeuchter-Request – Mindest-AUS-Zeit (Minuten)"
+      description: >
+        Der Entfeuchter-Request bleibt mindestens diese Zeit AUS,
+        auch wenn die Luftfeuchte erneut zu hoch steigt.
+
+        Gibt dem Entfeuchter Zeit zu reagieren, bevor ein neuer Request gesendet wird.
+        Empfehlung: 5–10 Minuten.
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 60
+          step: 1
+          unit_of_measurement: "min"
+
+    # ─── 🔒 PARALLELBETRIEB-SCHUTZ ────────────────────────────────────────────
+    allow_parallel_hum_dehum:
+      name: "🔒 Parallelbetrieb Befeuchter + Entfeuchter erlauben?"
+      description: >
+        **AUS (empfohlen):** Befeuchter wird gesperrt, solange der zentrale
+        Entfeuchter läuft (Status aus „Zentraler Entfeuchter – Status-Entity").
+        Verhindert sinnlosen gleichzeitigen Betrieb beider Geräte.
+
+        **AN:** Befeuchter und Entfeuchter können gleichzeitig laufen
+        (z.B. wenn sie verschiedene Bereiche des Zeltes bedienen).
+
+        Nur relevant, wenn „Zentraler Entfeuchter – Status-Entity" konfiguriert ist.
+      default: false
+      selector:
+        boolean: {}
+
+    conflict_strategy:
+      name: "⚖️ Konfliktstrategie bei logisch unvereinbaren Zuständen"
+      description: >
+        Was tun, wenn gleichzeitig Befeuchten **und** Entfeuchten logisch
+        geboten wäre (tritt normalerweise nur bei falsch konfigurierten
+        Ziel-/Toleranzwerten auf)?
+
+        - **Entfeuchten priorisieren:** Request AN, Befeuchter AUS (sinnvoll
+          wenn Schimmelschutz Vorrang hat – Empfehlung für Bloom-Phase)
+        - **Befeuchten priorisieren:** Befeuchter AN, Request AUS
+        - **Beide AUS:** Weder Befeuchter noch Request (sicherste Option)
+      default: "dehumidifier_priority"
+      selector:
+        select:
+          options:
+            - label: "Entfeuchten priorisieren (empfohlen)"
+              value: "dehumidifier_priority"
+            - label: "Befeuchten priorisieren"
+              value: "humidifier_priority"
+            - label: "Beide AUS (maximale Sicherheit)"
+              value: "both_off"
+
+    # ─── 📝 HEARTBEAT-LOGGING ─────────────────────────────────────────────────
+    log_heartbeat_minutes:
+      name: "🫀 Regelmäßiges Status-Log alle X Minuten (0 = deaktiviert)"
+      description: >
+        Schreibt regelmäßig einen Status-Log-Eintrag, auch wenn sich nichts geändert hat.
+        Nützlich zur Kontrolle, dass die Automation noch läuft und die Sensor-Werte
+        im erwarteten Bereich liegen.
+
+        **0** = Kein Heartbeat (nur bei Änderungen loggen – weniger Log-Einträge).
+        **15** = Alle 15 Minuten ein Status-Eintrag (Standard, gut für Monitoring).
+        **60** = Stündlicher Status-Eintrag.
+
+        Tipp: Werte die nicht durch 60 teilbar sind (z.B. 7, 11) führen zu
+        unregelmäßigen Intervallen – verwende besser 5, 10, 15, 20 oder 30.
+      default: 15
+      selector:
+        number:
+          min: 0
+          max: 120
+          step: 5
+          unit_of_measurement: "min"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AUTOMATION-KONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+mode: single
+max_exceeded: silent
+
+# ───────────────────────────────────────────────────────────────────────────────
+# TRIGGER
+# Minütlicher Zyklus + sofortige Reaktion auf Sensor- und Statusänderungen
+# ───────────────────────────────────────────────────────────────────────────────
+trigger:
+  - platform: time_pattern
+    minutes: "/1"
+    id: cycle
+
+  - platform: homeassistant
+    event: start
+    id: ha_start
+
+  - platform: state
+    entity_id: !input input_select_stage
+    id: stage_change
+
+  - platform: state
+    entity_id: !input input_boolean_auto
+    id: auto_change
+
+  - platform: state
+    entity_id: !input sensor_humidity
+    id: hum_change
+
+  - platform: state
+    entity_id: !input sensor_temp
+    id: temp_change
+
+# ───────────────────────────────────────────────────────────────────────────────
+# GLOBALE VARIABLEN
+# ───────────────────────────────────────────────────────────────────────────────
+variables:
+  # Umluft
+  # Hinweis: Blueprint-Inputs mit multiple:true können als String oder Liste ankommen.
+  # Der | list-Filter normalisiert beides zur sicheren Liste.
+  v_fan_list_raw:  !input switch_fan
+  v_circ_manual:   !input circulation_manual
+
+  # Befeuchter
+  v_humid_enabled:   !input humidifier_enabled
+  v_humid_list_raw:  !input switch_humidifier
+
+  # Entfeuchter-Request
+  v_req:           !input dehum_request_boolean
+  v_central_dehum: !input central_dehumidifier_state
+
+  # Sensoren
+  v_temp: !input sensor_temp
+  v_hum:  !input sensor_humidity
+  v_stage: !input input_select_stage
+
+  # Zielfeuchtigkeiten
+  t_seed:  !input target_humidity_seedling
+  t_veg:   !input target_humidity_veg
+  t_bloom: !input target_humidity_bloom
+  tol:     !input humidity_tolerance
+
+  # Temperaturgrenzen
+  min_t_hum: !input min_temp_humidifier
+  min_t_req: !input min_temp_dehum_request
+
+  # Anti-Flattern
+  hum_min_on:  !input humidifier_min_on_minutes
+  hum_min_off: !input humidifier_min_off_minutes
+  req_min_on:  !input request_min_on_minutes
+  req_min_off: !input request_min_off_minutes
+
+  # Sicherheit
+  allow_parallel: !input allow_parallel_hum_dehum
+  conflict:       !input conflict_strategy
+
+  # Logging
+  hb_min: !input log_heartbeat_minutes
+
+# ───────────────────────────────────────────────────────────────────────────────
+# ACTION
+# ───────────────────────────────────────────────────────────────────────────────
+action:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 0a – Listen normalisieren (KRITISCH – immer zuerst!)
+  # Blueprint-Inputs mit multiple:true liefern je nach HA-Version und Anzahl
+  # der gewählten Entities entweder einen String ODER eine Liste.
+  # Dieser Schritt erzwingt immer eine echte Liste, damit v_humid_list[0]
+  # den ersten Entity-String und NICHT den ersten Buchstaben liefert.
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      v_fan_list: >
+        {% if v_fan_list_raw is string %}
+          {{ [v_fan_list_raw] if v_fan_list_raw not in ['', 'none'] else [] }}
+        {% else %}
+          {{ v_fan_list_raw | list }}
+        {% endif %}
+      v_humid_list: >
+        {% if v_humid_list_raw is string %}
+          {{ [v_humid_list_raw] if v_humid_list_raw not in ['', 'none'] else [] }}
+        {% else %}
+          {{ v_humid_list_raw | list }}
+        {% endif %}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 0b – Auto OFF → Log + Abbruch
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: auto_change
+          - condition: state
+            entity_id: !input input_boolean_auto
+            state: "off"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ now().strftime('%Y-%m-%d %H:%M') }} 🔴 AUTO OFF"
+          - stop: "auto off"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 1 – Gate: Nur wenn Automatik aktiv
+  # ═══════════════════════════════════════════════════════════════════════════
+  - condition: state
+    entity_id: !input input_boolean_auto
+    state: "on"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 2 – Maintenance → Log + Abbruch
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input input_boolean_maintenance
+            state: "on"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ now().strftime('%Y-%m-%d %H:%M') }} 🔧 MAINTENANCE"
+          - stop: "maintenance aktiv"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 3 – Testmode → Log + Abbruch (keine Schaltaktionen)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input input_boolean_testmode
+            state: "on"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ now().strftime('%Y-%m-%d %H:%M') }} 🧪 TESTMODE"
+          - stop: "testmode aktiv – keine Schaltaktion"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 4 – Sensoren lesen, Zielwerte und Schwellwerte berechnen
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      # Entity-Referenzen (erster Switch aus Liste als Referenz für State-Checks)
+      fan_entity:   "{{ v_fan_list[0]   if (v_fan_list   | count) > 0 else '' }}"
+      humid_entity: "{{ v_humid_list[0] if (v_humid_list | count) > 0 else '' }}"
+
+      # Wachstumsphase (mit Fallback auf Veg)
+      stage_raw: "{{ states(v_stage) }}"
+      stage: "{{ stage_raw if stage_raw in ['Seedling','Veg','Bloom','Flush'] else 'Veg' }}"
+
+      # Sensoren auslesen
+      temp_s: "{{ states(v_temp) }}"
+      hum_s:  "{{ states(v_hum) }}"
+      temp:   "{{ temp_s | float(none) }}"
+      rh:     "{{ hum_s  | float(none) }}"
+
+      # Ziel-Luftfeuchte nach Phase (Flush = Bloom)
+      target: >
+        {% if stage == 'Seedling' %}{{ t_seed | int }}
+        {% elif stage == 'Veg' %}{{ t_veg | int }}
+        {% else %}{{ t_bloom | int }}
+        {% endif %}
+
+      # Hysterese-Schwellwerte
+      low_thr:  "{{ (target | float) - (tol | float) }}"
+      high_thr: "{{ (target | float) + (tol | float) }}"
+
+      # Heartbeat fällig?
+      hb_due: >
+        {% if (hb_min | int) <= 0 %}false
+        {% else %}{{ (now().minute % (hb_min | int)) == 0 }}
+        {% endif %}
+
+      # Zentraler Entfeuchter läuft? (robust gegen leeren String, none, [])
+      central_dehum_on: >
+        {% set cd = v_central_dehum | string %}
+        {% if cd in ['', 'none', '[]', 'None'] %}false
+        {% else %}{{ is_state(cd, 'on') }}
+        {% endif %}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 5 – Sensor-Safety
+  # Ungültige Sensordaten → Befeuchter AUS, Request AUS, Umluft AN, Log + Stop
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ rh is none or temp is none
+                 or hum_s  in ['unknown','unavailable','']
+                 or temp_s in ['unknown','unavailable',''] }}
+        sequence:
+          # Befeuchter AUS (wenn konfiguriert)
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ v_humid_enabled and humid_entity != '' }}"
+                sequence:
+                  - service: switch.turn_off
+                    target:
+                      entity_id: "{{ v_humid_list }}"
+          # Entfeuchter-Request AUS
+          - service: input_boolean.turn_off
+            target: { entity_id: !input dehum_request_boolean }
+          # Umluft AN (wenn nicht manuell und Switches konfiguriert)
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not v_circ_manual and (v_fan_list | count) > 0 }}"
+                sequence:
+                  - service: switch.turn_on
+                    target:
+                      entity_id: "{{ v_fan_list }}"
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ now().strftime('%Y-%m-%d %H:%M') }} ⚠️ SENSOR INVALID → HUM OFF / REQ OFF / CIRC ON"
+          - stop: "sensor ungültig"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 6 – Regelwunsch berechnen (SOLL vor Anti-Flattern)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      # Basisbedarf Befeuchter: RH zu niedrig + Temp OK
+      want_hum: >
+        {{ v_humid_enabled
+           and humid_entity != ''
+           and (rh | float) < (low_thr | float)
+           and (temp | float) >= (min_t_hum | float) }}
+
+      # Basisbedarf Request: RH zu hoch + Temp OK
+      want_req: >
+        {{ (rh | float) > (high_thr | float)
+           and (temp | float) >= (min_t_req | float) }}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 7 – Parallelbetrieb & Konfliktstrategie anwenden
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      # Befeuchter durch laufenden Entfeuchter blockiert?
+      hum_blocked_by_central: "{{ (not allow_parallel) and central_dehum_on }}"
+      want_hum_eff: "{{ want_hum and (not hum_blocked_by_central) }}"
+
+      # Logischer Konflikt (beide gleichzeitig AN) → Konfliktstrategie anwenden
+      want_hum_final: >
+        {% if want_hum_eff and want_req %}
+          {% if conflict == 'humidifier_priority' %}true
+          {% else %}false
+          {% endif %}
+        {% else %}
+          {{ want_hum_eff }}
+        {% endif %}
+
+      want_req_final: >
+        {% if want_hum_eff and want_req %}
+          {% if conflict == 'dehumidifier_priority' %}true
+          {% elif conflict == 'both_off' %}false
+          {% else %}true
+          {% endif %}
+        {% else %}
+          {{ want_req }}
+        {% endif %}
+
+      # SOLL-Zusammenfassung für Log
+      soll_line: >
+        SOLL CIRC={{ 'MANUAL' if v_circ_manual else 'ON' }}
+        HUM={{ 'ON' if want_hum_final else ('OFF(ZENTRAL-BLOCK)' if hum_blocked_by_central else 'OFF') }}
+        REQ={{ 'ON' if want_req_final else 'OFF' }}
+        | RH={{ (rh | float) | round(1) }}%
+        T={{ (temp | float) | round(1) }}°C
+        Target={{ target }}±{{ tol }}%
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 8 – Umluft dauerhaft AN (wenn nicht manuell)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ not v_circ_manual and (v_fan_list | count) > 0 }}"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: "{{ v_fan_list }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 9 – Anti-Flattern: IST-Zustände und Altersprüfung
+  # Snapshot VOR dem Schalten → für Logging nach dem Schalten
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      hum_is_on_prev: "{{ humid_entity != '' and is_state(humid_entity, 'on') }}"
+      req_is_on_prev: "{{ is_state(v_req, 'on') }}"
+
+      hum_age_s: >
+        {{ (as_timestamp(now()) - as_timestamp(states[humid_entity].last_changed))
+           if humid_entity != '' else 0 }}
+      req_age_s: "{{ as_timestamp(now()) - as_timestamp(states[v_req].last_changed) }}"
+
+      hum_min_on_s:  "{{ (hum_min_on  | int) * 60 }}"
+      hum_min_off_s: "{{ (hum_min_off | int) * 60 }}"
+      req_min_on_s:  "{{ (req_min_on  | int) * 60 }}"
+      req_min_off_s: "{{ (req_min_off | int) * 60 }}"
+
+      # Darf ausgeschaltet werden? (entweder schon aus, oder lange genug an)
+      hum_ok_to_off: "{{ (not hum_is_on_prev) or (hum_age_s >= hum_min_on_s) }}"
+      req_ok_to_off: "{{ (not req_is_on_prev) or (req_age_s >= req_min_on_s) }}"
+
+      # Darf eingeschaltet werden? (entweder schon an, oder lange genug aus)
+      hum_ok_to_on: "{{ hum_is_on_prev or (hum_age_s >= hum_min_off_s) }}"
+      req_ok_to_on: "{{ req_is_on_prev or (req_age_s >= req_min_off_s) }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 10 – Befeuchter schalten
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ v_humid_enabled and humid_entity != '' }}"
+        sequence:
+          - choose:
+              # Befeuchter AN
+              - conditions:
+                  - condition: template
+                    value_template: "{{ want_hum_final and (not hum_is_on_prev) and hum_ok_to_on }}"
+                sequence:
+                  - service: switch.turn_on
+                    target:
+                      entity_id: "{{ v_humid_list }}"
+              # Befeuchter AUS
+              - conditions:
+                  - condition: template
+                    value_template: "{{ (not want_hum_final) and hum_is_on_prev and hum_ok_to_off }}"
+                sequence:
+                  - service: switch.turn_off
+                    target:
+                      entity_id: "{{ v_humid_list }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 11 – Entfeuchter-Request schalten (input_boolean)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - choose:
+      # Request AN
+      - conditions:
+          - condition: template
+            value_template: "{{ want_req_final and (not req_is_on_prev) and req_ok_to_on }}"
+        sequence:
+          - service: input_boolean.turn_on
+            target: { entity_id: !input dehum_request_boolean }
+      # Request AUS
+      - conditions:
+          - condition: template
+            value_template: "{{ (not want_req_final) and req_is_on_prev and req_ok_to_off }}"
+        sequence:
+          - service: input_boolean.turn_off
+            target: { entity_id: !input dehum_request_boolean }
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCHRITT 12 – Logging
+  # Schreibt Log bei: Ereignissen (auto/stage/ha_start), Zustandsänderungen
+  # (HUM/REQ), oder Heartbeat. Vergleich IST vorher/nachher verhindert
+  # verpasste Schaltereignisse.
+  # ═══════════════════════════════════════════════════════════════════════════
+  - variables:
+      # Aktueller Zustand NACH dem Schalten
+      hum_now: "{{ humid_entity != '' and is_state(humid_entity, 'on') }}"
+      req_now: "{{ is_state(v_req, 'on') }}"
+      circ_now: >
+        {% if v_circ_manual %}MANUAL
+        {% elif fan_entity != '' %}{{ states(fan_entity) }}
+        {% else %}n/a{% endif %}
+
+      ist_line: >
+        IST CIRC={{ circ_now }}
+        HUM={{ 'ON' if hum_now else 'OFF' }}
+        REQ={{ 'ON' if req_now else 'OFF' }}
+
+      # Log-Entscheidung
+      should_log: >
+        {{ trigger.id in ['auto_change', 'stage_change', 'ha_start']
+           or hb_due
+           or (v_humid_enabled and humid_entity != '' and (hum_now | bool) != (hum_is_on_prev | bool))
+           or ((req_now | bool) != (req_is_on_prev | bool)) }}
+
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ should_log }}"
+        sequence:
+          - service: input_text.set_value
+            target: { entity_id: !input input_text_log }
+            data:
+              value: "{{ now().strftime('%Y-%m-%d %H:%M') }} {{ ist_line }} | {{ soll_line }}"

@@ -1,0 +1,149 @@
+#==============================================================================
+# GROWCTRL – HA-Package Zelt Mittel (LEGACY)
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Helper-Definitionen Zelt Mittel: 1x Main. Wird durch die GROWCTRL-Integration ersetzt.
+# Bezug   : Wird referenziert von: legacy/blueprints/* (Instanzen),
+#           legacy/dashboard/checkup_gz_mittel.yaml, cards/*
+# Version : 2.0.0-dev  |  Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+
+###############################################################################
+# packages/hydro_zelt_mittel.yaml
+# MITTEL: 1x MAIN
+###############################################################################
+
+input_boolean:
+  hydro_maintenance_mittel:
+    name: Hydro Maintenance Zelt Mittel
+    icon: mdi:toolbox
+  hydro_testmode_mittel:
+    name: Hydro Testmode Zelt Mittel
+    icon: mdi:flask
+
+  hydro_climate_auto_mittel:
+    name: Hydro Klima Auto Zelt Mittel
+    icon: mdi:home-thermometer
+
+  hydro_auto_mittel_main1:
+    name: Auto Mittel Main 1
+    icon: mdi:robot
+
+  hydro_dehum_request_mittel:
+    name: Hydro Entfeuchter Anforderung – Zelt Mittel
+    icon: mdi:water-off
+
+input_text:
+  hydro_climate_log_mittel:
+    name: Hydro Klima Log Zelt Mittel
+    max: 255
+    icon: mdi:text-box
+
+  hydro_log_mittel_main1:
+    name: Log Mittel Main 1
+    max: 255
+
+input_select:
+  hydro_stage_mittel_main1:
+    name: Stage Mittel Main 1
+    options: [Seedling, Veg, Bloom, Flush]
+    icon: mdi:flower
+
+input_datetime:
+  hydro_light_on_mittel_main1:
+    name: Licht AN Mittel Main 1
+    has_date: false
+    has_time: true
+  hydro_light_off_sv_mittel_main1:
+    name: Licht AUS Seedling/Veg Mittel Main 1
+    has_date: false
+    has_time: true
+  hydro_light_off_bloom_mittel_main1:
+    name: Licht AUS Bloom/Flush Mittel Main 1
+    has_date: false
+    has_time: true
+
+input_number:
+  hydro_pump_on_seedling_mittel_main1:
+    name: Pumpe AN Seedling Mittel Main 1 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_seedling_mittel_main1:
+    name: Pumpe AUS Seedling Mittel Main 1 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_veg_mittel_main1:
+    name: Pumpe AN Veg Mittel Main 1 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_veg_mittel_main1:
+    name: Pumpe AUS Veg Mittel Main 1 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+  hydro_pump_on_bloom_mittel_main1:
+    name: Pumpe AN Bloom/Flush Mittel Main 1 (min)
+    min: 1
+    max: 60
+    step: 1
+    mode: slider
+  hydro_pump_off_bloom_mittel_main1:
+    name: Pumpe AUS Bloom/Flush Mittel Main 1 (min)
+    min: 1
+    max: 120
+    step: 1
+    mode: slider
+
+template:
+  - sensor:
+      - name: "Mittel Main1 Licht Restzeit"
+        unique_id: hydro_mittel_main1_light_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_mittel_main1') %}
+          {% set on_str  = states('input_datetime.hydro_light_on_mittel_main1').split(' ')[-1][0:5] %}
+          {% set off_sv  = states('input_datetime.hydro_light_off_sv_mittel_main1').split(' ')[-1][0:5] %}
+          {% set off_b   = states('input_datetime.hydro_light_off_bloom_mittel_main1').split(' ')[-1][0:5] %}
+          {% set now_m = now().hour*60 + now().minute %}
+          {% set on_m = (on_str.split(':')[0]|int)*60 + (on_str.split(':')[1]|int) %}
+          {% set off_sv_m = (off_sv.split(':')[0]|int)*60 + (off_sv.split(':')[1]|int) %}
+          {% set off_b_m  = (off_b.split(':')[0]|int)*60 + (off_b.split(':')[1]|int) %}
+          {% set off_m = off_sv_m if stage in ['Seedling','Veg'] else off_b_m %}
+          {% if on_m == off_m %}0
+          {% elif on_m < off_m %}
+            {% if now_m < on_m %}{{ on_m-now_m }}
+            {% elif now_m < off_m %}{{ off_m-now_m }}
+            {% else %}{{ (24*60-now_m)+on_m }}{% endif %}
+          {% else %}
+            {% if now_m >= on_m or now_m < off_m %}
+              {% if now_m >= on_m %}{{ (24*60-now_m)+off_m }}{% else %}{{ off_m-now_m }}{% endif %}
+            {% else %}{{ on_m-now_m }}{% endif %}
+          {% endif %}
+
+      - name: "Mittel Main1 Pumpe Restzeit"
+        unique_id: hydro_mittel_main1_pump_restmin
+        unit_of_measurement: "min"
+        state: >
+          {% set stage = states('input_select.hydro_stage_mittel_main1') %}
+          {% set on_s  = states('input_number.hydro_pump_on_seedling_mittel_main1')|int(10) %}
+          {% set off_s = states('input_number.hydro_pump_off_seedling_mittel_main1')|int(15) %}
+          {% set on_v  = states('input_number.hydro_pump_on_veg_mittel_main1')|int(10) %}
+          {% set off_v = states('input_number.hydro_pump_off_veg_mittel_main1')|int(15) %}
+          {% set on_b  = states('input_number.hydro_pump_on_bloom_mittel_main1')|int(10) %}
+          {% set off_b = states('input_number.hydro_pump_off_bloom_mittel_main1')|int(15) %}
+          {% set minutes_today = now().hour*60 + now().minute %}
+          {% if stage == 'Seedling' %}{% set on=on_s %}{% set off=off_s %}
+          {% elif stage == 'Veg' %}{% set on=on_v %}{% set off=off_v %}
+          {% else %}{% set on=on_b %}{% set off=off_b %}{% endif %}
+          {% set cycle = on+off %}
+          {% if cycle == 0 %}0{% else %}
+            {% set phase = minutes_today % cycle %}
+            {{ (on-phase) if phase < on else (cycle-phase) }}
+          {% endif %}

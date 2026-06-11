@@ -1,0 +1,406 @@
+#==============================================================================
+# GROWCTRL – ESPHome Sensor Node v4.0
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Optionale GROWCTRL-Hardware: ESP32-C3, AHT21+ENS160, TSL2591, 2x DS18B20, RS485 zum
+#           Relay Board. Liefert Messwerte an HA; Kalibrierung lokal auf dem Node.
+# Bezug   : Benoetigt secrets.yaml: wifi_ssid, wifi_password, api_encryption_key, ota_password,
+#           ap_fallback_password
+# Version : 2.0.0-dev  |  Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+
+################################################################################
+# SENSOR NODE v4.0 — Kein Display
+# ESP32-C3 Mini
+#
+# HARDWARE:
+#   AHT21 + ENS160  — Kombisensor Temp/Feuchte/CO₂/TVOC  (I²C)
+#     VIN → 3.3V · GND → GND · SDA → GPIO5 · SCL → GPIO6
+#     ADD, CS, INT → nicht belegen
+#
+#   TSL2591         — Lux/Spektrum                        (I²C)
+#     VIN → 3.3V · GND → GND · SDA → GPIO5 · SCL → GPIO6
+#     INT → nicht belegen
+#
+#   DS18B20 × 2     — Temperatursensoren                  (1-Wire)
+#     VCC → 3.3V · GND → GND · DATA → GPIO7 · 4.7kΩ Pull-up
+#
+#   RS485           — Kommunikation zum Relay Board
+#     TX → GPIO16 · RX → GPIO17
+#
+# I²C ADRESSEN:
+#   AHT21  → 0x38
+#   ENS160 → 0x53
+#   TSL2591→ 0x29
+#
+# MONTAGE EMPFEHLUNG:
+#   Alle drei Sensoren auf Pflanzenhöhe montieren (Canopy-Zone).
+#   TSL2591 nach oben zeigend, mittig im Zelt.
+#   Nicht direkt unter der Lampe (Wärmestrahlung verfälscht Temp).
+################################################################################
+
+esphome:
+  name: sensor-node
+  friendly_name: "Grow Sensor Node v4"
+  on_boot:
+    priority: -200
+    then:
+      - logger.log: "Sensor Node v4.0 gestartet"
+
+esp32:
+  board: lolin_c3_mini
+  framework:
+    type: esp-idf
+    version: "5.3.2"
+
+# ─────────────────────────────────────────────────────────────────
+# WIFI + API + OTA
+# ─────────────────────────────────────────────────────────────────
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "SensorNode Fallback"
+    password: !secret ap_fallback_password
+
+captive_portal:
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# ─────────────────────────────────────────────────────────────────
+# I²C BUS
+# Alle drei Sensoren teilen SDA/SCL — verschiedene Adressen
+# ─────────────────────────────────────────────────────────────────
+i2c:
+  id: i2c_bus
+  sda: GPIO5
+  scl: GPIO6
+  frequency: 400000
+  scan: true
+
+# ─────────────────────────────────────────────────────────────────
+# 1-WIRE — DS18B20 × 2
+# Beide Sensoren parallel an einem Pin, werden per Adresse getrennt
+# ─────────────────────────────────────────────────────────────────
+one_wire:
+  - platform: gpio
+    pin: GPIO7
+
+# ─────────────────────────────────────────────────────────────────
+# UART — RS485 zum Relay Board
+# ─────────────────────────────────────────────────────────────────
+uart:
+  id: rs485_uart
+  tx_pin: GPIO16
+  rx_pin: GPIO17
+  baud_rate: 9600
+
+# ─────────────────────────────────────────────────────────────────
+# GLOBALS
+# ─────────────────────────────────────────────────────────────────
+globals:
+  # Addon Typen
+  - id: a_type
+    type: std::string[4]
+    restore_value: no
+
+  # Addon Online-Status
+  - id: a_online
+    type: bool[4]
+    restore_value: no
+    initial_value: '{false,false,false,false}'
+
+  # Addon Rohdaten [slot][kanal]
+  # HYDRO2: [0]=pH1 [1]=pH2 [2]=EC1 [3]=EC2 [4]=TDS1 [5]=TDS2
+  #         [6]=T1  [7]=T2  [8]=L1  [9]=L2
+  # TERRA2: [0]=Soil1F [1]=Soil1T [2]=Soil2F [3]=Soil2T [4]=ECb [5]=pHb
+  # POWER4: [0]=R1 [1]=R2 [2]=R3 [3]=R4
+  - id: a_data
+    type: float[4][10]
+    restore_value: no
+
+  # Alarm-Flags je Slot
+  - id: a_alarms
+    type: uint16_t[4]
+    restore_value: no
+    initial_value: '{0,0,0,0}'
+
+# ─────────────────────────────────────────────────────────────────
+# SENSOREN
+# ─────────────────────────────────────────────────────────────────
+sensor:
+
+  # ── AHT21 — Temperatur + Luftfeuchte ──────────────────────────
+  # Kombisensor zusammen mit ENS160 auf einem Board
+  # VIN·GND·SDA·SCL belegen — ADD/CS/INT freilassen
+  - platform: aht10
+    variant: AHT21
+    i2c_id: i2c_bus
+    address: 0x38
+    update_interval: 10s
+
+    temperature:
+      id: aht_temp
+      name: "Temperatur"
+      unit_of_measurement: "°C"
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+        - offset: 0.0   # Kalibrierungsoffset — bei Bedarf anpassen
+      on_value:
+        then:
+          - script.execute: send_lux_frame
+
+    humidity:
+      id: aht_hum
+      name: "Luftfeuchte"
+      unit_of_measurement: "%"
+      accuracy_decimals: 1
+      device_class: humidity
+      state_class: measurement
+
+  # ── ENS160 — CO₂ + TVOC ───────────────────────────────────────
+  # Gleicher Kombisensor wie AHT21, eigene I²C Adresse
+  # compensation: nutzt AHT21 Werte für genaue Messungen
+  - platform: ens160
+    i2c_id: i2c_bus
+    address: 0x53
+    update_interval: 10s
+    compensation:
+      temperature: aht_temp
+      humidity: aht_hum
+
+    eco2:
+      id: eco2_value
+      name: "CO₂"
+      unit_of_measurement: "ppm"
+      accuracy_decimals: 0
+      device_class: carbon_dioxide
+      state_class: measurement
+      icon: mdi:molecule-co2
+
+    tvoc:
+      id: tvoc_value
+      name: "TVOC"
+      unit_of_measurement: "ppb"
+      accuracy_decimals: 0
+      state_class: measurement
+      icon: mdi:air-filter
+
+  # ── TSL2591 — Lux + Spektrum ───────────────────────────────────
+  # Montage: nach oben zeigend, mittig auf Pflanzenhöhe
+  # VIN·GND·SDA·SCL belegen — INT freilassen
+  - platform: tsl2591
+    i2c_id: i2c_bus
+    address: 0x29
+    update_interval: 5s
+    integration_time: 300ms
+    gain: auto
+
+    full_spectrum:
+      id: tsl_full
+      name: "TSL2591 Vollspektrum"
+      internal: true
+
+    infrared:
+      id: tsl_ir
+      name: "TSL2591 Infrarot"
+      internal: true
+
+    visible:
+      id: tsl_vis
+      name: "TSL2591 Sichtbar"
+      internal: true
+
+    calculated_lux:
+      id: tsl_lux
+      name: "Lux"
+      unit_of_measurement: "lx"
+      accuracy_decimals: 0
+      device_class: illuminance
+      state_class: measurement
+      icon: mdi:white-balance-sunny
+
+  # ── DS18B20 × 2 — Temperatursensoren ──────────────────────────
+  # Beide Sensoren parallel an GPIO7 mit 4.7kΩ Pull-up
+  # Adressen: nach erstem Flash im Log ablesen, dann eintragen
+  - platform: dallas_temp
+    id: ds_temp1
+    name: "Temperatursensor 1"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    device_class: temperature
+    state_class: measurement
+    icon: mdi:thermometer
+    # address: 0x... ← nach erstem Flash aus Log ablesen
+
+  - platform: dallas_temp
+    id: ds_temp2
+    name: "Temperatursensor 2"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    device_class: temperature
+    state_class: measurement
+    icon: mdi:thermometer
+    # address: 0x... ← nach erstem Flash aus Log ablesen
+
+  # ── WiFi RSSI ──────────────────────────────────────────────────
+  - platform: wifi_signal
+    id: wifi_rssi
+    name: "WiFi RSSI"
+    unit_of_measurement: "dBm"
+    update_interval: 60s
+    icon: mdi:wifi
+
+  # ── Uptime ─────────────────────────────────────────────────────
+  - platform: uptime
+    name: "Uptime"
+    update_interval: 60s
+
+# ─────────────────────────────────────────────────────────────────
+# TEXT SENSOREN
+# ─────────────────────────────────────────────────────────────────
+text_sensor:
+
+  # ── ENS160 AQI ────────────────────────────────────────────────
+  - platform: ens160
+    i2c_id: i2c_bus
+    address: 0x53
+    aqi:
+      id: aqi_status
+      name: "Luftqualität (AQI)"
+      icon: mdi:leaf
+
+  # ── WiFi Info ─────────────────────────────────────────────────
+  - platform: wifi_info
+    ip_address:
+      id: wifi_ip
+      name: "IP-Adresse"
+    ssid:
+      name: "WiFi SSID"
+
+# ─────────────────────────────────────────────────────────────────
+# SCRIPTS
+# ─────────────────────────────────────────────────────────────────
+script:
+
+  # ── LUX-Frame senden an Relay Board ───────────────────────────
+  # Ausgelöst bei jeder Temperaturänderung (~10s)
+  # Format: LUX:<lux>,ECO2:<co2>,TVOC:<tvoc>,AHT_T:<temp>,AHT_H:<hum>,DS1:<ds1>,DS2:<ds2>
+  # Werte -1 / -99 = Sensor nicht verfügbar
+  - id: send_lux_frame
+    then:
+      - lambda: |-
+          char frame[192];
+          snprintf(frame, sizeof(frame),
+            "LUX:%.0f,ECO2:%.0f,TVOC:%.0f,AHT_T:%.2f,AHT_H:%.1f,DS1:%.2f,DS2:%.2f\n",
+            isnan(id(tsl_lux).state)   ? -1.0f  : id(tsl_lux).state,
+            isnan(id(eco2_value).state)? -1.0f  : id(eco2_value).state,
+            isnan(id(tvoc_value).state)? -1.0f  : id(tvoc_value).state,
+            isnan(id(aht_temp).state)  ? -99.0f : id(aht_temp).state,
+            isnan(id(aht_hum).state)   ? -1.0f  : id(aht_hum).state,
+            isnan(id(ds_temp1).state)  ? -99.0f : id(ds_temp1).state,
+            isnan(id(ds_temp2).state)  ? -99.0f : id(ds_temp2).state
+          );
+          id(rs485_uart).write_array((uint8_t*)frame, strlen(frame));
+          ESP_LOGD("rs485", "TX: %s", frame);
+
+# ─────────────────────────────────────────────────────────────────
+# INTERVAL — RS485 Empfang + Parser
+# Empfängt SDATA + ADDONS Frames vom Relay Board
+# ─────────────────────────────────────────────────────────────────
+interval:
+  - interval: 100ms
+    then:
+      - lambda: |-
+          static std::string buf;
+
+          while (id(rs485_uart).available()) {
+            char c;
+            id(rs485_uart).read_byte((uint8_t*)&c);
+
+            if (c == '\n') {
+              if (buf.length() < 6) { buf.clear(); continue; }
+
+              // ══════════════════════════════════════════
+              // SDATA Frame — Addon Messdaten
+              // Format: SDATA:1=pH1|pH2|EC1|EC2|TDS1|TDS2|T1|T2|L1|L2|ALRM
+              //         SDATA:1=T2|S1F|S1T|S2F|S2T|ECb|pHb|ALRM  (TERRA2)
+              // ══════════════════════════════════════════
+              if (buf.substr(0,6) == "SDATA:") {
+                int slot = buf[6] - '0';
+                if (slot < 1 || slot > 3) { buf.clear(); continue; }
+
+                auto eq = buf.find("=");
+                if (eq == std::string::npos) { buf.clear(); continue; }
+
+                std::string data = buf.substr(eq+1);
+                float vals[10] = {NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN};
+                uint16_t alarms = 0;
+                int idx = 0;
+                size_t pos = 0;
+
+                while (idx <= 10) {
+                  auto sep = data.find("|", pos);
+                  std::string tok = data.substr(pos,
+                    sep == std::string::npos ? std::string::npos : sep - pos);
+
+                  if (!tok.empty() && tok != "T2") {
+                    float v = std::stof(tok);
+                    if (idx < 10)
+                      vals[idx] = (v < -0.5f) ? NAN : v;
+                    else
+                      alarms = (uint16_t)v;
+                  }
+                  idx++;
+                  if (sep == std::string::npos) break;
+                  pos = sep + 1;
+                }
+
+                for (int ch = 0; ch < 10; ch++)
+                  id(a_data)[slot][ch] = vals[ch];
+                id(a_alarms)[slot] = alarms;
+                id(a_online)[slot] = true;
+
+                ESP_LOGD("rs485", "SDATA Slot %d empfangen", slot);
+              }
+
+              // ══════════════════════════════════════════
+              // ADDONS Frame — Slot Belegung + Typ
+              // Format: ADDONS:1=HYDRO2|ON,2=---|OFF,3=---|OFF
+              // ══════════════════════════════════════════
+              else if (buf.substr(0,7) == "ADDONS:") {
+                auto parse_slot = [&](int s, const char* key) {
+                  auto p = buf.find(key);
+                  if (p == std::string::npos) return;
+                  auto pe = buf.find(",", p);
+                  std::string sv = buf.substr(p + strlen(key),
+                    pe == std::string::npos
+                      ? std::string::npos
+                      : pe - p - strlen(key));
+                  auto sep = sv.find("|");
+                  if (sep == std::string::npos) return;
+                  id(a_type)[s]   = sv.substr(0, sep);
+                  id(a_online)[s] = sv.substr(sep + 1) == "ON";
+                };
+                parse_slot(1, "1=");
+                parse_slot(2, "2=");
+                parse_slot(3, "3=");
+              }
+
+              buf.clear();
+
+            } else if (c >= 32 && buf.length() < 320) {
+              buf += c;
+            }
+          }
