@@ -1,7 +1,6 @@
 <p align="center">
 
 <p align="center"><img src="assets/logo/logo.png" alt="GROWCTRL" width="160"/></p>
-  <img src="assets/growctrl_logo.png" alt="GROWCTRL Logo" width="280">
 </p>
 
 # GROWCTRL
