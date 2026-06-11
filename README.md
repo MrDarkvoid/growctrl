@@ -71,15 +71,35 @@ growctrl/
 ├── CHANGELOG.md · CONTRIBUTING.md · LICENSE · README.md
 ```
 
-## Installation (heutiger Legacy-Weg)
+## Installation
 
-1. **Helper anlegen:** Dateien aus `legacy/packages/` nach `<config>/packages/` kopieren und
-   Packages in `configuration.yaml` aktivieren (`homeassistant: packages: !include_dir_named packages`).
-2. **Blueprints importieren:** `legacy/blueprints/*.yaml` nach
-   `<config>/blueprints/automation/growctrl/` kopieren, je Station/Zelt eine Automation anlegen.
-3. **Dashboard:** Übergangsweise `legacy/dashboard/` (button-card erforderlich) – wird durch den
-   Karten-Cluster ersetzt.
-4. **Optional Hardware:** `firmware/*.yaml` mit ESPHome flashen (`secrets.yaml` siehe `firmware/README.md`).
+### Integration (HACS, empfohlen)
+1. HACS → ⋮ → **Benutzerdefinierte Repositories** → `MrDarkvoid/growctrl`, Kategorie **Integration**
+2. „GROWCTRL" installieren, HA neu starten
+3. Einstellungen → Geräte & Dienste → **Integration hinzufügen → GROWCTRL** → je Station einen Eintrag anlegen
+   (Zelt-/Stationsname, Licht-Switches Pflicht, Pumpe/O₂/Umluft optional)
+
+### Karten (HACS)
+1. HACS → ⋮ → **Benutzerdefinierte Repositories** → `MrDarkvoid/growctrl-cards`, Kategorie **Dashboard**
+2. „GROWCTRL Cards" installieren – Ressource wird automatisch registriert
+3. Karten im Dashboard hinzufügen – **alle 6 Karten haben einen vollständigen GUI-Editor**
+   (Beispiele: `cards/examples/`, manueller Test ohne HACS: `cards/examples/INSTALLATION_TEST.md`)
+
+### Legacy-Weg (Übergangsstand)
+Packages aus `legacy/packages/` + Blueprints aus `legacy/blueprints/` wie bisher; Details in `legacy/README.md`.
+
+### ⚠️ Integration lässt sich nicht installieren? (Checkliste)
+
+1. **Repo-Struktur prüfen (häufigste Ursache):** Im GitHub-Repo `MrDarkvoid/growctrl` müssen `README.md`,
+   `hacs.json` und `custom_components/` **direkt im Repo-Root** liegen. Wenn das ZIP mit seinem
+   Wrapper-Ordner hochgeladen wurde (`growctrl/custom_components/...` im Repo), findet HACS nichts →
+   Inhalt des entpackten `growctrl/`-Ordners in den Repo-Root verschieben.
+2. **Release anlegen:** Auf GitHub ein Release `v2.1.0` taggen – HACS bevorzugt Releases gegenüber `main`.
+3. **Lokale Installation als Test (ohne HACS):** Ordner `custom_components/growctrl/` nach
+   `/config/custom_components/growctrl/` kopieren → HA neu starten → Einstellungen → Geräte & Dienste →
+   Integration hinzufügen → „GROWCTRL".
+4. **Logs prüfen:** Einstellungen → System → Protokolle, nach `growctrl` filtern. Die konkrete
+   Fehlermeldung sagt, ob HACS (Repo nicht gefunden) oder HA (Setup-Fehler) das Problem ist.
 
 ## Roadmap
 

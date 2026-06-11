@@ -98,5 +98,31 @@ expert:
 ```
 
 ## Hinweise
-- Konfiguration aktuell per YAML (`getStubConfig` liefert Startgerüste); GUI-Editoren folgen als nächster Ausbauschritt.
+- **Alle 6 Karten haben vollständige GUI-Editoren** (ha-form). Nur `station.overrides`/`station.templates` bleiben YAML-Experten-Features – der Editor erhält sie beim Speichern.
 - HACS-Veröffentlichung: Bundle in das Zweitrepo `MrDarkvoid/growctrl-cards` kopieren (siehe `docs/karten_cluster_konzept.md`, Abschnitt 5).
+
+## Stil anpassen (alle Karten)
+
+```yaml
+style:
+  background: "#0E1A2B,#091018"   # Farbe, "a,b" = Gradient oder beliebiges CSS-background
+  opacity: 0.8                    # Transparenz der Kartenfläche (0–1)
+  glass: true                     # Milchglas-Effekt (Blur)
+  accent: "#4DFFC3"
+  radius: 22
+```
+
+## Systemtyp der Station (DWC / Erde)
+
+```yaml
+type: custom:growctrl-station-card
+station: { tent: gross, station: main1, light_switch: switch.fs_gz_gross_licht_main1 }
+system: dwc
+dwc:
+  ec:         { entity: sensor.gc_slot1_ec1, min: 1.2, max: 2.2 }
+  ph:         { entity: sensor.gc_slot1_ph1, min: 5.5, max: 6.5 }
+  water_temp: { entity: sensor.gc_slot1_wtemp1, min: 16, max: 22 }
+  level:      { entity: sensor.gc_slot1_level1, min: 30 }
+# Erde analog: system: soil + soil: { moisture, soil_temp, ec, ph }
+```
+Werte außerhalb des Sollbereichs färben Kachel **und Kartenrahmen** (Ampel-Prinzip).

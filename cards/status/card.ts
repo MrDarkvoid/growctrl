@@ -2,19 +2,20 @@
  * GROWCTRL – growctrl-status-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Uebersetzte Live-Logs (Station/Klima) mit Schweregrad-Ampel; Experten-Bereich mit Roh-Logs und Wartung/Testmodus (immer mit Bestaetigung).
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.1.0  |  Lizenz: MIT
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
 import { html, nothing } from "lit";
+import "./editor";
 import {
-  GrowctrlBaseCard, sharedStyles, THEME, LOG_BG, LOG_TX,
+  GrowctrlBaseCard, sharedStyles, THEME, LOG_BG, LOG_TX, cardVars, worstLevel, type StyleConfig,
   translateStationLog, translateKlimaLog,
 } from "../core/index";
 
 interface LogItem { entity: string; name?: string; type?: "station" | "climate"; }
 interface ExpertCfg { controls?: { entity: string; name?: string }[]; show_raw?: boolean; }
-interface StatusConfig { type: string; title?: string; logs: LogItem[]; expert?: ExpertCfg; }
+interface StatusConfig { type: string; title?: string; logs: LogItem[]; expert?: ExpertCfg; style?: StyleConfig; }
 
 export class GrowctrlStatusCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
@@ -25,6 +26,7 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
     if (!Array.isArray(c.logs) || !c.logs.length)
       throw new Error("growctrl-status-card: 'logs' (min. 1 Eintrag) ist Pflicht.");
   }
+  static getConfigElement() { return document.createElement("growctrl-status-editor"); }
   static getStubConfig() { return { logs: [{ entity: "input_text.hydro_log_mittel_main1" }] }; }
 
   render() {
@@ -39,7 +41,7 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
     else if (levels.includes("warning")) warn = { label: "\u26A0\uFE0F Warnung", color: THEME.warn };
     else if (levels.includes("info")) warn = { label: "\u2139\uFE0F Info", color: THEME.info };
 
-    return html`<div class="card" style="position:relative">
+    return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${worstLevel(levels)} style="${cardVars(c.style)};position:relative">
       <div class="hdr" style="align-items:center">
         <div class="title" style="font-size:15px">${c.title ?? "Status"}</div>
         <span class="stagebadge" style="background:rgba(0,0,0,.25);color:${warn.color}">${warn.label}</span>

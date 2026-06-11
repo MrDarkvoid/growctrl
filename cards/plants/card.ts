@@ -2,15 +2,17 @@
  * GROWCTRL – growctrl-plants-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Pflanzen-Ebene: Sorte, Alter (Keimdatum), eigene Sensoren je Pflanze (z.B. eigene O2-/Zirkulationspumpe als Aktor in Controls), Kalender-Ereignisse.
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.1.0  |  Lizenz: MIT
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
 import { html, nothing } from "lit";
-import { GrowctrlBaseCard, sharedStyles, daysSince, num, fetchCalendar } from "../core/index";
+import "./editor";
+import { GrowctrlBaseCard, sharedStyles, daysSince, num, fetchCalendar, cardVars, type StyleConfig } from "../core/index";
 
-interface PlantItem { name: string; strain?: string; germination_helper?: string; sensors?: { entity: string; name?: string }[]; }
-interface PlantsConfig { type: string; title?: string; plants: PlantItem[]; calendar?: string; columns?: number; }
+type PlantSensor = string | { entity: string; name?: string };
+interface PlantItem { name: string; strain?: string; germination_helper?: string; sensors?: PlantSensor[]; }
+interface PlantsConfig { type: string; title?: string; plants: PlantItem[]; calendar?: string; columns?: number; style?: StyleConfig; }
 
 export class GrowctrlPlantsCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
@@ -22,6 +24,7 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
     if (!Array.isArray(c.plants) || !c.plants.length)
       throw new Error("growctrl-plants-card: 'plants' (min. 1 Eintrag) ist Pflicht.");
   }
+  static getConfigElement() { return document.createElement("growctrl-plants-editor"); }
   static getStubConfig() { return { plants: [{ name: "Pflanze 1" }] }; }
 
   connectedCallback() {
@@ -40,7 +43,7 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
   render() {
     const c = this._config as PlantsConfig;
     if (!this.hass) return nothing;
-    return html`<div class="card">
+    return html`<div class="card ${c.style?.glass ? "glass" : ""}" style=${cardVars(c.style)}>
       ${c.title ? html`<div class="title" style="font-size:15px">${c.title}</div>` : nothing}
       <div class="grid" style="grid-template-columns:repeat(${c.columns ?? 2},1fr)">
         ${c.plants.map(p => {
@@ -52,12 +55,12 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
               ${p.strain ? html`<span style="font-size:10px;color:rgba(255,255,255,.55)">${p.strain}</span>` : nothing}
             </div>
             ${age !== null ? html`<div class="lbl" style="margin-top:4px">Tag ${age}</div>` : nothing}
-            ${(p.sensors ?? []).map(s => html`
+            ${(p.sensors ?? []).map(raw => { const s = typeof raw === "string" ? { entity: raw } : raw; return html`
               <button class="gc" style="display:flex;justify-content:space-between;width:100%;font-size:11px;margin-top:4px;color:rgba(255,255,255,.75)"
                 @click=${() => this.moreInfo(s.entity)}>
                 <span>${s.name ?? this.friendly(s.entity)}</span>
                 <span style="font-weight:700">${num(this.st(s.entity)) ?? "--"} ${this.unit(s.entity)}</span>
-              </button>`)}
+              </button>`; })}
           </div>`;
         })}
       </div>

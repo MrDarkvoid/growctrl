@@ -1,7 +1,7 @@
 #==============================================================================
 # GROWCTRL Integration – config_flow
-# Zweck   : Config Flow 'Station hinzufuegen': Zelt/Station-Name, Licht (Pflicht, Mehrfach), optionale Switches/Sensoren. Optionale Funktionen ohne Zuordnung erzeugen keine Entitaeten.
-# Version : 2.0.0-dev | Lizenz: MIT
+# Zweck   : Config Flow 'Station hinzufuegen': Zelt/Station-Name, Licht (Pflicht, Mehrfach), optionale Switches/Sensoren, Systemtyp (DWC/Erde) mit Wasser-/Bodensensoren. Optionale Funktionen ohne Zuordnung erzeugen keine Entitaeten.
+# Version : 2.1.0-dev | Lizenz: MIT
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 
@@ -12,9 +12,11 @@ from homeassistant import config_entries
 from homeassistant.helpers import selector
 
 from .const import (
-    CONF_FAN_SWITCHES, CONF_HUM_SENSOR, CONF_LIGHT_SWITCHES, CONF_O2_SWITCHES,
-    CONF_PUMP_247, CONF_PUMP_SWITCHES, CONF_STATION, CONF_TEMP_SENSOR,
-    CONF_TENT, DOMAIN,
+    CONF_EC_SENSOR, CONF_FAN_SWITCHES, CONF_HUM_SENSOR, CONF_LEVEL_SENSOR,
+    CONF_LIGHT_SWITCHES, CONF_O2_SWITCHES, CONF_PH_SENSOR, CONF_PUMP_247,
+    CONF_PUMP_SWITCHES, CONF_SOIL_MOISTURE_SENSOR, CONF_SOIL_TEMP_SENSOR,
+    CONF_STATION, CONF_SYSTEM_TYPE, CONF_TEMP_SENSOR, CONF_TENT,
+    CONF_WATER_TEMP_SENSOR, DOMAIN, SYSTEM_DWC, SYSTEM_GENERIC, SYSTEM_SOIL,
 )
 
 _ENT_MULTI = selector.EntitySelector(selector.EntitySelectorConfig(domain="switch", multiple=True))
@@ -30,6 +32,20 @@ SCHEMA = vol.Schema({
     vol.Optional(CONF_TEMP_SENSOR): _ENT_SENSOR,
     vol.Optional(CONF_HUM_SENSOR): _ENT_SENSOR,
     vol.Optional(CONF_PUMP_247, default=False): bool,
+    vol.Required(CONF_SYSTEM_TYPE, default=SYSTEM_GENERIC): selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[SYSTEM_GENERIC, SYSTEM_DWC, SYSTEM_SOIL],
+            translation_key="system_type",
+            mode=selector.SelectSelectorMode.DROPDOWN,
+        )
+    ),
+    # Systemspezifische Sensoren (alle optional; nur relevant je nach Systemtyp)
+    vol.Optional(CONF_EC_SENSOR): _ENT_SENSOR,
+    vol.Optional(CONF_PH_SENSOR): _ENT_SENSOR,
+    vol.Optional(CONF_WATER_TEMP_SENSOR): _ENT_SENSOR,
+    vol.Optional(CONF_LEVEL_SENSOR): _ENT_SENSOR,
+    vol.Optional(CONF_SOIL_MOISTURE_SENSOR): _ENT_SENSOR,
+    vol.Optional(CONF_SOIL_TEMP_SENSOR): _ENT_SENSOR,
 })
 
 

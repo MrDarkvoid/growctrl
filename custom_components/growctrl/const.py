@@ -17,6 +17,16 @@ CONF_TEMP_SENSOR = "temp_sensor"
 CONF_HUM_SENSOR = "hum_sensor"
 CONF_PUMP_247 = "pump_247"
 
+# Systemtyp + systemspezifische Sensoren (DWC / Erde)
+CONF_SYSTEM_TYPE = "system_type"          # generic | dwc | soil
+SYSTEM_GENERIC, SYSTEM_DWC, SYSTEM_SOIL = "generic", "dwc", "soil"
+CONF_EC_SENSOR = "ec_sensor"              # DWC + Erde
+CONF_PH_SENSOR = "ph_sensor"              # DWC + Erde
+CONF_WATER_TEMP_SENSOR = "water_temp_sensor"   # DWC
+CONF_LEVEL_SENSOR = "level_sensor"             # DWC Fuellstand
+CONF_SOIL_MOISTURE_SENSOR = "soil_moisture_sensor"  # Erde
+CONF_SOIL_TEMP_SENSOR = "soil_temp_sensor"          # Erde
+
 STAGES = ["Seedling", "Veg", "Bloom", "Flush"]
 STAGE_KEYS = {"Seedling": "seedling", "Veg": "veg", "Bloom": "bloom", "Flush": "bloom"}
 

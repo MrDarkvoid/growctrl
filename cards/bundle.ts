@@ -2,7 +2,7 @@
  * GROWCTRL – bundle
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Bundle-Einstieg: registriert alle GROWCTRL-Karten. Build-Ziel: dist/growctrl-cards.js (HACS Dashboard-Repo).
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.1.0  |  Lizenz: MIT
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -13,7 +13,7 @@ import "./sensors/card";
 import "./plants/card";
 import "./status/card";
 
-const VERSION = "2.0.0";
+const VERSION = "2.1.0";
 const CARDS = [
   { type: "growctrl-tent-card",     name: "GROWCTRL Tent",     description: "Zelt-Hero: Klima-KPIs, VPD-Skala, Status-Ampel" },
   { type: "growctrl-station-card",  name: "GROWCTRL Station",  description: "Station: Licht-/Pumpenbalken, Stage, Auto, Konfiguration" },

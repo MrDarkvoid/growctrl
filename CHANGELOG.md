@@ -1,6 +1,29 @@
 # Changelog – GROWCTRL
 
-## [2.0.0-dev] – 2026-06-11 · Große Reorganisation (Phase 0–1)
+## [2.1.0-dev] – 2026-06-11 · Große Reorganisation (Phase 0–1)
+
+### Hinzugefügt (Design-Refresh v2.1)
+- **Modernes Karten-Design v2:** neue Typo-Hierarchie, weiche Radien, dezente Borders, mehr Luft
+- **Status-Ampel auf Kartenebene:** Karten bekommen bei Warnung/Fehler farbigen Rahmen + Glow –
+  „einmal raufgucken und sehen, dass alles in Ordnung ist" (Checkup-Prinzip)
+- **Stil pro Karte konfigurierbar** (`style:`): Hintergrund (Farbe/Gradient/CSS), Deckkraft 0–1,
+  Glas-Effekt (Blur), Akzentfarbe, Eckenradius – in allen 6 GUI-Editoren als Sektion „Stil"
+- **Systemtypen DWC/Erde (Station-Karte):** `system: dwc` → EC/pH/Wassertemperatur/Füllstand,
+  `system: soil` → Bodenfeuchte/-temperatur/EC/pH; je Wert Sollbereich (min/max) mit Ampelfarbe,
+  Verletzungen färben Kachel + Kartenrahmen; vollständig im GUI-Editor
+- **Sensors-Karte:** Flächen-Sparkline, großer Wert + Einheit, optionaler Sollbereich je Sensor (Ampel)
+- **Controls-Karte:** Kacheln mit Icon + animierter Schalter-Pille
+- **Integration:** Config Flow um Systemtyp (Generisch/DWC/Erde) + optionale System-Sensoren erweitert;
+  `strings.json` + `translations/en.json` ergänzt (Härtung); Manifest 2.1.0;
+  Installations-Troubleshooting im README
+
+### Hinzugefügt (HACS + GUI-Editoren)
+- **Integration HACS-installierbar:** `hacs.json` im Repo-Root – Monorepo = HACS-Repo Kategorie *Integration*
+  (Zwei-Repo-Strategie: `growctrl-cards` bleibt Kategorie *Dashboard*); README-Installationsabschnitt neu
+- **Vollständige GUI-Editoren für alle 6 Karten** (`*/editor.ts` + `core/editor-base.ts`):
+  ha-form-basiert, generischer Listen-Editor (Zeilen hinzufügen/entfernen) für Logs, Aktoren, Sensoren,
+  Pflanzen und Experten-Schalter; Station-Editor erhält YAML-`overrides`/`templates` beim Speichern
+- Plants-Karte akzeptiert Sensoren jetzt auch als reine Entity-Liste (GUI-Mehrfachauswahl)
 
 ### Hinzugefügt (Phase 3 – Skeleton)
 - Integrations-Konzept (`docs/integration_konzept.md`): 1 Config Entry = 1 Station, Pflicht- vs.

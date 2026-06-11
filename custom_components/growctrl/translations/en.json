@@ -1,0 +1,39 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add GROWCTRL station",
+        "data": {
+          "tent": "Tent name (e.g. mittel)",
+          "station": "Station name (e.g. main1)",
+          "light_switches": "Light switches (required)",
+          "pump_switches": "Pump switches (optional)",
+          "o2_switches": "O₂ switches (optional)",
+          "fan_switches": "Circulation switches (optional)",
+          "temp_sensor": "Temperature sensor (optional)",
+          "hum_sensor": "Humidity sensor (optional)",
+          "pump_247": "Pump 24/7 (NFT/aeroponics)",
+          "system_type": "System type",
+          "ec_sensor": "EC sensor (DWC/soil, optional)",
+          "ph_sensor": "pH sensor (DWC/soil, optional)",
+          "water_temp_sensor": "Water temperature (DWC, optional)",
+          "level_sensor": "Water level (DWC, optional)",
+          "soil_moisture_sensor": "Soil moisture (optional)",
+          "soil_temp_sensor": "Soil temperature (optional)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This station is already configured."
+    }
+  },
+  "selector": {
+    "system_type": {
+      "options": {
+        "generic": "Generic",
+        "dwc": "DWC (deep water culture)",
+        "soil": "Soil"
+      }
+    }
+  }
+}
