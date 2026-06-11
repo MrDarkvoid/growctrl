@@ -87,11 +87,18 @@ growctrl/
 |---|---|---|
 | 0 | Bestandsaufnahme & Issue-Liste | ✅ abgeschlossen (`docs/phase0_bestandsaufnahme.md`) |
 | 1 | Monorepo, Vereinheitlichung, Kopfblöcke | ✅ dieses Repo |
-| 2 | Karten-Cluster (core + fokussierte Karten) | 🔜 |
+| 2 | Karten-Cluster (core + fokussierte Karten) | 🟡 Konzept liegt vor (`docs/karten_cluster_konzept.md`) |
 | 3 | GROWCTRL-Integration (Config Flow, Entitäten, Logik in Python, Events) | geplant |
 | 4 | Vollständige Doku, Migration, Release | geplant |
 
 Bekannte Probleme: siehe Issue-Liste in `docs/phase0_bestandsaufnahme.md` (Abschnitt 4).
+
+## HACS-Veröffentlichung (geplant)
+
+Zwei benutzerdefinierte HACS-Repositories (HACS erlaubt eine Kategorie pro Repo):
+`MrDarkvoid/growctrl` (Kategorie *Integration*, dieses Monorepo) und
+`MrDarkvoid/growctrl-cards` (Kategorie *Dashboard*, nur das gebaute Karten-Bundle
+`growctrl-cards.js`). Details: `docs/karten_cluster_konzept.md`, Abschnitt 5.
 
 ## Credits & Lizenz
 
