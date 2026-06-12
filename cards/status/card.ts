@@ -16,7 +16,7 @@ import {
 interface StatusSource { entity: string; name?: string; }
 interface StatusConfig {
   type: string; title?: string; sources: StatusSource[];
-  limit?: number; style?: StyleConfig;
+  limit?: number; min_level?: "alle" | "warnung"; style?: StyleConfig;
 }
 interface Row { ts: string; text: string; level: string; src?: string; }
 
@@ -43,7 +43,9 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
       verlauf.forEach(r => rows.push({ ...r, src: s.name ?? this.friendly(s.entity) }));
     }
     rows.reverse();                                  // neueste zuerst
-    const shown = rows.slice(0, c.limit ?? 12);
+    const filtered = c.min_level === "warnung"
+      ? rows.filter(r => r.level === "warning" || r.level === "critical") : rows;
+    const shown = filtered.slice(0, c.limit ?? 12);
     const level = worstLevel(levels.map(l => l === "ok" ? "ok" : l));
     const pill = STATUS_PILL[level];
 

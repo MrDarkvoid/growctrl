@@ -39,8 +39,12 @@ def test_light_desired_midnight_overflow():
     assert logic.light_desired(12 * 60, on, off) is False
 
 
-def test_light_desired_equal_times_off():
-    assert logic.light_desired(600, 480, 480) is False
+def test_light_desired_equal_times_24h():
+    # v2.5: AN == AUS bedeutet 24-h-Dauerlicht (z.B. 12:00 -> 12:00)
+    assert logic.light_desired(0, 12 * 60, 12 * 60) is True
+    assert logic.light_desired(720, 12 * 60, 12 * 60) is True
+    assert logic.light_rest_min(300, 12 * 60, 12 * 60) == 24 * 60
+    assert logic.planned_light_seconds(12 * 60, 12 * 60) == 24 * 3600
 
 
 def test_light_rest_normal():
@@ -189,3 +193,28 @@ def test_effective_climate_phase():
     assert logic.effective_climate_phase("Auto", ["Veg", "Flush"], s2c, order) == "Bloom"
     # Keine Stationen -> Veg als sicherer Default
     assert logic.effective_climate_phase("Auto", [], s2c, order) == "Veg"
+
+
+def test_schutzfunktionen_v25():
+    # Stale: erst ab Schwelle
+    assert logic.sensor_stale(14.0, 15.0) is False
+    assert logic.sensor_stale(15.0, 15.0) is True
+    assert logic.sensor_stale(None, 15.0) is False
+    # Trockenlauf: ohne Sensor keine Sperre, unter Minimum gesperrt
+    assert logic.pump_level_ok(None, 25.0) is True
+    assert logic.pump_level_ok(30.0, 25.0) is True
+    assert logic.pump_level_ok(20.0, 25.0) is False
+    # Erde: nur bewaessern wenn trocken; ohne Sensor Intervallbetrieb
+    assert logic.soil_needs_water(30.0, 35.0) is True
+    assert logic.soil_needs_water(40.0, 35.0) is False
+    assert logic.soil_needs_water(None, 35.0) is True
+    # Leistung: AN ohne Watt nach Anlaufzeit = Problem
+    assert logic.power_implausible(True, 5.0, 0.5) is True
+    assert logic.power_implausible(True, 1.0, 0.5) is False   # Anlaufzeit
+    assert logic.power_implausible(True, 5.0, 150.0) is False
+    assert logic.power_implausible(False, 5.0, 0.0) is False
+    assert logic.power_implausible(True, 5.0, None) is False  # kein Sensor
+    # Sollband
+    assert logic.in_band(1.0, 0.8, 1.2) is True
+    assert logic.in_band(1.3, 0.8, 1.2) is False
+    assert logic.in_band(None, 0.8, 1.2) is False

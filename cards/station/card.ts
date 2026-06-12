@@ -12,6 +12,7 @@ import {
   GrowctrlBaseCard, sharedStyles, THEME, STAGE_COLORS, STATUS_PILL, LOG_TX,
   cardVars, type StyleConfig, num,
   stEnt, ST, type GcOverrides,
+  gcResolve,
 } from "../core/index";
 
 const STAGES = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"];
@@ -34,9 +35,12 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
   static getStubConfig() { return { tent: "gross", station: "main1" }; }
 
   private e(key: keyof typeof ST): string {
-    const [domain, suffix] = ST[key];
+    const [domain, suffix, role] = ST[key];
     const c = this._config as StationConfig;
-    return stEnt(domain, c.tent, c.station, suffix, c.overrides);
+    // 1) explizite overrides  2) Attribut-Registry (umbenennungssicher)  3) abgeleitete ID
+    return c.overrides?.[suffix]
+      ?? gcResolve(this.hass, c.tent, c.station, role)
+      ?? stEnt(domain, c.tent, c.station, suffix, c.overrides);
   }
   private _select(entity: string, option: string) {
     this.hass.callService("select", "select_option", { entity_id: entity, option });
@@ -134,7 +138,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
         })}
       </div>
 
-      <div class="grid" style="grid-template-columns:repeat(${hasDli ? 4 : hasPump ? 3 : 2},1fr);margin-top:12px">
+      <div class="kpis ${hasDli ? "" : hasPump ? "cols-3" : "cols-2"}" style="margin-top:12px">
         ${kpi("Licht", this.st(this.e("lightRest")) ?? "\u2013",
               `${this.unit(this.e("lightRest")) || "min"} Restzeit`)}
         ${hasPump ? kpi("Pumpe", this.st(this.e("pumpRest")) ?? "\u2013",
@@ -157,7 +161,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
           <span class="txt" style="color:rgba(255,255,255,.65)">${evt.state}</span>
         </button>` : nothing}
 
-      ${this._open ? html`<div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
+      ${this._open ? html`<div class="settings-grid" style="margin-top:10px">
         ${setting(this.e("lightOn"), "Licht AN")}
         ${setting(this.e("lightOffSv"), "AUS Seed/Veg")}
         ${setting(this.e("lightOffBloom"), "AUS Bloom")}

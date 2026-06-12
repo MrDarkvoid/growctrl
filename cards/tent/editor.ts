@@ -9,14 +9,15 @@
 import { html } from "lit";
 import { GrowctrlEditorBase, SEL } from "../core/editor-base";
 
-const MAIN = [
-  SEL.text("tent", "Zelt (Name wie in der Integration, z.B. gross)"),
-  SEL.text("name", "Anzeigename (optional)"),
-  SEL.bool("show_chart", "VPD-Chart anzeigen"),
-  SEL.num("hours", "Chart-Zeitraum (h)", 1, 168),
-];
-
 export class GrowctrlTentEditor extends GrowctrlEditorBase {
-  render() { return html`${this.form(MAIN)}${this.styleSection()}`; }
+  render() {
+    const main = [
+      this.tentSelect(),
+      SEL.text("name", "Anzeigename (optional)"),
+      SEL.bool("show_chart", "VPD-Chart anzeigen"),
+      SEL.num("hours", "Chart-Zeitraum (h)", 1, 168),
+    ];
+    return html`${this.form(main)}${this.styleSection()}`;
+  }
 }
 customElements.define("growctrl-tent-editor", GrowctrlTentEditor);

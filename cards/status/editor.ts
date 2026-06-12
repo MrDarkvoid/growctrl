@@ -9,7 +9,12 @@
 import { html } from "lit";
 import { GrowctrlEditorBase, SEL } from "../core/editor-base";
 
-const MAIN = [SEL.text("title", "Titel"), SEL.num("limit", "Max. Zeilen", 3, 50)];
+const MAIN = [
+  SEL.text("title", "Titel"), SEL.num("limit", "Max. Zeilen", 3, 50),
+  SEL.select("min_level", "Anzeige", [
+    { value: "alle", label: "Alle Ereignisse" },
+    { value: "warnung", label: "Nur Warnungen/Fehler" }]),
+];
 const ROW = [
   SEL.entity("entity", "Letztes-Ereignis-Sensor", "sensor"),
   SEL.text("name", "Label (optional)"),

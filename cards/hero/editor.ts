@@ -10,18 +10,16 @@ import { html } from "lit";
 import { GrowctrlEditorBase, SEL } from "../core/editor-base";
 
 const MAIN = [
-  SEL.text("tent", "Zelt (Name wie in der Integration, z.B. gross)"),
   SEL.text("title", "Titel (optional)"),
   SEL.text("logo", "Logo-URL (z.B. /local/growctrl/logo.png)"),
   SEL.bool("show_chart", "VPD-Chart anzeigen"),
   SEL.num("hours", "Chart-Zeitraum (h)", 1, 168),
 ];
-const ROW = [SEL.text("station", "Station (z.B. main1)"), SEL.text("name", "Label (optional)")];
-
 export class GrowctrlHeroEditor extends GrowctrlEditorBase {
   render() {
-    return html`${this.form(MAIN)}
-      ${this.list({ key: "stations", rowSchema: ROW, title: "Stationen (Informationssystem)",
+    const row = [this.stationSelect(this._config?.tent), SEL.text("name", "Label (optional)")];
+    return html`${this.form([this.tentSelect(), ...MAIN])}
+      ${this.list({ key: "stations", rowSchema: row, title: "Stationen (Informationssystem)",
         addLabel: "Station hinzuf\u00fcgen", newItem: () => ({ station: "" }) })}
       ${this.styleSection()}`;
   }

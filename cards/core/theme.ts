@@ -65,6 +65,21 @@ export const worstLevel = (levels: string[]): "ok"|"info"|"warning"|"critical" =
 };
 
 export const sharedStyles = css`
+  /* Responsive KPI-Raster: 4 Spalten, auf dem Handy 2; Settings 3 -> 2 */
+  .kpis { display:grid; gap:8px; grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .kpis.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .kpis.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .settings-grid { display:grid; gap:8px; grid-template-columns:repeat(3,minmax(0,1fr)); }
+  @media (max-width: 480px) {
+    .card { padding: 13px 12px; }
+    .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .kpis.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+    .settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .kpis .tile { padding: 9px 9px; }
+    .kpis .val { font-size: 19px; }
+    .title { font-size: 15px; }
+  }
+
   :host { display: block; }
   .card {
     position: relative; isolation: isolate;

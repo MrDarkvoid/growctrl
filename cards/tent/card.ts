@@ -12,6 +12,7 @@ import {
   GrowctrlBaseCard, sharedStyles, THEME, STATUS_PILL, LOG_TX,
   cardVars, type StyleConfig, num, fetchHistory, lineChart,
   tentEnt, TENT, type GcOverrides,
+  gcResolve,
 } from "../core/index";
 
 const MODES = ["VPD", "RH"];
@@ -36,9 +37,12 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
   static getStubConfig() { return { tent: "gross" }; }
 
   private e(key: keyof typeof TENT): string {
-    const [domain, suffix] = TENT[key];
+    const [domain, suffix, role] = TENT[key];
     const c = this._config as TentConfig;
-    return tentEnt(domain, c.tent, suffix, c.overrides);
+    // 1) explizite overrides  2) Attribut-Registry (umbenennungssicher)  3) abgeleitete ID
+    return c.overrides?.[suffix]
+      ?? gcResolve(this.hass, c.tent, "zelt", role)
+      ?? tentEnt(domain, c.tent, suffix, c.overrides);
   }
   private _select(entity: string, option: string) {
     this.hass.callService("select", "select_option", { entity_id: entity, option });
@@ -117,7 +121,7 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
         ${toggle(this.e("climate"), "Klima", climate, "mdi:thermostat")}
       </div>
 
-      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:10px">
+      <div class="kpis cols-3" style="margin-top:10px">
         ${kpi("Temperatur", t != null ? Number(t).toFixed(1) : "\u2013", "\u00b0C")}
         ${kpi("Luftfeuchte", h != null ? String(Math.round(Number(h))) : "\u2013", "%")}
         ${kpi("VPD", v !== null ? v.toFixed(2) : "\u2013", "kPa",

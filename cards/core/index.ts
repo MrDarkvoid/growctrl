@@ -15,4 +15,5 @@ export * from "./data";
 export * from "./theme";
 export * from "./chart";
 export * from "./id";
+export * from "./registry";
 export * from "./base-card";

@@ -24,6 +24,14 @@ Integration NICHT beschrieben — bei Parallelbetrieb laufen beide Welten getren
    über dem Maximum (Default 1440 min) → **Not-Aus** aller Licht-Switches + Critical-Eintrag.
 3. **Lichtzeiten unvollständig:** Automatik pausiert, Warnung statt unkontrolliertem Schalten.
 4. **Klima-Sensorausfall:** Klima aktiv, aber Temp/RH liefern nichts → Problem im Zelt-Status.
+5. **Eingefrorene Sensoren (Stale):** Temp+RH ändern sich 15 min nicht → **sicherer Zustand**
+   (Befeuchter/Entfeuchter aus, Abluft an), Critical-Eintrag; löst sich bei neuen Werten.
+6. **Trockenlauf-Schutz:** Füllstand unter „Füllstand Minimum" → **Pumpe gesperrt**,
+   Critical-Eintrag; automatische Freigabe bei ausreichendem Stand.
+7. **Leistungs-Plausibilität:** Licht AN, aber < 5 W nach 2 min Anlaufzeit → „Lampe prüfen!"
+   (optionaler Leistungssensor je Station).
+8. **Bedarfs-Bewässerung (Erde):** Pumpzyklen werden übersprungen, solange die Bodenfeuchte
+   über der Schwelle liegt (Number „Bodenfeuchte-Schwelle").
 
 ## Failsafe-Maßnahmen (by design)
 - **Zelt-Gate:** „Zelt aktiv" AUS → alle Stationen schalten ihre Aktoren ab.
@@ -33,6 +41,26 @@ Integration NICHT beschrieben — bei Parallelbetrieb laufen beide Welten getren
 - **Geteilte Lichter:** ODER-Votes — keine Station kann einer anderen das Licht ausschalten.
 - **Idempotentes Schalten:** Service-Calls nur bei tatsächlicher Abweichung.
 
+## Watchdog: merkt, wenn die Regelung selbst steht
+Jede Station und jedes Zelt hat den Sensor **„Letzte Regelung"** (Timestamp). Beispiel-
+Automation für eine Push-Nachricht, wenn der Regelkreis > 5 min still steht:
+
+```yaml
+automation:
+  - alias: GROWCTRL Watchdog
+    trigger:
+      - platform: template
+        value_template: >
+          {{ (now() - states('sensor.growctrl_gross_main1_letzte_regelung')
+              | as_datetime).total_seconds() > 300 }}
+    action:
+      - service: notify.mobile_app_dein_handy
+        data: { message: "GROWCTRL: Regelung main1 reagiert nicht mehr!" }
+```
+
+Dazu misst das Zelt den Sensor **„Zeit im Sollband heute"** (% der Klima-Laufzeit innerhalb
+der Phasen-Sollwerte) — die ehrlichste Kennzahl für die Klimaqualität.
+
 ## Noch offen (ehrlich)
-Pumpen-Failsafe (Trockenlauf), Sensor-Stale-Erkennung (Wert friert ein) und persistente
-Log-Historie über Neustarts hinaus stehen auf der Roadmap.
+Sunrise/Sunset-Dimmen für dimmbare Lichter und ein Grow-Report (Zyklus-Auswertung über
+Wochen) stehen auf der Roadmap. Die Ereignis-Logs sind seit v2.5 **persistent** (Store).

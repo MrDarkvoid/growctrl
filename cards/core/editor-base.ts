@@ -69,6 +69,22 @@ export abstract class GrowctrlEditorBase extends LitElement {
       <button class="add" @click=${() => set([...items, o.newItem()])}>+ ${o.addLabel}</button>`;
   }
 
+  /** Zelt-Auswahl als echtes Dropdown (Quelle: Integrations-Attribute). */
+  protected tentSelect(name = "tent", label = "Zelt") {
+    const opts = gcRegistry(this.hass).tents;
+    return { name, label, selector: { select: {
+      options: opts, custom_value: true, mode: "dropdown" } } };
+  }
+
+  /** Stations-Auswahl (gefiltert auf das gewaehlte Zelt). */
+  protected stationSelect(tent: string | undefined, name = "station", label = "Station") {
+    const reg = gcRegistry(this.hass);
+    const opts = tent ? (reg.stations[tent] ?? []) :
+      [...new Set(Object.values(reg.stations).flat())];
+    return { name, label, selector: { select: {
+      options: opts, custom_value: true, mode: "dropdown" } } };
+  }
+
   /** Stil-Sektion (alle Karten): Hintergrund, Deckkraft, Glas, Akzent, Radius. */
   protected styleSection(): TemplateResult {
     const style = this._config.style ?? {};
@@ -86,6 +102,8 @@ export abstract class GrowctrlEditorBase extends LitElement {
           this._fire({ ...this._config, style: { ...e.detail.value } })}></ha-form>`;
   }
 }
+
+import { gcRegistry } from "./registry";
 
 /* Wiederverwendete Schema-Bausteine */
 export const SEL = {

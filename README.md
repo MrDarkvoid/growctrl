@@ -41,7 +41,8 @@ und als Ressource `/local/growctrl-cards.js` (JavaScript-Modul) eintragen.
 ## 3. Einrichtung (Reihenfolge wichtig)
 
 1. Einstellungen → Geräte & Dienste → **GROWCTRL** hinzufügen → **„Zelt anlegen"**:
-   Name, Temp-/Feuchte-Sensor, Klima-Aktoren (Befeuchter/Entfeuchter/Abluft/Heizung).
+   **Pflicht ist nur der Name** — Sensoren und Klima-Aktoren sind optional und jederzeit
+   über „Konfigurieren" (Options-Dialog) nachrüstbar.
 2. Erneut hinzufügen → **„Station anlegen"**: Zelt im Dropdown wählen, Licht-Switches
    (Pflicht), optional Pumpe/O₂/Umluft, Lux-Sensor (für DLI), Systemtyp DWC/Erde mit Sensoren.
 3. Pro Station: Lichtzeiten setzen, Phase wählen, ggf. Keimstart-Datum → **Automatik AN**.
@@ -64,6 +65,8 @@ Test-Leitfaden vor dem Echtbetrieb: **`docs/testplan.md`**.
 | Status | sensor | ok/problem + Attribut `probleme` (alle Stationen gesammelt) |
 | Letztes Ereignis | sensor | Klartext + Attribut `verlauf` (30 Einträge) |
 | Aufgaben | todo | Liste; Phasen-Empfehlungen landen automatisch hier |
+| Letzte Regelung | sensor | Watchdog-Heartbeat (Timestamp) |
+| Zeit im Sollband heute | sensor | % der Klima-Laufzeit innerhalb der Phasen-Sollwerte |
 
 ### Station (`GROWCTRL <zelt> <station>`)
 | Entität | Typ | Funktion |
@@ -80,6 +83,9 @@ Test-Leitfaden vor dem Echtbetrieb: **`docs/testplan.md`**.
 | Letztes Ereignis | sensor | Klartext + `verlauf` + `schweregrad` |
 | Manueller Eingriff / Licht-Failsafe / Zeiten unvollständig | binary_sensor | Problem-Melder |
 | Keimstart | date | Startdatum der Pflanze |
+| Letzte Regelung | sensor | Watchdog-Heartbeat (Timestamp) |
+| Füllstand Minimum | number | Trockenlauf-Schutz (nur mit Füllstand-Sensor) |
+| Bodenfeuchte-Schwelle | number | Erde: bewässern nur unterhalb (nur mit Sensor) |
 
 ## 5. Was das System überwacht und absichert
 

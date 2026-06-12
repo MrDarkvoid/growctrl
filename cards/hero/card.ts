@@ -12,6 +12,7 @@ import {
   GrowctrlBaseCard, sharedStyles, THEME, LOG_BG, LOG_TX, STATUS_PILL,
   cardVars, worstLevel, type StyleConfig, num, fetchHistory, lineChart,
   stEnt, tentEnt, TENT, ST, type GcOverrides,
+  gcResolve,
 } from "../core/index";
 
 interface HeroStation { station: string; name?: string; }
@@ -35,9 +36,12 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
   static getStubConfig() { return { tent: "gross", stations: [{ station: "main1" }] }; }
 
   private te(key: keyof typeof TENT): string {
-    const [domain, suffix] = TENT[key];
+    const [domain, suffix, role] = TENT[key];
     const c = this._config as HeroConfig;
-    return tentEnt(domain, c.tent, suffix, c.overrides);
+    // 1) explizite overrides  2) Attribut-Registry (umbenennungssicher)  3) abgeleitete ID
+    return c.overrides?.[suffix]
+      ?? gcResolve(this.hass, c.tent, "zelt", role)
+      ?? tentEnt(domain, c.tent, suffix, c.overrides);
   }
   connectedCallback() {
     super.connectedCallback();
@@ -66,7 +70,9 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
 
     // ── Informationssystem: Zelt-Probleme + Stations-Ereignislage ──
     const stations = (c.stations ?? []).map(s => {
-      const evt = this.hass.states[stEnt("sensor", c.tent, s.station, "letztes_ereignis", c.overrides)];
+      const evt = this.hass.states[
+        gcResolve(this.hass, c.tent, s.station, "last_event")
+        ?? stEnt("sensor", c.tent, s.station, "letztes_ereignis", c.overrides)];
       const sev = (evt?.attributes?.schweregrad as string) ?? "ok";
       return { name: s.name ?? s.station, text: evt?.state ?? "\u2013", level: sev };
     });
@@ -111,7 +117,7 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
         ${bigToggle(this.te("climate"), "Klima", climate, "mdi:thermostat")}
       </div>
 
-      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:12px">
+      <div class="kpis cols-3" style="margin-top:12px">
         <div class="tile" style="text-align:center"><div class="lbl">Temperatur</div>
           <div class="val" style="font-size:22px">${t != null ? Number(t).toFixed(1) : "\u2013"}<span class="unit">\u00b0C</span></div></div>
         <div class="tile" style="text-align:center"><div class="lbl">Luftfeuchte</div>

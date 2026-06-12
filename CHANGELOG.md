@@ -1,5 +1,35 @@
 # Changelog – GROWCTRL
 
+## [2.5.0-dev]
+
+### Fixes aus dem ersten Live-Test
+- **24-h-Licht:** AN == AUS (z.B. 12:00 → 12:00) bedeutet jetzt Dauerlicht statt „aus"
+- **Sofortige Reaktion:** Regelzyklus läuft direkt beim Start UND unmittelbar nach jeder
+  Nutzeraktion (Automatik/Zelt/Klima/Phase) — kein Warten mehr auf den Minutentakt
+- **Lückenloses Protokoll:** Zelt deaktivieren/aktivieren, Klima an/aus, Phasenwechsel und
+  das Zelt-Gate („Station gestoppt") erscheinen jetzt als Ereignisse; Logs sind **persistent**
+- **Status-Sensor:** Zustand jetzt `OK`/`Problem`; repräsentiert die gesammelte Problemlage
+  des Zelts inkl. aller Stationen (Attribut `probleme`)
+- **Phasen-Sollwerte sortiert:** „1 Seedling · …" bis „4 Trocknung · …" + als Konfigurations-
+  Entitäten gruppiert (eigener Bereich auf der Geräteseite)
+
+### Karten
+- **Umbenennungssichere Auflösung:** Entitäten werden über die `growctrl_*`-Attribute gefunden —
+  funktioniert auch mit Area-Präfixen wie `keller_zimmer_…` (Reihenfolge: overrides → Registry → abgeleitete ID)
+- **Echte Dropdowns:** Zelt und Station im Editor auswählbar (aus der Integration gelesen)
+- **Mobil entzerrt:** KPI-Raster 4→2 Spalten, kompaktere Kacheln/Paddings unter 480 px
+- Ereignisprotokoll: Filter „Nur Warnungen/Fehler"
+
+### Neue Schutz- & Auswertungsfunktionen
+- **Sensor-Stale-Erkennung** (15 min unverändert → sicherer Klima-Zustand)
+- **Trockenlauf-Schutz** (Pumpensperre unter „Füllstand Minimum")
+- **Bedarfs-Bewässerung Erde** (Pumpzyklen nur unter Bodenfeuchte-Schwelle)
+- **Leistungs-Plausibilität** (optionaler Watt-Sensor: Licht AN ohne Leistung → Critical)
+- **Watchdog** „Letzte Regelung" je Station/Zelt + Automation-Vorlage
+- **„Zeit im Sollband heute"** (% der Klima-Laufzeit im Phasen-Soll)
+- **Options Flow:** Aktoren/Sensoren nachträglich ändern ohne Neuanlegen
+- **CI:** GitHub Actions mit pytest, tsc/Build, hassfest und HACS-Validierung
+
 ## [2.4.0-dev]
 
 ### Integration
