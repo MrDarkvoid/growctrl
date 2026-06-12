@@ -23,7 +23,16 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
         { value: "tage", label: "Immer Tage" },
         { value: "wochen", label: "Immer Wochen" }]),
     ];
+    const plantRow = [
+      SEL.text("name", "Name"),
+      SEL.text("strain", "Sorte (optional)"),
+      SEL.entity("germination_helper", "Keimstart-Entity (date, optional)", "date"),
+      SEL.entities("sensors", "Sensoren dieser Pflanze (optional)", "sensor"),
+      SEL.text("image", "Bild-URL (optional)"),
+    ];
     return html`${this.form(main)}
+      ${this.list({ key: "plants", rowSchema: plantRow, title: "Pflanzen (Tabs in der Karte)",
+        addLabel: "Pflanze hinzuf\u00fcgen", newItem: () => ({ name: "" }) })}
       ${this.styleSection()}
       <div class="hint">Entity-IDs werden automatisch abgeleitet
         (z.B. <code>switch.growctrl_gross_main1_automatik</code>). Abweichende IDs

@@ -1,5 +1,21 @@
 # Changelog – GROWCTRL
 
+## [2.8.0-dev]
+
+### Fixes aus dem vierten Live-Test
+- **Sensor-Timeout endlich einstellbar:** Die Zelt-Number „Sensor-Timeout
+  (eingefroren nach)“ (5–120 min, Standard 30) fehlte - der v2.6-Patch hatte
+  still nicht gegriffen. Eingebaut und verifiziert (Konfiguration-Bereich des Zelts)
+- **Klima-Schalter bleibt beim Zelt-Deaktivieren bewusst erhalten:** Aktoren gehen
+  aus, die Automatik-Einstellung nicht - beim Reaktivieren läuft das Klima sofort
+  weiter. Mit Protokoll-Einträgen „Klima pausiert“ / „läuft weiter“
+- Patch-Disziplin: alle Codeänderungen laufen jetzt mit Anker-Verifikation
+
+### Karten
+- **Pflanzen-Tabs in der Stations-Karte:** Hero + Station decken das Tagesgeschäft
+  ab - pro Pflanze Tab mit Name, Sorte, Alter, eigenen Sensoren und Bild
+- Karten-Zweitrepo: README aktualisiert (11 Karten) und auf **GC-SAL 1.0** umgestellt
+
 ## [2.7.0-dev]
 
 ### Fixes aus dem dritten Live-Test

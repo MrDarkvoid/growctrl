@@ -13,7 +13,7 @@ import {
   cardVars, type StyleConfig, num,
   stEnt, ST, type GcOverrides,
   gcResolve,
-  fmtDur, fmtAge,
+  fmtDur, fmtAge, daysSince,
 } from "../core/index";
 
 const STAGES = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"];
@@ -22,14 +22,17 @@ interface StationConfig {
   age_format?: "auto" | "tage" | "wochen";
   show_age?: boolean;       // Alter-KPI (Standard aus - gehoert eher zur Pflanzen-Karte)
   show_event?: boolean;     // Ereigniszeile am Kartenfuss (Standard aus)
+  plants?: Array<{ name: string; strain?: string; germination_helper?: string;
+    sensors?: string[]; image?: string }>;   // Pflanzen-Tabs direkt in der Station
   type: string; tent: string; station: string; name?: string;
   show_settings?: boolean; overrides?: GcOverrides; style?: StyleConfig;
 }
 
 export class GrowctrlStationCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
-  static properties = { ...GrowctrlBaseCard.properties, _open: { state: true } };
+  static properties = { ...GrowctrlBaseCard.properties, _open: { state: true }, _tab: { state: true } };
   private _open = false;
+  private _tab = 0;
 
   protected validateConfig(c: StationConfig) {
     if (!c.tent || !c.station)
@@ -167,6 +170,8 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
               rec && rec !== stage ? "#FFD166" : undefined) : nothing}
       </div>` : nothing}
 
+      ${this.plantTabs()}
+
       ${problems.length ? html`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
         ${problems.map(p => html`<span class="badge warn">\u26A0 ${p.label}</span>`)}</div>` : nothing}
 
@@ -223,6 +228,46 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
         : nothing}
       </div>
     </div>`;
+  }
+  /** Pflanzen-Tabs: Infos + Sensorwerte je Pflanze direkt in der Stations-Karte. */
+  private plantTabs() {
+    const plants = (this._config as StationConfig).plants ?? [];
+    if (!plants.length) return nothing;
+    const i = Math.min(this._tab, plants.length - 1);
+    const pl = plants[i];
+    const germ = pl.germination_helper ? this.st(pl.germination_helper) : null;
+    const age = germ ? daysSince(germ) : null;
+    return html`
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
+        ${plants.map((pp, pi) => html`<button class="gc" style="padding:5px 13px;border-radius:10px;
+            font-size:11.5px;font-weight:700;transition:all .15s;
+            background:${pi === i ? "rgba(77,255,195,.13)" : "rgba(255,255,255,.04)"};
+            border:1.5px solid ${pi === i ? THEME.ok : "rgba(255,255,255,.1)"};
+            color:${pi === i ? THEME.ok : "rgba(255,255,255,.55)"}"
+          @click=${() => { this._tab = pi; }}>\ud83c\udf31 ${pp.name}</button>`)}
+      </div>
+      <div class="tile" style="margin-top:8px">
+        <div style="display:flex;align-items:center;gap:12px">
+          ${pl.image ? html`<img src="${pl.image}" style="width:52px;height:52px;border-radius:12px;
+              object-fit:cover;border:1px solid rgba(255,255,255,.15)"/>` : nothing}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800">${pl.name}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.6)">
+              ${pl.strain ?? ""}${pl.strain && age !== null ? " \u00b7 " : ""}${age !== null ? `${fmtAge(age)} \u00b7 Tag ${age + 1}` : ""}</div>
+          </div>
+        </div>
+        ${pl.sensors?.length ? html`
+          <div class="kpis cols-${Math.min(3, Math.max(2, pl.sensors.length))}" style="margin-top:10px">
+            ${pl.sensors.map(se => {
+              const v = num(this.st(se));
+              return html`<div class="tile" style="background:rgba(0,0,0,.18)">
+                <div class="lbl">${this.friendly(se)}</div>
+                <div style="font-size:18px;font-weight:800">${v !== null ? v : (this.st(se) ?? "\u2013")}
+                  <span class="unit">${this.unit(se)}</span></div>
+              </div>`;
+            })}
+          </div>` : nothing}
+      </div>`;
   }
 }
 customElements.define("growctrl-station-card", GrowctrlStationCard);
