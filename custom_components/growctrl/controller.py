@@ -26,15 +26,20 @@ _LOG_TEXT = {
     "humidifier": lambda d: ("Befeuchter AN" if d.get("soll") == "on" else "Befeuchter AUS", "info"),
     "dehumidifier": lambda d: ("Entfeuchter AN" if d.get("soll") == "on" else "Entfeuchter AUS", "info"),
     "exhaust": lambda d: ("Abluft-Boost AN" if d.get("soll") == "on" else "Abluft-Boost AUS", "info"),
-    "manual_override": lambda d: (f"Manueller Eingriff erkannt (Ist={d.get('ist')})", "warning"),
+    "manual_override": lambda d: (
+        f"Manueller Eingriff erkannt - Automatik pausiert {d.get('minuten')} min", "warning"),
+    "override_end": lambda d: ("Automatik uebernimmt wieder den Lichtplan", "info"),
     "light_failsafe": lambda d: (f"FAILSAFE: Licht lief {d.get('on_minutes')} min -> Not-Aus", "critical"),
     "time_invalid": lambda d: ("Lichtzeiten unvollstaendig - Automatik pausiert", "warning"),
 }
 
 from . import logic
+from datetime import timedelta
+
 from .const import (
-    DATA_LIGHT_VOTES, DATA_TENTS, DEFAULT_MAX_LIGHT_ON_MIN, DOMAIN,
+    DATA_LIGHT_VOTES, DATA_STATIONS, DATA_TENTS, DEFAULT_MAX_LIGHT_ON_MIN, DOMAIN,
     EVENT_GROWCTRL, LUX_LIGHT_THRESHOLD, STAGE_KEYS, STAGE_MAX_DAYS, STAGE_ORDER,
+    STAGE_TO_CLIMATE,
 )
 from .runtime import StationRuntime, TentRuntime
 
@@ -107,7 +112,7 @@ class StationController(_Base):
             await self._set_all(rt.pump_switches, False)
             return
 
-        if not rt.auto or rt.maintenance or rt.testmode:
+        if not rt.auto or rt.maintenance:
             rt.manual_override = False
             rt._override_strikes = 0
             return
@@ -150,21 +155,42 @@ class StationController(_Base):
             rt.light_on_since = None
             rt.light_failsafe = False
 
-        # ── Manual-Override-Erkennung: Ist weicht 2 Zyklen vom Soll ab ──
-        if light_was != want_light and rt._override_strikes >= 2 and not rt.manual_override:
-            rt.manual_override = True
-            self._fire("manual_override", ist="on" if light_was else "off")
-        rt._override_strikes = rt._override_strikes + 1 if light_was != want_light else 0
-        if light_was == want_light:
-            rt.manual_override = False
+        # ── Manuelle Übernahme: erkanntes Handschalten wird respektiert ──
+        if rt.manual_override:
+            if now >= (rt.override_until or now) or light_was == want_light:
+                # Zeit abgelaufen ODER Plan stimmt wieder mit Ist ueberein
+                rt.manual_override = False
+                rt.override_until = None
+                rt._override_strikes = 0
+                self._fire("override_end")
+            else:
+                # Waehrend der Übernahme: Ist-Zustand respektieren (Vote = Ist),
+                # damit geteilte Lichter den manuellen Wunsch mittragen.
+                await self._set_light_with_votes(light_was)
+                if rt.has_pump:
+                    pass  # Pumpe laeuft regulaer weiter (unten)
+                # Licht-Regelung in diesem Zyklus aussetzen:
+                want_light = light_was
 
-        if want_light != light_was:
-            await self._set_light_with_votes(want_light)
-            if want_light:
-                rt.light_on_since = now
-            self._fire("light", soll="on" if want_light else "off")
-        else:
-            await self._set_light_with_votes(want_light)   # Votes aktuell halten
+        if not rt.manual_override:
+            if light_was != want_light:
+                rt._override_strikes += 1
+                if rt._override_strikes >= 2:
+                    # 2 Zyklen Abweichung trotz Regelung = Handschaltung
+                    rt.manual_override = True
+                    rt.override_until = now + timedelta(minutes=max(0.0, rt.override_minutes))
+                    self._fire("manual_override", ist="on" if light_was else "off",
+                               minuten=int(rt.override_minutes))
+                    await self._set_light_with_votes(light_was)
+                    want_light = light_was
+                else:
+                    await self._set_light_with_votes(want_light)
+                    if want_light:
+                        rt.light_on_since = now
+                    self._fire("light", soll="on" if want_light else "off")
+            else:
+                rt._override_strikes = 0
+                await self._set_light_with_votes(want_light)   # Votes aktuell halten
 
         # ── Pumpe (Trocknung: aus) ──
         if rt.has_pump:
@@ -224,12 +250,17 @@ class TentController(_Base):
         if not rt.climate_on:
             return
 
-        # ── Klima-Regelung mit Hysterese ──
+        # ── Klima-Regelung: Sollwerte folgen der Phase (Auto = fuehrende Station) ──
+        stages = [s.stage for s in
+                  self.hass.data.get(DOMAIN, {}).get(DATA_STATIONS, {}).get(rt.tent, {}).values()]
+        phase = logic.effective_climate_phase(rt.climate_phase, stages,
+                                              STAGE_TO_CLIMATE, STAGE_ORDER)
+        tg = rt.targets.get(phase, rt.targets["Veg"])
         humid_on = self._is_on(rt.humidifier_switches[0]) if rt.humidifier_switches else False
         dehum_on = self._is_on(rt.dehumidifier_switches[0]) if rt.dehumidifier_switches else False
         want_h, want_d = logic.climate_actions(
             rt.climate_mode, rt.current_vpd, rt.current_rh,
-            rt.vpd_min, rt.vpd_max, rt.rh_min, rt.rh_max, humid_on, dehum_on)
+            tg["vpd_min"], tg["vpd_max"], tg["rh_min"], tg["rh_max"], humid_on, dehum_on)
         if want_h != humid_on:
             await self._set_all(rt.humidifier_switches, want_h)
             self._fire("humidifier", soll="on" if want_h else "off")
@@ -237,7 +268,7 @@ class TentController(_Base):
             await self._set_all(rt.dehumidifier_switches, want_d)
             self._fire("dehumidifier", soll="on" if want_d else "off")
         if rt.exhaust_switches:
-            want_e = logic.exhaust_desired(rt.current_rh, rt.rh_max)
+            want_e = logic.exhaust_desired(rt.current_rh, tg["rh_max"])
             if want_e != self._is_on(rt.exhaust_switches[0]):
                 await self._set_all(rt.exhaust_switches, want_e)
                 self._fire("exhaust", soll="on" if want_e else "off")

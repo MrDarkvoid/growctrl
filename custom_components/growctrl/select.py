@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity
 
-from .const import CLIMATE_MODES, DOMAIN, STAGES
+from .const import CLIMATE_MODES, CLIMATE_PHASES, DOMAIN, STAGES
 from .runtime import TentRuntime
 from .entity import GrowctrlEntity
 
@@ -17,7 +17,8 @@ from .entity import GrowctrlEntity
 async def async_setup_entry(hass, entry, async_add_entities):
     rt = hass.data[DOMAIN][entry.entry_id]
     if isinstance(rt, TentRuntime):
-        async_add_entities([ClimateModeSelect(entry.entry_id, rt)])
+        async_add_entities([ClimateModeSelect(entry.entry_id, rt),
+                            ClimatePhaseSelect(entry.entry_id, rt)])
         return
     async_add_entities([StageSelect(entry.entry_id, rt)])
 
@@ -62,4 +63,26 @@ class ClimateModeSelect(GrowctrlEntity, SelectEntity):
 
     async def async_select_option(self, option: str):
         self.rt.climate_mode = option
+        self.async_write_ha_state()
+
+
+class ClimatePhaseSelect(GrowctrlEntity, SelectEntity):
+    """Welche Phasen-Sollwerte das Klima nutzt; Auto = fuehrende Stations-Phase."""
+    _attr_options = CLIMATE_PHASES
+
+    def __init__(self, entry_id, rt):
+        super().__init__(entry_id, rt, "climate_phase", "Klima-Phase")
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        last = await self.async_get_last_state()
+        if last is not None and last.state in CLIMATE_PHASES:
+            self.rt.climate_phase = last.state
+
+    @property
+    def current_option(self) -> str:
+        return self.rt.climate_phase
+
+    async def async_select_option(self, option: str):
+        self.rt.climate_phase = option
         self.async_write_ha_state()

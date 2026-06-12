@@ -186,3 +186,19 @@ def stage_recommendation(age_days: int | None, stage: str,
 def aggregate_light_votes(votes: dict[str, bool]) -> bool:
     """Geteiltes Licht: AN, sobald EINE Station es anfordert (ODER-Logik)."""
     return any(votes.values())
+
+
+def effective_climate_phase(selected: str, station_stages: list[str],
+                            stage_to_climate: dict[str, str],
+                            order: list[str]) -> str:
+    """Klima-Phase des Zelts: manuell gewaehlt oder 'Auto' = am weitesten
+    fortgeschrittene Stations-Phase (Flush zaehlt als Bloom)."""
+    if selected != "Auto":
+        return selected
+    best = "Veg"
+    best_idx = -1
+    for s in station_stages:
+        idx = order.index(s) if s in order else -1
+        if idx > best_idx:
+            best_idx, best = idx, s
+    return stage_to_climate.get(best, "Veg")

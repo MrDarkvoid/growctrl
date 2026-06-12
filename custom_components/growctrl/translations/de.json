@@ -4,8 +4,8 @@
       "user": {
         "title": "GROWCTRL hinzufügen",
         "menu_options": {
-          "tent": "Zelt anlegen (Klima, DLI, Aufgaben)",
-          "station": "Station anlegen (Licht, Pumpe, O₂)"
+          "tent": "Zelt anlegen (Klima, Status, Aufgaben)",
+          "station": "Station anlegen (Licht, Pumpe, O₂, DLI)"
         }
       },
       "tent": {

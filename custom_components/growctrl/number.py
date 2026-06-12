@@ -24,19 +24,25 @@ _DEFS = [
 
 
 _TENT_DEFS = [
-    # role, name, rt_attr, min, max, step, unit
-    ("vpd_min", "VPD Min", "vpd_min", 0.2, 2.0, 0.05, "kPa"),
-    ("vpd_max", "VPD Max", "vpd_max", 0.2, 2.5, 0.05, "kPa"),
-    ("rh_min", "RH Min", "rh_min", 20, 90, 1, "%"),
-    ("rh_max", "RH Max", "rh_max", 25, 95, 1, "%"),
     ("leaf_offset", "Blatt-Offset", "leaf_offset", -5, 5, 0.1, "K"),
 ]
+# Klima-Sollwerte je Phase (Flush nutzt Bloom)
+_PHASE_METRICS = [
+    ("vpd_min", "VPD Min", 0.2, 2.5, 0.05, "kPa"),
+    ("vpd_max", "VPD Max", 0.2, 2.5, 0.05, "kPa"),
+    ("rh_min", "RH Min", 20, 95, 1, "%"),
+    ("rh_max", "RH Max", 20, 95, 1, "%"),
+]
+_PHASES = ["Seedling", "Veg", "Bloom", "Trocknung"]
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     rt = hass.data[DOMAIN][entry.entry_id]
     if isinstance(rt, TentRuntime):
-        async_add_entities([TentNumber(entry.entry_id, rt, *d) for d in _TENT_DEFS])
+        ents = [TentNumber(entry.entry_id, rt, *d) for d in _TENT_DEFS]
+        ents += [PhaseTargetNumber(entry.entry_id, rt, ph, *m)
+                 for ph in _PHASES for m in _PHASE_METRICS]
+        async_add_entities(ents)
         return
     ents = []
     if rt.has_pump:
@@ -45,6 +51,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
         ents.append(TentNumber(entry.entry_id, rt,
                     "lux_factor", "Lux\u2192PPFD-Faktor", "lux_factor",
                     0.005, 0.05, 0.001, None))
+    # Manuelle Übernahme: so lange respektiert die Automatik Handschaltungen
+    ents.append(TentNumber(entry.entry_id, rt,
+                "override_minutes", "Manuelle \u00dcbernahme", "override_minutes",
+                0, 1440, 5, "min"))
     if ents:
         async_add_entities(ents)
 
@@ -104,4 +114,34 @@ class TentNumber(GrowctrlEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float):
         setattr(self.rt, self._rt_attr, value)
+        self.async_write_ha_state()
+
+
+class PhaseTargetNumber(GrowctrlEntity, NumberEntity):
+    """Klima-Sollwert einer Phase (liest/schreibt rt.targets[phase][metric])."""
+    _attr_mode = NumberMode.BOX
+
+    def __init__(self, entry_id, rt, phase, metric, label, min_v, max_v, step, unit):
+        super().__init__(entry_id, rt, f"{phase.lower()}_{metric}", f"{phase} {label}")
+        self._phase, self._metric = phase, metric
+        self._attr_native_min_value = min_v
+        self._attr_native_max_value = max_v
+        self._attr_native_step = step
+        self._attr_native_unit_of_measurement = unit
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        last = await self.async_get_last_state()
+        if last is not None:
+            try:
+                self.rt.targets[self._phase][self._metric] = float(last.state)
+            except (ValueError, TypeError, KeyError):
+                pass
+
+    @property
+    def native_value(self) -> float:
+        return float(self.rt.targets[self._phase][self._metric])
+
+    async def async_set_native_value(self, value: float):
+        self.rt.targets[self._phase][self._metric] = value
         self.async_write_ha_state()

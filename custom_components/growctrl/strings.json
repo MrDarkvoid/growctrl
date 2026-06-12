@@ -4,8 +4,8 @@
       "user": {
         "title": "Add GROWCTRL",
         "menu_options": {
-          "tent": "Add tent (climate, DLI, tasks)",
-          "station": "Add station (light, pump, O₂)"
+          "tent": "Add tent (climate, status, tasks)",
+          "station": "Add station (light, pump, O₂, DLI)"
         }
       },
       "tent": {

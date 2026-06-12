@@ -25,7 +25,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities([
         _RtSwitch(entry.entry_id, rt, "auto", "Automatik", "auto"),
         _RtSwitch(entry.entry_id, rt, "maintenance", "Wartung", "maintenance"),
-        _RtSwitch(entry.entry_id, rt, "testmode", "Testmodus", "testmode"),
     ])
 
 

@@ -12,9 +12,10 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Callable
 
+import copy
+
 from .const import (
-    DEFAULT_LEAF_OFFSET, DEFAULT_LUX_FACTOR,
-    DEFAULT_RH_MAX, DEFAULT_RH_MIN, DEFAULT_VPD_MAX, DEFAULT_VPD_MIN,
+    CLIMATE_DEFAULTS, DEFAULT_LEAF_OFFSET, DEFAULT_LUX_FACTOR, DEFAULT_OVERRIDE_MIN,
 )
 
 MAX_LOG = 30
@@ -40,7 +41,6 @@ class StationRuntime:
     # Von den Integrations-Entitaeten gepflegte Einstellungen
     auto: bool = False
     maintenance: bool = False
-    testmode: bool = False
     stage: str = "Veg"
     light_on_min: int | None = None
     light_off_sv_min: int | None = None
@@ -58,6 +58,8 @@ class StationRuntime:
     time_invalid: bool = False
     light_on_since: datetime | None = None
     _override_strikes: int = 0
+    override_minutes: float = DEFAULT_OVERRIDE_MIN     # 0 = sofort zurueckschalten
+    override_until: datetime | None = None
 
     # DLI je Station (aus eigenem Lux-Sensor, Prognose ueber den Lichtplan)
     lux_factor: float = DEFAULT_LUX_FACTOR
@@ -94,7 +96,7 @@ class StationRuntime:
     def problems(self) -> list[str]:
         out: list[str] = []
         if self.manual_override:
-            out.append(f"{self.station}: Manueller Eingriff erkannt")
+            out.append(f"{self.station}: Manueller Eingriff aktiv (Automatik pausiert)")
         if self.light_failsafe:
             out.append(f"{self.station}: Licht-Failsafe ausgeloest (lief zu lange)")
         if self.time_invalid:
@@ -119,10 +121,8 @@ class TentRuntime:
     enabled: bool = True
     climate_on: bool = False
     climate_mode: str = "VPD"
-    vpd_min: float = DEFAULT_VPD_MIN
-    vpd_max: float = DEFAULT_VPD_MAX
-    rh_min: float = DEFAULT_RH_MIN
-    rh_max: float = DEFAULT_RH_MAX
+    climate_phase: str = "Auto"        # Auto = fuehrende Stations-Phase
+    targets: dict = field(default_factory=lambda: copy.deepcopy(CLIMATE_DEFAULTS))
     leaf_offset: float = DEFAULT_LEAF_OFFSET
 
     # Laufende Werte (Controller)

@@ -14,7 +14,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from . import logic
 from .const import (DATA_STATIONS, DLI_TARGETS, DOMAIN, SIGNAL_UPDATE,
-                    STAGE_KEYS, STAGE_MAX_DAYS, STAGE_ORDER)
+                    STAGE_KEYS, STAGE_MAX_DAYS, STAGE_ORDER, STAGE_TO_CLIMATE)
 from .runtime import StationRuntime, TentRuntime
 from .entity import GrowctrlEntity
 
@@ -138,9 +138,14 @@ class TentVpd(_TentBase):
 
     @property
     def extra_state_attributes(self):
+        stations = self.hass.data.get(DOMAIN, {}).get(DATA_STATIONS, {}).get(self.rt.tent, {})
+        phase = logic.effective_climate_phase(
+            self.rt.climate_phase, [s.stage for s in stations.values()],
+            STAGE_TO_CLIMATE, STAGE_ORDER)
         return {**super().extra_state_attributes,
                 "temp": self.rt.current_temp, "rh": self.rt.current_rh,
-                "leaf_offset": self.rt.leaf_offset, "modus": self.rt.climate_mode}
+                "leaf_offset": self.rt.leaf_offset, "modus": self.rt.climate_mode,
+                "phase_effektiv": phase, "sollwerte": self.rt.targets.get(phase)}
 
 
 class StationDli(_RestBase):

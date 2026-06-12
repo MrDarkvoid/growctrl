@@ -67,3 +67,17 @@ STAGE_ORDER = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"]
 DATA_TENTS = "_tents"
 DATA_STATIONS = "_stations"
 DATA_LIGHT_VOTES = "_light_votes"
+
+# ── Klima je Phase (v2.4): Default-Sollwerte, per Number-Entities anpassbar ──
+CLIMATE_PHASES = ["Auto", "Seedling", "Veg", "Bloom", "Trocknung"]   # Flush nutzt Bloom
+CLIMATE_DEFAULTS = {
+    "Seedling": {"vpd_min": 0.4, "vpd_max": 0.8, "rh_min": 65.0, "rh_max": 75.0},
+    "Veg":      {"vpd_min": 0.8, "vpd_max": 1.2, "rh_min": 55.0, "rh_max": 70.0},
+    "Bloom":    {"vpd_min": 1.2, "vpd_max": 1.6, "rh_min": 45.0, "rh_max": 55.0},
+    "Trocknung":{"vpd_min": 1.0, "vpd_max": 1.4, "rh_min": 50.0, "rh_max": 60.0},
+}
+STAGE_TO_CLIMATE = {"Seedling": "Seedling", "Veg": "Veg", "Bloom": "Bloom",
+                    "Flush": "Bloom", "Trocknung": "Trocknung"}
+
+# Manuelle Übernahme: so lange respektiert die Automatik manuelles Schalten (Minuten)
+DEFAULT_OVERRIDE_MIN = 60.0
