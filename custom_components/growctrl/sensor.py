@@ -254,14 +254,18 @@ class LastEvent(GrowctrlEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
+        # schweregrad = Level des LETZTEN Eintrags (fuer "was ist gerade passiert"),
+        # schweregrad_verlauf = schlechtester Level der Historie (fuer Ampeln).
         worst = "ok"
         for e in self.rt.log:
             if e["level"] == "critical":
                 worst = "critical"
             elif e["level"] == "warning" and worst != "critical":
                 worst = "warning"
+        last = self.rt.log[-1]["level"] if self.rt.log else "ok"
         return {**super().extra_state_attributes,
-                "verlauf": list(self.rt.log), "schweregrad": worst}
+                "verlauf": list(self.rt.log),
+                "schweregrad": last, "schweregrad_verlauf": worst}
 
 
 class TentStatus(_TentBase):
