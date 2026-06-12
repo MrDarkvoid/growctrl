@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-tent-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Zelt-Klima (integrations-nativ): Zelt/Klima-Schalter, Temp/RH/VPD aus dem VPD-Sensor, Modus- und Phasen-Chips, VPD-24h-Chart mit Sollband der effektiven Phase, Ereigniszeile.
- * Version : 2.4.0  |  Lizenz: MIT
+ * Version : 2.4.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -64,7 +64,7 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
           font-weight:700;transition:all .15s;
           background:${o === current ? "rgba(77,255,195,.13)" : "rgba(255,255,255,.04)"};
           border:1.5px solid ${o === current ? THEME.ok : "rgba(255,255,255,.09)"};
-          color:${o === current ? THEME.ok : "rgba(255,255,255,.45)"}"
+          color:${o === current ? THEME.ok : "rgba(255,255,255,.6)"}"
         @click=${() => this._select(entity, o)}>${o}</button>`)}
     </div>`;
   }
@@ -84,7 +84,7 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
     const climate = this.isOn(this.e("climate"));
     const statusSt = this.hass.states[this.e("status")];
     const problems = (statusSt?.attributes?.probleme as string[]) ?? [];
-    const level = statusSt?.state === "problem" ? "warning" : enabled ? "ok" : "none";
+    const level = statusSt?.state ?.toLowerCase?.() === "problem" ? "warning" : enabled ? "ok" : "none";
     const pill = STATUS_PILL[level] ?? STATUS_PILL.none;
     const evt = this.hass.states[this.e("event")];
     const vpdOk = v !== null && targets && v >= targets.vpd_min && v <= targets.vpd_max;

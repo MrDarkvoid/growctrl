@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-sensors-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Sensor-Kacheln v2: grosser Wert + Einheit, Flaechen-Sparkline, optionaler Sollbereich je Sensor (Ampelfarbe + Kartenrahmen), Stil konfigurierbar.
- * Version : 2.1.0  |  Lizenz: MIT
+ * Version : 2.1.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

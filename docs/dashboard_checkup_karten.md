@@ -1,7 +1,7 @@
 <!--
 GROWCTRL – Doku Checkup-Karten (LEGACY)
 Zweck: Beschreibung der drei alten Checkup-Karten. Dient als Funktions-Spezifikation fuer den Karten-Cluster (Phase 2).
-Version: 2.0.0-dev | Lizenz: MIT
+Version: 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 Autor: MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 -->
 # Dashboard Checkup Karten — Überblick

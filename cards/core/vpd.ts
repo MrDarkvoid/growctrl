@@ -2,7 +2,7 @@
  * GROWCTRL – core/vpd
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Die EINE VPD-Implementierung (Magnus) inkl. Blattoffset und Zonen. Loest Issue #5.
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.0.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

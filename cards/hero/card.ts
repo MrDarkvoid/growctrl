@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-hero-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Hero ueber allem (integrations-nativ): Logo, Zelt/Klima-Schalter, Klima-KPIs + VPD-Chart aus dem Zelt-VPD-Sensor, Informationssystem = Zelt-Status + Ereignis-/Problemlage aller Stationen.
- * Version : 2.4.0  |  Lizenz: MIT
+ * Version : 2.4.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -77,14 +77,16 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
       const sev = (evt?.attributes?.schweregrad as string) ?? "ok";
       return { name: s.name ?? s.station, text: evt?.state ?? "\u2013", level: sev };
     });
+    // Nur echte Warnungen/Fehler zaehlen - "Licht AN" (info) ist KEINE Warnung
+    const isWarn = (l: string) => l === "warning" || l === "critical";
     const level = worstLevel([
-      statusSt?.state === "problem" ? "warning" : "ok",
-      ...stations.map(s => s.level),
+      (statusSt?.state ?? "").toLowerCase() === "problem" ? "warning" : "ok",
+      ...stations.map(s => (isWarn(s.level) ? s.level : "ok")),
     ]);
     const pill = STATUS_PILL[level];
     const problems = [
       ...tentProblems.map(p => ({ label: p, level: "warning" })),
-      ...stations.filter(s => s.level !== "ok").map(s => ({ label: `${s.name}: ${s.text}`, level: s.level })),
+      ...stations.filter(s => isWarn(s.level)).map(s => ({ label: `${s.name}: ${s.text}`, level: s.level })),
     ];
 
     const bigToggle = (entity: string, label: string, on: boolean, icon: string) => html`
@@ -129,7 +131,7 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
 
       ${this.vpdZoneBar(v, targets ?? null)}
 
-      ${c.show_chart !== false && this._hist.length > 1 ? html`
+      ${c.show_chart === true && this._hist.length > 1 ? html`
         <div class="seclbl">VPD \u00b7 ${c.hours ?? 24}h</div>
         ${lineChart([{ data: this._hist, color: THEME.ok }],
           { h: 100, band: targets ? { min: targets.vpd_min, max: targets.vpd_max } : undefined, grid: 3 })}` : nothing}
@@ -183,8 +185,8 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
       <div style="display:flex;margin-top:4px">
         ${(() => { let f2 = 0; return ZONES.map(z => {
           const wPct = ((z.to - f2) / MAXV) * 100; f2 = z.to;
-          return html`<div style="width:${wPct}%;text-align:center;font-size:8.5px;
-            color:rgba(255,255,255,.45);overflow:hidden;white-space:nowrap">${z.lbl}</div>`;
+          return html`<div style="width:${wPct}%;text-align:center;font-size:9.5px;
+            color:rgba(255,255,255,.6);overflow:hidden;white-space:nowrap">${z.lbl}</div>`;
         }); })()}
       </div>
     </div>`;

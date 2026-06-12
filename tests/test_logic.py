@@ -1,7 +1,7 @@
 #==============================================================================
 # GROWCTRL Integration – tests/test_logic
 # Zweck   : pytest fuer die reine Steuerlogik – ersetzt das ungetestete Jinja.
-# Version : 2.0.0-dev | Lizenz: MIT
+# Version : 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

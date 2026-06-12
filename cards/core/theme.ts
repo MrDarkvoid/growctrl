@@ -2,7 +2,7 @@
  * GROWCTRL – core/theme
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Modernes Design-System: Status-Ampel auf Kartenebene (Rahmen-Glow), einstellbare Transparenz/Hintergrund/Akzent/Radius/Glas-Effekt, geteilte Styles.
- * Version : 2.1.0  |  Lizenz: MIT
+ * Version : 2.1.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -66,7 +66,8 @@ export const worstLevel = (levels: string[]): "ok"|"info"|"warning"|"critical" =
 
 export const sharedStyles = css`
   /* Responsive KPI-Raster: 4 Spalten, auf dem Handy 2; Settings 3 -> 2 */
-  .kpis { display:grid; gap:8px; grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .kpis { display:grid; gap:8px; grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; }
+  .kpis .tile { display:flex; flex-direction:column; justify-content:center; min-height:64px; }
   .kpis.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .kpis.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
   .settings-grid { display:grid; gap:8px; grid-template-columns:repeat(3,minmax(0,1fr)); }
@@ -76,7 +77,7 @@ export const sharedStyles = css`
     .kpis.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
     .settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .kpis .tile { padding: 9px 9px; }
-    .kpis .val { font-size: 19px; }
+    .kpis .val { font-size: 20px; }
     .title { font-size: 15px; }
   }
 
@@ -111,7 +112,7 @@ export const sharedStyles = css`
   .title { font-size: 19px; font-weight: 800; letter-spacing: -.3px; line-height: 1.15; }
   .subtitle { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; font-weight: 500; }
   .badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
-  .badge { font-size: 10px; font-weight: 700; background: rgba(255,255,255,.08);
+  .badge { font-size: 11px; font-weight: 700; background: rgba(255,255,255,.08);
            border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.85);
            padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
   .badge.warn { background: rgba(255,165,0,.18); border-color: rgba(255,165,0,.35); color: #FFD166; }
@@ -123,16 +124,16 @@ export const sharedStyles = css`
   .tile { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09);
           border-radius: 14px; padding: 11px 13px; min-width: 0; transition: background .15s; }
   button.tile:hover { background: rgba(255,255,255,.08); }
-  .tile .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .8px;
-               color: rgba(255,255,255,.5); font-weight: 600; }
+  .tile .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .9px;
+               color: rgba(255,255,255,.62); font-weight: 700; }
   .tile .val { font-size: 25px; font-weight: 800; margin-top: 2px; letter-spacing: -.5px; }
   .tile .val.sm { font-size: 17px; font-weight: 700; }
-  .tile .unit { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.45); margin-left: 3px; }
+  .tile .unit { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.58); margin-left: 3px; }
   .logrow { display: flex; align-items: center; gap: 8px; border-radius: 10px;
             padding: 7px 11px; min-width: 0; }
-  .logrow .txt { font-size: 11.5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
+  .logrow .txt { font-size: 12.5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
   .logrow .ts { font-size: 10px; color: rgba(255,255,255,.4); flex-shrink: 0; font-variant-numeric: tabular-nums; }
-  .seclbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  .seclbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1.1px;
             color: rgba(255,255,255,.4); margin: 12px 0 6px; font-weight: 700; }
   .stagebadge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 9px; }
   .barrow { display: flex; align-items: center; gap: 8px; }

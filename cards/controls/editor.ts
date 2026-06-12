@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-controls-card Editor
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : GUI-Editor: Titel/Spalten + Aktoren-Liste (Entity, Name, Gruppe, Bestaetigung).
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.0.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

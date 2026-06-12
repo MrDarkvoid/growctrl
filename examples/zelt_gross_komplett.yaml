@@ -5,7 +5,7 @@
 #           Diagrammen, EC/Fuellstand und Aktoren. Voraussetzung: Integration
 #           mit Zelt "gross" + Stationen "main1"/"main2" eingerichtet.
 #           Alle growctrl_*-Entity-IDs leiten die Karten automatisch ab.
-# Version : 2.4.0 | Lizenz: MIT
+# Version : 2.4.0 | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 title: Zelt Gross

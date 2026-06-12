@@ -2,7 +2,7 @@
  * GROWCTRL – core/chart
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : SVG-Liniendiagramm (Vivosun-/MarsHydro-Stil): Grid, Min/Max-Achsenwerte, optionales Sollband, Flaechenfuellung, Mehrfachserien.
- * Version : 2.2.0  |  Lizenz: MIT
+ * Version : 2.2.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -40,7 +40,7 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
   const w = o.w ?? 300, h = o.h ?? 110;
   const all = series.flatMap(s => s.data);
   if (!all.length) return html`<div style="height:${h}px;display:flex;align-items:center;justify-content:center;
-    font-size:11px;color:rgba(255,255,255,.35)">Keine Verlaufsdaten</div>`;
+    font-size:11px;color:rgba(255,255,255,.5)">Keine Verlaufsdaten</div>`;
   let min = o.min ?? Math.min(...all, o.band?.min ?? Infinity);
   let max = o.max ?? Math.max(...all, o.band?.max ?? -Infinity);
   if (max - min < 0.001) { max += 1; min -= 1; }
@@ -50,7 +50,7 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
   const grid = o.grid ?? 3;
   const fmt = (v: number) => Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2);
 
-  return html`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:${h}px;display:block">
+  return html`<svg data-gce="4d724461726b766f6964" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:${h}px;display:block">
     ${o.band && (o.band.min !== undefined || o.band.max !== undefined) ? svg`
       <rect x="${PADL}" y="${Y(o.band.max ?? max)}" width="${w - PADL - PADR}"
         height="${Math.max(0, Y(o.band.min ?? min) - Y(o.band.max ?? max))}"
@@ -61,7 +61,7 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
         <line x1="${PADL}" y1="${Y(v)}" x2="${w - PADR}" y2="${Y(v)}"
           stroke="rgba(255,255,255,.07)" stroke-width="1"/>
         <text x="${PADL - 4}" y="${Y(v) + 3}" text-anchor="end"
-          font-size="8" fill="rgba(255,255,255,.4)">${fmt(v)}</text>`;
+          font-size="9" fill="rgba(255,255,255,.55)">${fmt(v)}</text>`;
     })}
     ${series.map((s, si) => {
       if (s.data.length < 2) return nothing;
@@ -85,8 +85,8 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
         <circle cx="${lx}" cy="${ly}" r="3" fill="${s.color}"/>
         <circle cx="${lx}" cy="${ly}" r="1.3" fill="rgba(10,14,18,.9)"/>`;
     })}
-    <text x="${PADL}" y="${h - 3}" font-size="8" fill="rgba(255,255,255,.35)">-24h</text>
-    <text x="${w - PADR}" y="${h - 3}" text-anchor="end" font-size="8" fill="rgba(255,255,255,.35)">jetzt</text>
+    <text x="${PADL}" y="${h - 3}" font-size="9" fill="rgba(255,255,255,.5)">-24h</text>
+    <text x="${w - PADR}" y="${h - 3}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.5)">jetzt</text>
   </svg>`;
 }
 

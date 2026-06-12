@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-status-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Ereignisprotokoll (integrations-nativ): liest das 'verlauf'-Attribut der Letztes-Ereignis-Sensoren mehrerer Quellen, faerbt nach Schweregrad, neueste zuerst.
- * Version : 2.4.0  |  Lizenz: MIT
+ * Version : 2.4.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

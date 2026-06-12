@@ -102,6 +102,11 @@ letztes_ereignis`
 Fertige View: `../examples/zelt_gross_komplett.yaml`
 
 
+## Informationssystem (Hero)
+Zeigt seit 2.7 nur noch **echte Warnungen und Fehler** - Info-Ereignisse wie
+„Licht AN“ erscheinen nicht mehr als gelbe Einträge, und die Status-Pille
+springt nur noch bei wirklichen Problemen auf „Warnung“.
+
 ## Vorschau im Kartenwähler
 Alle GROWCTRL-Karten liefern jetzt eine Live-Vorschau im „Karte hinzufügen“-Dialog:
 fehlen die Beispiel-Entitäten, rendert die Karte automatisch ansprechende Demo-Daten.
@@ -109,3 +114,8 @@ fehlen die Beispiel-Entitäten, rendert die Karte automatisch ansprechende Demo-
 ## Chart-Stil
 Verlaufs-Diagramme zeichnen seit 2.6 weiche Kurven mit Farbverlaufs-Füllung und
 Endpunkt-Glow (Apex-Look) - betrifft Hero, Zelt, Metric und History.
+
+
+## Lizenz
+GC-SAL 1.0 (source-available, keine kommerzielle Nutzung) - siehe `LICENSE`
+im Hauptrepository.

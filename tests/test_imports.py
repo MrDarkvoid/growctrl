@@ -109,3 +109,14 @@ def test_config_flow_schemas_buildable():
     cf = importlib.import_module("custom_components.growctrl.config_flow")
     assert cf._tent_schema() is not None
     assert cf._station_schema(["testzelt"]) is not None
+
+
+def test_station_runtime_field_contract():
+    """sensor.py greift auf diese Felder zu - Vertragstest gegen Tippfehler
+    wie das nicht existierende rt.times (Live-Bug v2.6)."""
+    import importlib
+    rtmod = importlib.import_module("custom_components.growctrl.runtime")
+    rt = rtmod.StationRuntime(tent="t", station="s", light_switches=[], pump_switches=[], o2_switches=[], fan_switches=[])
+    for f in ("light_on_min", "light_off_sv_min", "light_off_bloom_min",
+              "stage", "level_sensor", "power_sensor", "last_tick"):
+        assert hasattr(rt, f), f"StationRuntime.{f} fehlt"

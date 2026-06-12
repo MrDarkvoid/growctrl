@@ -2,7 +2,7 @@
  * GROWCTRL – core/base-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Abstrakte Basisklasse aller GROWCTRL-Karten: hass-Handling, State-Helfer, more-info, Bestaetigungs-Overlay.
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.0.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

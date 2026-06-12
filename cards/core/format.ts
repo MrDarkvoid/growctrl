@@ -1,7 +1,7 @@
 /*==============================================================================
  * GROWCTRL – core/format
  * Zweck   : Lesbare Dauer-Formatierung ("5 h 40 min") + Alters-Formate.
- * Version : 2.6.0  |  Lizenz: MIT
+ * Version : 2.6.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 export function fmtDur(minutes: number | null | undefined): string {

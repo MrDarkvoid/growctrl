@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-station-card Editor
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : GUI-Editor: Zelt + Station (wie in der Integration), Anzeigename, Einstellungen-Zahnrad, Stil. Entity-Abweichungen via overrides (YAML).
- * Version : 2.4.0  |  Lizenz: MIT
+ * Version : 2.4.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -16,6 +16,8 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       this.stationSelect(this._config?.tent),
       SEL.text("name", "Anzeigename (optional)"),
       SEL.bool("show_settings", "Einstellungen-Zahnrad anzeigen"),
+      SEL.bool("show_age", "Alter-KPI anzeigen (sonst: Pflanzen-Karte)"),
+      SEL.bool("show_event", "Letztes Ereignis am Kartenfuss anzeigen"),
       SEL.select("age_format", "Alter anzeigen als", [
         { value: "auto", label: "Automatisch (ab Woche 2 in Wochen)" },
         { value: "tage", label: "Immer Tage" },

@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-checkup-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Checkup ueber alle Zelte/Stationen: eine Zeile je Quelle (Log oder Problem-Sensor) mit Ampelpunkt, Klartext-Auswertung und Zeit; Gesamt-Ampel auf Pill + Kartenrahmen.
- * Version : 2.2.0  |  Lizenz: MIT
+ * Version : 2.2.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -37,7 +37,7 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
         return { row, level: lvl === "ok" ? "ok" : lvl,
                  label: s?.state ?? "\u2013", ts: "" };
       }
-      if (row.type === "problem") {
+      if (row.type ?.toLowerCase?.() === "problem") {
         const on = this.isOn(row.entity);
         return { row, level: on ? "warning" : "ok", label: on ? "Problem erkannt" : "OK", ts: "" };
       }

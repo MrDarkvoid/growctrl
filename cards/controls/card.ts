@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-controls-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Aktoren v3: Icon-zentrierte Touch-Kacheln (Vivosun-Stil), Zustand ueber ganze Kachel, Gruppen, Bestaetigung. Keine separate Schalter-Pille.
- * Version : 2.2.0  |  Lizenz: MIT
+ * Version : 2.2.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

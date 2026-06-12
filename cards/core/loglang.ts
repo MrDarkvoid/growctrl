@@ -2,7 +2,7 @@
  * GROWCTRL – core/loglang
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Der EINE Log-Uebersetzer (Station + Klima), portiert aus den Checkup-Karten. Verhalten gemaess docs/log_referenz.md. Loest Issue #6.
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.0.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

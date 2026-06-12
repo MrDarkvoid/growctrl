@@ -2,13 +2,13 @@
  * GROWCTRL – growctrl-plants-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Pflanzen-Ebene: Sorte, Alter (Keimdatum), eigene Sensoren je Pflanze (z.B. eigene O2-/Zirkulationspumpe als Aktor in Controls), Kalender-Ereignisse.
- * Version : 2.1.0  |  Lizenz: MIT
+ * Version : 2.1.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
 import { html, nothing } from "lit";
 import "./editor";
-import { GrowctrlBaseCard, sharedStyles, daysSince, num, fetchCalendar, cardVars, type StyleConfig } from "../core/index";
+import { GrowctrlBaseCard, sharedStyles, daysSince, fmtAge, num, fetchCalendar, cardVars, type StyleConfig } from "../core/index";
 
 type PlantSensor = string | { entity: string; name?: string };
 interface PlantItem { name: string; strain?: string; germination_helper?: string; sensors?: PlantSensor[]; camera?: string; image?: string; }
@@ -65,7 +65,7 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
               <span style="font-size:13px;font-weight:800">\u{1F331} ${p.name}</span>
               ${p.strain ? html`<span style="font-size:10px;color:rgba(255,255,255,.55)">${p.strain}</span>` : nothing}
             </div>
-            ${age !== null ? html`<div class="lbl" style="margin-top:4px">Tag ${age}</div>` : nothing}
+            ${age !== null ? html`<div class="lbl" style="margin-top:4px;color:rgba(255,255,255,.7)">${fmtAge(age)} \u00b7 Tag ${age + 1}</div>` : nothing}
             ${(p.sensors ?? []).map(raw => { const s = typeof raw === "string" ? { entity: raw } : raw; return html`
               <button class="gc" style="display:flex;justify-content:space-between;width:100%;font-size:11px;margin-top:4px;color:rgba(255,255,255,.75)"
                 @click=${() => this.moreInfo(s.entity)}>

@@ -2,7 +2,7 @@
  * GROWCTRL – core/id
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Leitet Entity-IDs der GROWCTRL-Integration deterministisch aus Zelt-/Stationsnamen ab (has_entity_name-Schema); overrides als Ausweich-Map.
- * Version : 2.4.0  |  Lizenz: MIT
+ * Version : 2.4.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

@@ -2,7 +2,7 @@
  * GROWCTRL – growctrl-station-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Stations-Karte v3 (integrations-nativ): Auto/Wartung, Phasen-Chips, KPI-Reihe (Licht/Pumpe/DLI/Alter), Ereigniszeile, Problem-Badges, Einstellungen per Zahnrad. Entity-IDs werden aus tent+station abgeleitet (overrides moeglich).
- * Version : 2.4.0  |  Lizenz: MIT
+ * Version : 2.4.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -20,6 +20,8 @@ const STAGES = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"];
 
 interface StationConfig {
   age_format?: "auto" | "tage" | "wochen";
+  show_age?: boolean;       // Alter-KPI (Standard aus - gehoert eher zur Pflanzen-Karte)
+  show_event?: boolean;     // Ereigniszeile am Kartenfuss (Standard aus)
   type: string; tent: string; station: string; name?: string;
   show_settings?: boolean; overrides?: GcOverrides; style?: StyleConfig;
 }
@@ -57,6 +59,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const c = this._config as StationConfig;
     if (!this.hass) return nothing;
     const demo = this.isPreview;
+    const showAge = (this._config as StationConfig).show_age === true;
     const stage = this.st(this.e("stage")) ?? "Veg";
     const sc = STAGE_COLORS[stage] ?? STAGE_COLORS.Veg;
     const auto = this.isOn(this.e("auto")) || demo;
@@ -82,13 +85,14 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const rec = this.st(this.e("rec"));
     const hasPump = !!this.hass.states[this.e("pumpRest")] || demo;
     const hasDli = !!this.hass.states[this.e("dli")] || demo;
+    const kpiCount = (hasPump ? 1 : 0) + (hasDli ? 1 : 0) + (showAge ? 1 : 0);
 
     const kpi = (label: string, value: string, sub?: string, accent?: string) => html`
       <div class="tile" style="min-width:0">
         <div class="lbl">${label}</div>
         <div style="font-size:19px;font-weight:800;letter-spacing:-.3px;line-height:1.15;
           color:${accent ?? "rgba(255,255,255,.92)"}">${value}</div>
-        ${sub ? html`<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:2px">${sub}</div>` : nothing}
+        ${sub ? html`<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">${sub}</div>` : nothing}
       </div>`;
 
     const setting = (entity: string, label: string) => html`
@@ -143,30 +147,30 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
               font-weight:700;transition:all .15s;
               background:${on ? col.bg : "rgba(255,255,255,.04)"};
               border:1.5px solid ${on ? col.color : "rgba(255,255,255,.09)"};
-              color:${on ? col.color : "rgba(255,255,255,.45)"}"
+              color:${on ? col.color : "rgba(255,255,255,.6)"}"
             @click=${() => this._select(this.e("stage"), s)}>${s}</button>`;
         })}
       </div>
 
       ${this.lightRow()}
 
-      <div class="kpis cols-${(hasPump ? 1 : 0) + (hasDli ? 1 : 0) >= 2 ? 3 : 2}" style="margin-top:10px">
+      ${kpiCount > 0 ? html`<div class="kpis cols-${Math.min(3, Math.max(2, kpiCount))}" style="margin-top:10px">
         ${hasPump ? kpi("Pumpe", demo ? "12 min" : fmtDur(Number(this.st(this.e("pumpRest")))),
               demo ? "Restzeit (Demo)" : "Restzeit") : nothing}
         ${hasDli ? kpi("DLI heute",
               dli !== null ? dli.toFixed(1) : "\u2013",
               dliTarget ? `Ziel ${dliTarget} \u00b7 Prognose ${dliFc !== null ? dliFc.toFixed(1) : "\u2013"}` : undefined,
               dliTarget && dli !== null && dli >= dliTarget ? THEME.ok : undefined) : nothing}
-        ${kpi("Alter", age !== null ? fmtAge(age, c.age_format ?? "auto") : "\u2013",
+        ${showAge ? kpi("Alter", age !== null ? fmtAge(age, c.age_format ?? "auto") : "\u2013",
               rec && rec !== stage ? `\u2192 ${rec} empfohlen`
                 : (this.hass.states[this.e("rec")]?.attributes?.hinweis ? "Hinweis \u2013 antippen" : "Phase passt"),
-              rec && rec !== stage ? "#FFD166" : undefined)}
-      </div>
+              rec && rec !== stage ? "#FFD166" : undefined) : nothing}
+      </div>` : nothing}
 
       ${problems.length ? html`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
         ${problems.map(p => html`<span class="badge warn">\u26A0 ${p.label}</span>`)}</div>` : nothing}
 
-      ${evt ? html`<button class="gc logrow" style="width:100%;margin-top:10px;text-align:left"
+      ${(this._config as StationConfig).show_event === true && evt ? html`<button class="gc logrow" style="width:100%;margin-top:10px;text-align:left"
           @click=${() => this.moreInfo(this.e("event"))}>
           <span class="dot" style="background:${LOG_TX[(evt.attributes?.schweregrad as string) === "ok" ? "info" : (evt.attributes?.schweregrad as string)] ?? THEME.info};flex-shrink:0"></span>
           <span class="txt" style="color:rgba(255,255,255,.65)">${evt.state}</span>
@@ -214,7 +218,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
               background:linear-gradient(90deg, ${col}, ${col}cc);
               box-shadow:0 0 8px ${col}66;transition:width .6s"></div>
           </div>
-          <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:3px">
+          <div style="font-size:10.5px;color:rgba(255,255,255,.55);margin-top:3px">
             ${an === false ? "Dunkelphase" : "Leuchtphase"} \u00b7 ${(anteil * 100).toFixed(0)} % verbleibend</div>`
         : nothing}
       </div>

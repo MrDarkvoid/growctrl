@@ -2,7 +2,7 @@
  * GROWCTRL – core/data
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Gedrosselte Daten-Caches: History (5 min TTL, 48 Punkte) und Kalender (10 min).
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.0.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

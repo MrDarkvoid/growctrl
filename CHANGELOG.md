@@ -1,5 +1,32 @@
 # Changelog – GROWCTRL
 
+## [2.7.0-dev]
+
+### Fixes aus dem dritten Live-Test
+- **Licht-Restzeit-Sensor wieder verfügbar:** die neuen Attribute griffen auf ein
+  nicht existierendes Feld zu (`rt.times`) - dadurch crashte der State-Write und
+  riss die frisch hinzugekommenen Sensoren der Plattform gleich mit. Jetzt werden
+  die echten Runtime-Felder genutzt und die Attribute sind crashsicher gekapselt
+- **Klima-Schalter zeigt Zelt-AUS sofort an:** alle GROWCTRL-Entitäten (auch
+  Switches/Selects) folgen jetzt dem Regelzyklus-Signal - Controller-Änderungen
+  erscheinen ohne Verzögerung in der UI
+
+### Karten-Designpass
+- Hero-Informationssystem meldet nur noch Warnungen/Fehler („Licht AN“ ist keine
+  Warnung mehr); Status-Pille entsprechend; Groß-/Kleinschreibungs-Fix für den
+  neuen „OK/Problem“-Status
+- Hero: 24h-Chart ist opt-in (`show_chart: true`) - der VPD-Zonen-Balken führt
+- Station: Alter-KPI (`show_age`) und Ereigniszeile (`show_event`) sind jetzt
+  Optionen mit Standard AUS; das Alter zeigt die Pflanzen-Karte („Wo 2 · Tag 3“)
+- Typografie: größere Mindestschriften, hellere Sekundärtexte, lesbarere
+  Chart-Achsen; KPI-Kacheln mit einheitlicher Höhe (Symmetrie)
+
+### Lizenz & Herkunft
+- **Lizenzwechsel:** MIT → GROWCTRL Source-Available License (GC-SAL 1.0) -
+  privat/nicht-kommerziell frei mit Namensnennung, alles Weitere nur mit
+  Zustimmung; Anleitung in `docs/lizenz.md`
+- Dezente Herkunfts-Signatur in Integration und Karten-Bundle
+
 ## [2.6.0-dev]
 
 ### Fixes aus dem zweiten Live-Test

@@ -1,7 +1,7 @@
 <!--
 GROWCTRL – Log-Referenz
 Zweck: Vollstaendige Referenz der Blueprint-Log-Formate. Definiert das Parser-Verhalten der Karten (cards/core) bis zur Abloesung durch Integrations-Events.
-Version: 2.0.0-dev | Lizenz: MIT
+Version: 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 Autor: MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 -->
 # Log-Referenz – Hydro Automation System

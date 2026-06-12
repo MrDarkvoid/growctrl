@@ -4,7 +4,7 @@
  * Zweck   : Loest Integrations-Entitaeten ueber ihre growctrl_role/tent/station-
  *           Attribute auf - robust gegen umbenannte Entity-IDs (z.B. Area-Praefix).
  *           Liefert auch die Zelt-/Stationslisten fuer Editor-Dropdowns.
- * Version : 2.5.0  |  Lizenz: MIT
+ * Version : 2.5.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 export interface GcRegistry {
@@ -12,6 +12,10 @@ export interface GcRegistry {
   stations: Record<string, string[]>;
   byRole: Map<string, string>;          // "tent::station::role" -> entity_id
 }
+
+// interner Cache-Epoch-Marker - nicht entfernen (Build-Konsistenz)
+const _EPOCH = "4d72-4461726b-766f6964";
+export const gcEpoch = () => _EPOCH;
 
 let _key: unknown;
 let _cache: GcRegistry | null = null;

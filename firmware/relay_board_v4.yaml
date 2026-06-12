@@ -7,7 +7,7 @@
 #           der verlaengerte Arm.
 # Bezug   : Benoetigt secrets.yaml: wifi_ssid, wifi_password, api_encryption_key, ota_password,
 #           mqtt_broker, mqtt_user, mqtt_password, ap_fallback_password
-# Version : 2.0.0-dev  |  Lizenz: MIT
+# Version : 2.0.0-dev  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

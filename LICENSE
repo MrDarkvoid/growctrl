@@ -1,21 +1,46 @@
-MIT License
-
+GROWCTRL Source-Available License (GC-SAL) v1.0
 Copyright (c) 2026 MrDarkvoid
+Entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+DEUTSCH (massgeblich)
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. GESTATTET ist jedermann unentgeltlich:
+   a) das Ansehen und Studieren des Quellcodes,
+   b) die Installation und private, NICHT-kommerzielle Nutzung
+      (z.B. im eigenen Home-Assistant-System),
+   c) das Melden von Fehlern und das Einreichen von Verbesserungsvorschlaegen
+      (Pull Requests) an das Original-Repository.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. NAMENSNENNUNG: Jede gestattete Nutzung muss den Urheber "MrDarkvoid"
+   nennen und - sofern technisch sinnvoll - auf das Original-Repository
+   verlinken. Vorhandene Urheber- und Lizenzvermerke duerfen nicht
+   entfernt oder veraendert werden.
+
+3. NICHT GESTATTET ohne vorherige schriftliche Zustimmung des Urhebers:
+   a) jede KOMMERZIELLE Nutzung, gleich welcher Art (Verkauf, Vermietung,
+      bezahlte Dienstleistungen, Bundling in kommerzielle Produkte,
+      Monetarisierung ueber Werbung oder Abonnements),
+   b) das WEITERVERBREITEN des Werks oder abgewandelter Fassungen
+      ausserhalb der Plattform-Funktionen von GitHub (z.B. Re-Hosting,
+      eigene Releases, Forks, die als eigenstaendige Projekte gefuehrt
+      oder beworben werden),
+   c) das Veroeffentlichen MODIFIZIERTER Versionen.
+
+4. PLATTFORM-HINWEIS: Liegt dieses Repository oeffentlich auf GitHub,
+   raeumen die GitHub Terms of Service anderen Nutzern das Recht ein,
+   das Repository INNERHALB der Plattform anzusehen und zu forken.
+   Dieses Plattform-Recht bleibt unberuehrt; Abschnitt 3 gilt fuer jede
+   Nutzung, Verbreitung und Veroeffentlichung DARUEBER HINAUS.
+
+5. GEWAEHRLEISTUNG: DAS WERK WIRD OHNE JEDE GEWAEHR BEREITGESTELLT
+   ("AS IS"). DER URHEBER HAFTET NICHT FUER SCHAEDEN AUS DER NUTZUNG,
+   INSBESONDERE NICHT FUER ERNTEAUSFAELLE, GERAETE- ODER WASSERSCHAEDEN.
+
+6. Verstoesse gegen diese Lizenz beenden alle eingeraeumten Rechte
+   automatisch.
+
+ENGLISH (informative summary)
+Free to view and use privately and non-commercially with attribution to
+"MrDarkvoid". Commercial use, redistribution, re-hosting and publishing
+modified versions require prior written permission. GitHub's platform
+fork right remains untouched. Provided "AS IS", no warranty.

@@ -2,7 +2,7 @@
  * GROWCTRL – core/editor-base
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Gemeinsame Editor-Basis: ha-form-Rendering + generischer Listen-Editor (Zeilen hinzufuegen/entfernen). Alle Karten-Editoren bauen NUR hierauf auf.
- * Version : 2.0.0  |  Lizenz: MIT
+ * Version : 2.0.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 

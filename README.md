@@ -6,7 +6,7 @@
 (Zelte + Stationen, Klima, DLI, Failsafe, Informationssystem) plus elf aufeinander
 abgestimmte Dashboard-Karten. Keine YAML-Helfer, keine Blueprints nötig.
 
-> Entwickelt von **MrDarkvoid** in Zusammenarbeit mit Claude (Anthropic), Vibe Coding · Lizenz MIT
+> Entwickelt von **MrDarkvoid** in Zusammenarbeit mit Claude (Anthropic), Vibe Coding · Lizenz GC-SAL 1.0
 
 ---
 
@@ -150,7 +150,7 @@ fertiges Beispiel: **`examples/zelt_gross_komplett.yaml`**.
 
 ## Credits & Lizenz
 
-MIT — © MrDarkvoid. Entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding.
+GC-SAL 1.0 — © MrDarkvoid. Entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding.
 
 
 ## Entitäten-Organisation
@@ -158,3 +158,24 @@ Jedes Gerät trennt seine Entitäten in drei Bereiche: **Steuerung** (Automatik,
 Phase, Zelt/Klima-Schalter), **Konfiguration** (Lichtzeiten, Pumpenzyklen, Keimstart,
 Schwellen, Sollwerte) und **Diagnose** (Problem-Sensoren, Watchdog). So bleibt die
 Geräteseite aufgeräumt und Dashboards zeigen nur, was täglich gebraucht wird.
+
+
+## Lizenz
+GROWCTRL steht unter der **GROWCTRL Source-Available License (GC-SAL 1.0)**:
+privat und nicht-kommerziell frei nutzbar mit Namensnennung (**MrDarkvoid**) -
+kommerzielle Nutzung, Re-Hosting und veröffentlichte Modifikationen nur mit
+schriftlicher Zustimmung. Details: [`LICENSE`](LICENSE) · Anleitung &
+ehrliche Hinweise zu GitHub-Forks: [`docs/lizenz.md`](docs/lizenz.md).
+
+## Highlights v2.6/v2.7
+- Zelt AUS = wirklich aus: Licht, Pumpen, O₂, Lüfter, Klima-Aktoren UND
+  Klima-Schalter; alle Schalter zeigen Controller-Änderungen sofort an
+- Sofort-Reaktion: Regelzyklus läuft beim Start und nach jeder Nutzeraktion;
+  Zelt-Schaltungen stoßen alle Stationen direkt an
+- Schutzpaket: Stale-Erkennung (Timeout einstellbar), Trockenlauf-Sperre,
+  Bedarfs-Bewässerung, Leistungs-Plausibilität - alles als Diagnose-Sensoren
+- Watchdog „Letzte Regelung“ + „Zeit im Sollband heute“, persistentes
+  Ereignisprotokoll, Options-Flow zum Nachrüsten
+- Karten: umbenennungssichere Auflösung + echte Dropdowns, Licht-Balken,
+  VPD-Zonen-Balken, Apex-Style-Charts, Vorschau im Kartenwähler,
+  Mobil-Layout, großzügigere Typografie
