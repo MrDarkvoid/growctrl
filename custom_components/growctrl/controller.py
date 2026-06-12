@@ -320,10 +320,19 @@ class TentController(_Base):
             rt.band_date, rt.band_total_s, rt.band_in_s = today, 0.0, 0.0
 
         if not rt.enabled:
+            # Klima-AKTOREN aus - der Automatik-SCHALTER bleibt bewusst erhalten,
+            # damit das Klima beim Reaktivieren des Zelts automatisch weiterlaeuft.
+            if not rt.gate_logged:
+                rt.gate_logged = True
+                rt.add_log("Zelt deaktiviert - Klima pausiert "
+                           "(Automatik-Einstellung bleibt erhalten)", "warning")
             for grp in (rt.humidifier_switches, rt.dehumidifier_switches,
                         rt.exhaust_switches, rt.heater_switches):
                 await self._set_all(grp, False)
             return
+        if rt.gate_logged:
+            rt.gate_logged = False
+            rt.add_log("Zelt wieder aktiv - Klima-Automatik l\u00e4uft weiter")
         if not rt.climate_on:
             return
 

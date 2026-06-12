@@ -26,6 +26,8 @@ _DEFS = [
 
 _TENT_DEFS = [
     ("leaf_offset", "Blatt-Offset", "leaf_offset", -5, 5, 0.1, "K"),
+    # Failsafe: ab wann gelten eingefrorene Temp/RH-Werte als haengend?
+    ("stale_minutes", "Sensor-Timeout (eingefroren nach)", "stale_minutes", 5, 120, 5, "min"),
 ]
 # Klima-Sollwerte je Phase (Flush nutzt Bloom)
 _PHASE_METRICS = [
