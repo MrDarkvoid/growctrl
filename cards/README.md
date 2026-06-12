@@ -100,3 +100,12 @@ manuelle_ubernahme, manueller_eingriff, licht_failsafe, lichtzeiten_unvollstandi
 letztes_ereignis`
 
 Fertige View: `../examples/zelt_gross_komplett.yaml`
+
+
+## Vorschau im Kartenwähler
+Alle GROWCTRL-Karten liefern jetzt eine Live-Vorschau im „Karte hinzufügen“-Dialog:
+fehlen die Beispiel-Entitäten, rendert die Karte automatisch ansprechende Demo-Daten.
+
+## Chart-Stil
+Verlaufs-Diagramme zeichnen seit 2.6 weiche Kurven mit Farbverlaufs-Füllung und
+Endpunkt-Glow (Apex-Look) - betrifft Hero, Zelt, Metric und History.

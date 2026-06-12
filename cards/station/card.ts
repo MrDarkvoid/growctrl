@@ -13,11 +13,13 @@ import {
   cardVars, type StyleConfig, num,
   stEnt, ST, type GcOverrides,
   gcResolve,
+  fmtDur, fmtAge,
 } from "../core/index";
 
 const STAGES = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"];
 
 interface StationConfig {
+  age_format?: "auto" | "tage" | "wochen";
   type: string; tent: string; station: string; name?: string;
   show_settings?: boolean; overrides?: GcOverrides; style?: StyleConfig;
 }
@@ -34,6 +36,11 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
   static getConfigElement() { return document.createElement("growctrl-station-editor"); }
   static getStubConfig() { return { tent: "gross", station: "main1" }; }
 
+  /** Vorschau im Kartenwaehler: Beispieldaten statt leerer Karte. */
+  private get isPreview(): boolean {
+    return !this.hass?.states?.[this.e("stage")];
+  }
+
   private e(key: keyof typeof ST): string {
     const [domain, suffix, role] = ST[key];
     const c = this._config as StationConfig;
@@ -49,9 +56,10 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
   render() {
     const c = this._config as StationConfig;
     if (!this.hass) return nothing;
+    const demo = this.isPreview;
     const stage = this.st(this.e("stage")) ?? "Veg";
     const sc = STAGE_COLORS[stage] ?? STAGE_COLORS.Veg;
-    const auto = this.isOn(this.e("auto"));
+    const auto = this.isOn(this.e("auto")) || demo;
     const wart = this.isOn(this.e("wartung"));
 
     // Probleme + Schweregrad fuer die Karten-Ampel
@@ -59,19 +67,21 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       { e: this.e("pOverride"), label: "Manueller Eingriff" },
       { e: this.e("pFailsafe"), label: "Licht-Failsafe" },
       { e: this.e("pTime"), label: "Zeiten unvollst\u00e4ndig" },
+      { e: this.e("pPump"), label: "Pumpe gesperrt (F\u00fcllstand)" },
+      { e: this.e("pPower"), label: "Licht ohne Leistung" },
     ].filter(p => this.isOn(p.e));
     const evt = this.hass.states[this.e("event")];
     const sev = problems.length ? (this.isOn(this.e("pFailsafe")) ? "critical" : "warning")
       : ((evt?.attributes?.schweregrad as string) === "critical" ? "warning" : "ok");
     const pill = STATUS_PILL[sev] ?? STATUS_PILL.ok;
 
-    const dli = num(this.st(this.e("dli")));
-    const dliFc = num(this.st(this.e("dliFc")));
+    const dli = num(this.st(this.e("dli"))) ?? (demo ? 18.4 : null);
+    const dliFc = num(this.st(this.e("dliFc"))) ?? (demo ? 24.7 : null);
     const dliTarget = this.hass.states[this.e("dli")]?.attributes?.ziel_aktuelle_phase as number | undefined;
-    const age = num(this.st(this.e("age")));
+    const age = num(this.st(this.e("age"))) ?? (demo ? 24 : null);
     const rec = this.st(this.e("rec"));
-    const hasPump = !!this.hass.states[this.e("pumpRest")];
-    const hasDli = !!this.hass.states[this.e("dli")];
+    const hasPump = !!this.hass.states[this.e("pumpRest")] || demo;
+    const hasDli = !!this.hass.states[this.e("dli")] || demo;
 
     const kpi = (label: string, value: string, sub?: string, accent?: string) => html`
       <div class="tile" style="min-width:0">
@@ -138,17 +148,18 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
         })}
       </div>
 
-      <div class="kpis ${hasDli ? "" : hasPump ? "cols-3" : "cols-2"}" style="margin-top:12px">
-        ${kpi("Licht", this.st(this.e("lightRest")) ?? "\u2013",
-              `${this.unit(this.e("lightRest")) || "min"} Restzeit`)}
-        ${hasPump ? kpi("Pumpe", this.st(this.e("pumpRest")) ?? "\u2013",
-              `${this.unit(this.e("pumpRest")) || "min"} Restzeit`) : nothing}
+      ${this.lightRow()}
+
+      <div class="kpis cols-${(hasPump ? 1 : 0) + (hasDli ? 1 : 0) >= 2 ? 3 : 2}" style="margin-top:10px">
+        ${hasPump ? kpi("Pumpe", demo ? "12 min" : fmtDur(Number(this.st(this.e("pumpRest")))),
+              demo ? "Restzeit (Demo)" : "Restzeit") : nothing}
         ${hasDli ? kpi("DLI heute",
               dli !== null ? dli.toFixed(1) : "\u2013",
               dliTarget ? `Ziel ${dliTarget} \u00b7 Prognose ${dliFc !== null ? dliFc.toFixed(1) : "\u2013"}` : undefined,
               dliTarget && dli !== null && dli >= dliTarget ? THEME.ok : undefined) : nothing}
-        ${kpi("Alter", age !== null ? `${age} d` : "\u2013",
-              rec && rec !== stage ? `\u2192 ${rec} empfohlen` : "Phase passt",
+        ${kpi("Alter", age !== null ? fmtAge(age, c.age_format ?? "auto") : "\u2013",
+              rec && rec !== stage ? `\u2192 ${rec} empfohlen`
+                : (this.hass.states[this.e("rec")]?.attributes?.hinweis ? "Hinweis \u2013 antippen" : "Phase passt"),
               rec && rec !== stage ? "#FFD166" : undefined)}
       </div>
 
@@ -169,6 +180,44 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
         ${setting(this.e("overrideMin"), "Man. \u00dcbernahme")}
       </div>` : nothing}
       ${this.renderConfirm()}
+    </div>`;
+  }
+
+  /** Licht-Status als volle Zeile: Lampe + "Licht an fuer 5 h 40 min" + Restzeit-Balken.
+   *  Gelb = restliche LEUCHTzeit (nimmt ab), Blaugrau = restliche Dunkelzeit. */
+  private lightRow() {
+    if (this.isPreview) {
+      const restSt = undefined as any;  // Demo-Zweig unten nutzt Festwerte
+      void restSt;
+      return this.lightRowView(true, "Licht an f\u00fcr 5 h 40 min", 0.62);
+    }
+    const restSt = this.hass.states[this.e("lightRest")];
+    const rest = Number(restSt?.state);
+    const a = restSt?.attributes ?? {};
+    const an = a.zustand ? a.zustand === "an" : undefined;
+    const text = a.text ?? (isNaN(rest) ? "\u2013" : `Restzeit ${fmtDur(rest)}`);
+    const anteil = typeof a.anteil === "number" ? Math.min(1, Math.max(0, a.anteil)) : null;
+    return this.lightRowView(an, text, anteil);
+  }
+
+  private lightRowView(an: boolean | undefined, text: string, anteil: number | null) {
+    const col = an === false ? "#7A8CA8" : "#FFD166";
+    return html`<div class="tile" style="margin-top:12px;display:flex;align-items:center;gap:12px">
+      <ha-icon icon="${an === false ? "mdi:lightbulb-outline" : "mdi:lightbulb-on"}"
+        style="--mdc-icon-size:26px;color:${col};flex-shrink:0;
+               ${an !== false ? `filter:drop-shadow(0 0 7px ${col})` : ""}"></ha-icon>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9)">${text}</div>
+        ${anteil !== null ? html`
+          <div style="height:7px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:6px;overflow:hidden">
+            <div style="height:100%;width:${(anteil * 100).toFixed(1)}%;border-radius:4px;
+              background:linear-gradient(90deg, ${col}, ${col}cc);
+              box-shadow:0 0 8px ${col}66;transition:width .6s"></div>
+          </div>
+          <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:3px">
+            ${an === false ? "Dunkelphase" : "Leuchtphase"} \u00b7 ${(anteil * 100).toFixed(0)} % verbleibend</div>`
+        : nothing}
+      </div>
     </div>`;
   }
 }

@@ -86,6 +86,8 @@ Test-Leitfaden vor dem Echtbetrieb: **`docs/testplan.md`**.
 | Letzte Regelung | sensor | Watchdog-Heartbeat (Timestamp) |
 | Füllstand Minimum | number | Trockenlauf-Schutz (nur mit Füllstand-Sensor) |
 | Bodenfeuchte-Schwelle | number | Erde: bewässern nur unterhalb (nur mit Sensor) |
+| Pumpe gesperrt (Füllstand) | binary_sensor | Trockenlauf-Schutz aktiv (nur mit Füllstand-Sensor) |
+| Licht ohne Leistung | binary_sensor | Plausibilitäts-Alarm (nur mit Leistungssensor) |
 
 ## 5. Was das System überwacht und absichert
 
@@ -149,3 +151,10 @@ fertiges Beispiel: **`examples/zelt_gross_komplett.yaml`**.
 ## Credits & Lizenz
 
 MIT — © MrDarkvoid. Entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding.
+
+
+## Entitäten-Organisation
+Jedes Gerät trennt seine Entitäten in drei Bereiche: **Steuerung** (Automatik, Wartung,
+Phase, Zelt/Klima-Schalter), **Konfiguration** (Lichtzeiten, Pumpenzyklen, Keimstart,
+Schwellen, Sollwerte) und **Diagnose** (Problem-Sensoren, Watchdog). So bleibt die
+Geräteseite aufgeräumt und Dashboards zeigen nur, was täglich gebraucht wird.

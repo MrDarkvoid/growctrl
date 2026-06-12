@@ -58,12 +58,13 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
     const c = this._config as HeroConfig;
     if (!this.hass) return nothing;
     const vpdSt = this.hass.states[this.te("vpd")];
-    const v = num(vpdSt?.state);
-    const t = vpdSt?.attributes?.temp as number | null;
-    const h = vpdSt?.attributes?.rh as number | null;
+    const demo = !vpdSt && !this.hass.states[this.te("enabled")];
+    const v = num(vpdSt?.state) ?? (demo ? 1.06 : null);
+    const t = (vpdSt?.attributes?.temp as number | null) ?? (demo ? 22.4 : null);
+    const h = (vpdSt?.attributes?.rh as number | null) ?? (demo ? 52 : null);
     const phaseEff = (vpdSt?.attributes?.phase_effektiv as string) ?? "";
     const targets = vpdSt?.attributes?.sollwerte as { vpd_min: number; vpd_max: number } | undefined;
-    const enabled = this.isOn(this.te("enabled"));
+    const enabled = this.isOn(this.te("enabled")) || demo;
     const climate = this.isOn(this.te("climate"));
     const statusSt = this.hass.states[this.te("status")];
     const tentProblems = (statusSt?.attributes?.probleme as string[]) ?? [];
@@ -126,6 +127,8 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
           <div class="val" style="font-size:22px;color:${v !== null && targets && v >= targets.vpd_min && v <= targets.vpd_max ? THEME.ok : "#FFD166"}">${v !== null ? v.toFixed(2) : "\u2013"}<span class="unit">kPa</span></div></div>
       </div>
 
+      ${this.vpdZoneBar(v, targets ?? null)}
+
       ${c.show_chart !== false && this._hist.length > 1 ? html`
         <div class="seclbl">VPD \u00b7 ${c.hours ?? 24}h</div>
         ${lineChart([{ data: this._hist, color: THEME.ok }],
@@ -146,6 +149,44 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
         : html`<div class="logrow" style="background:${LOG_BG.ok};margin-top:4px">
             <span class="txt" style="color:${THEME.ok}">\u2713 Alle Systeme arbeiten normal</span></div>`}
       ${this.renderConfirm()}
+    </div>`;
+  }
+
+  /** VPD-Zonen-Balken: auf einen Blick sehen, ob der Wert in der richtigen Zone liegt. */
+  private vpdZoneBar(v: number | null, targets: { vpd_min: number; vpd_max: number } | null) {
+    const ZONES = [
+      { to: 0.4, col: "#5B8DEF", lbl: "zu feucht" },
+      { to: 0.8, col: "#58E0A5", lbl: "Seedling" },
+      { to: 1.2, col: "#34D17B", lbl: "Veg" },
+      { to: 1.6, col: "#FFB35C", lbl: "Bloom" },
+      { to: 2.0, col: "#FF6B6B", lbl: "zu trocken" },
+    ];
+    const MAXV = 2.0;
+    const pos = v !== null ? Math.min(1, Math.max(0, v / MAXV)) * 100 : null;
+    let from = 0;
+    return html`<div style="margin-top:12px">
+      <div style="position:relative;height:12px;border-radius:6px;
+                  display:flex;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)">
+        ${ZONES.map(z => {
+          const wPct = ((z.to - from) / MAXV) * 100; const first = from === 0; from = z.to;
+          return html`<div style="width:${wPct}%;background:${z.col};opacity:.75;
+            ${first ? "border-radius:6px 0 0 6px;" : ""}
+            ${z.to === MAXV ? "border-radius:0 6px 6px 0;" : ""}"></div>`;
+        })}
+        ${targets ? html`<div style="position:absolute;top:-2px;bottom:-2px;
+          left:${(targets.vpd_min / MAXV) * 100}%;width:${((targets.vpd_max - targets.vpd_min) / MAXV) * 100}%;
+          border:1.5px solid rgba(255,255,255,.85);border-radius:4px;pointer-events:none"></div>` : nothing}
+        ${pos !== null ? html`<div style="position:absolute;top:-4px;bottom:-4px;left:${pos}%;
+          width:3px;margin-left:-1.5px;background:#fff;border-radius:2px;
+          box-shadow:0 0 6px rgba(255,255,255,.9)"></div>` : nothing}
+      </div>
+      <div style="display:flex;margin-top:4px">
+        ${(() => { let f2 = 0; return ZONES.map(z => {
+          const wPct = ((z.to - f2) / MAXV) * 100; f2 = z.to;
+          return html`<div style="width:${wPct}%;text-align:center;font-size:8.5px;
+            color:rgba(255,255,255,.45);overflow:hidden;white-space:nowrap">${z.lbl}</div>`;
+        }); })()}
+      </div>
     </div>`;
   }
 }

@@ -47,7 +47,7 @@ export class GrowctrlMetricCard extends GrowctrlBaseCard {
   render() {
     const c = this._config as MetricConfig;
     if (!this.hass) return nothing;
-    const v = num(this.st(c.entity));
+    const v = num(this.st(c.entity)) ?? (!this.hass.states[c.entity] ? 1.84 : null);
     const bad = v !== null && ((c.min !== undefined && v < c.min) || (c.max !== undefined && v > c.max));
     const color = v === null ? "rgba(255,255,255,.4)" : bad ? THEME.crit : THEME.ok;
     const dec = c.decimals ?? 2;

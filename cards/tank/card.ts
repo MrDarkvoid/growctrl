@@ -28,7 +28,8 @@ export class GrowctrlTankCard extends GrowctrlBaseCard {
   render() {
     const c = this._config as TankConfig;
     if (!this.hass) return nothing;
-    const pct = Math.min(100, Math.max(0, num(this.st(c.entity)) ?? 0));
+    const demo = !this.hass.states[c.entity];
+    const pct = Math.min(100, Math.max(0, num(this.st(c.entity)) ?? (demo ? 62 : 0)));
     const low = c.min !== undefined && pct < c.min;
     const color = low ? THEME.crit : pct < (c.min ?? 0) + 15 ? THEME.warn : "#4FC3F7";
     const liters = c.volume_l ? (pct / 100) * c.volume_l : null;

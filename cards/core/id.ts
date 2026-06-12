@@ -41,6 +41,8 @@ export const ST = {
   pOverride: ["binary_sensor", "manueller_eingriff", "problem_override"],
   pFailsafe: ["binary_sensor", "licht_failsafe", "problem_light_failsafe"],
   pTime: ["binary_sensor", "lichtzeiten_unvollstandig", "problem_time_invalid"],
+  pPump: ["binary_sensor", "pumpe_gesperrt_fullstand", "problem_pump_blocked"],
+  pPower: ["binary_sensor", "licht_ohne_leistung", "problem_power"],
 } as const;
 
 export const TENT = {

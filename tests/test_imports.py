@@ -97,3 +97,15 @@ def test_config_flow_handler_vorhanden():
     assert hasattr(flow, "async_step_user")
     assert hasattr(flow, "async_step_tent")
     assert hasattr(flow, "async_step_station")
+
+
+def test_config_flow_schemas_buildable():
+    """Die lazy gebauten Flow-Schemas muessen sich fehlerfrei erzeugen lassen.
+
+    Haette den Live-NameError (CONF_POWER_SENSOR fehlte im Import) gefangen,
+    der den Stations-Options-Flow mit 500 abstuerzen liess.
+    """
+    import importlib
+    cf = importlib.import_module("custom_components.growctrl.config_flow")
+    assert cf._tent_schema() is not None
+    assert cf._station_schema(["testzelt"]) is not None

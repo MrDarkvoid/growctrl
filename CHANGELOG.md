@@ -1,5 +1,33 @@
 # Changelog – GROWCTRL
 
+## [2.6.0-dev]
+
+### Fixes aus dem zweiten Live-Test
+- **Stations-Options-Flow 500er behoben:** fehlender `CONF_POWER_SENSOR`-Import in
+  `config_flow.py` (NameError); neuer Test ruft die Flow-Schemas jetzt wirklich auf
+- **Zelt AUS = wirklich aus:** Gate schaltet zusätzlich O₂ + Lüfter ab und setzt den
+  Klima-Automatik-Schalter mit auf AUS (inkl. Log-Eintrag)
+- **Stationen reagieren sofort auf Zelt-Schaltungen** (kick_stations statt Minutentakt)
+- **24-h-Phasen-Hinweis statt Fehlempfehlung:** „Tag 4: laut Richtwert noch 'Seedling'
+  (bis Tag 14)“, wenn die Phase manuell vorgezogen wurde - kein Rückwechsel-Zwang
+- **Sensor-Timeout konfigurierbar** (Zelt-Number, Standard 30 min statt 15)
+- **Umlaute** in allen Entitätsnamen und Log-Texten (IDs bleiben sauber slugifiziert)
+
+### Integration
+- Alter-Sensor: Einheit „Tage“ + Wochen-Attribute (`woche`, `tag_in_woche`, `text_wochen`)
+- Licht-Restzeit: Attribute `zustand`/`text`/`anteil` („Licht an für 5 h 40 min“)
+- Neue Diagnose-Sensoren: Pumpe gesperrt (Füllstand), Licht ohne Leistung,
+  Klima-Sensoren eingefroren
+- Entitäten getrennt in Steuerung / Konfiguration / Diagnose (EntityCategory)
+
+### Karten
+- Stations-Karte: **Licht-Balken** (Lampe mit Glow, Klartext, Restzeit-Balken gelb/blaugrau),
+  Alter-Format-Option, neue Problem-Badges
+- Hero: **VPD-Zonen-Balken** mit Sollband-Rahmen und Ist-Marker
+- Charts im Apex-Stil: weiche Kurven, Gradient-Füllung, Endpunkt-Glow
+- Mehr Kontrast: kräftigere Ränder + tiefere Schatten
+- **Live-Vorschau im Kartenwähler** (Demo-Daten, `preview: true`)
+
 ## [2.5.0-dev]
 
 ### Fixes aus dem ersten Live-Test

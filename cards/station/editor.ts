@@ -16,6 +16,10 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       this.stationSelect(this._config?.tent),
       SEL.text("name", "Anzeigename (optional)"),
       SEL.bool("show_settings", "Einstellungen-Zahnrad anzeigen"),
+      SEL.select("age_format", "Alter anzeigen als", [
+        { value: "auto", label: "Automatisch (ab Woche 2 in Wochen)" },
+        { value: "tage", label: "Immer Tage" },
+        { value: "wochen", label: "Immer Wochen" }]),
     ];
     return html`${this.form(main)}
       ${this.styleSection()}

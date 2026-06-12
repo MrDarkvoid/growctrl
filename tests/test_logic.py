@@ -168,9 +168,15 @@ def test_stage_recommendation():
     assert rec == "Veg" and note is not None
     rec, note = logic.stage_recommendation(115, "Flush", md, order)
     assert rec == "Trocknung"
-    # Keine Empfehlung "zurueck": Bloom an Tag 20 bleibt Bloom
+    # Kein Rueckwechsel erzwingen - aber Hinweis: Tag 20 waere laut Richtwert noch Veg
     rec, note = logic.stage_recommendation(20, "Bloom", md, order)
-    assert rec == "Bloom" and note is None
+    assert rec == "Bloom" and note is not None and "Veg" in note
+    # Der Live-Befund: Tag 4 + Phase Veg -> Hinweis "noch Seedling (bis Tag 14)"
+    rec, note = logic.stage_recommendation(4, "Veg", md, order)
+    assert rec == "Veg" and "Seedling" in note and "14" in note
+    # Phase passt exakt -> kein Hinweis
+    rec, note = logic.stage_recommendation(4, "Seedling", md, order)
+    assert rec == "Seedling" and note is None
     rec, note = logic.stage_recommendation(None, "Veg", md, order)
     assert rec == "Veg" and note is None
 

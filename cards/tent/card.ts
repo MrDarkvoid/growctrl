@@ -73,7 +73,8 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
     const c = this._config as TentConfig;
     if (!this.hass) return nothing;
     const vpdSt = this.hass.states[this.e("vpd")];
-    const v = num(vpdSt?.state);
+    const demo = !vpdSt && !this.hass.states[this.e("enabled")];
+    const v = num(vpdSt?.state) ?? (demo ? 1.06 : null);
     const t = vpdSt?.attributes?.temp as number | null;
     const h = vpdSt?.attributes?.rh as number | null;
     const phaseEff = (vpdSt?.attributes?.phase_effektiv as string) ?? "Veg";

@@ -86,8 +86,8 @@ export const sharedStyles = css`
     border-radius: var(--gc-radius, 20px);
     padding: 18px 18px 16px;
     color: #fff;
-    border: 1px solid rgba(255,255,255,.07);
-    box-shadow: 0 12px 32px -20px rgba(0,0,0,.9);
+    border: 1px solid rgba(255,255,255,.13);
+    box-shadow: 0 14px 38px -16px rgba(0,0,0,.75), 0 2px 8px rgba(0,0,0,.35);
     font-family: var(--primary-font-family, "Inter", Roboto, sans-serif);
     overflow: hidden;
   }
@@ -120,7 +120,7 @@ export const sharedStyles = css`
     font-size: 12px; font-weight: 800; padding: 6px 13px; border-radius: 20px; white-space: nowrap; }
   .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
   .grid { display: grid; gap: 8px; margin-top: 10px; }
-  .tile { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.06);
+  .tile { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09);
           border-radius: 14px; padding: 11px 13px; min-width: 0; transition: background .15s; }
   button.tile:hover { background: rgba(255,255,255,.08); }
   .tile .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .8px;

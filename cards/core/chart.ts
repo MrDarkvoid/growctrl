@@ -19,7 +19,24 @@ export interface ChartOpts {
 const PADL = 30, PADR = 4, PADT = 6, PADB = 14;
 
 /** Mehrserien-Liniendiagramm als Lit-Template. */
+let _gradSeq = 0;  // eindeutige Gradient-IDs pro Chart-Render
+
+/** Catmull-Rom -> kubische Bezier: weiche "Apex-Style"-Kurven statt Polylinien. */
+function smoothPath(pts: Array<[number, number]>): string {
+  if (pts.length < 3) return `M${pts.map(p => p.join(",")).join(" L")}`;
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1],
+          p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+
 export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
+  const gid = `gcg${_gradSeq++}`;
   const w = o.w ?? 300, h = o.h ?? 110;
   const all = series.flatMap(s => s.data);
   if (!all.length) return html`<div style="height:${h}px;display:flex;align-items:center;justify-content:center;
@@ -46,17 +63,27 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
         <text x="${PADL - 4}" y="${Y(v) + 3}" text-anchor="end"
           font-size="8" fill="rgba(255,255,255,.4)">${fmt(v)}</text>`;
     })}
-    ${series.map(s => {
+    ${series.map((s, si) => {
       if (s.data.length < 2) return nothing;
-      const pts = s.data.map((v, i) => `${X(i, s.data.length).toFixed(1)},${Y(v).toFixed(1)}`);
-      const path = `M${pts.join(" L")}`;
+      const pts: Array<[number, number]> = s.data.map((v, i) =>
+        [Number(X(i, s.data.length).toFixed(1)), Number(Y(v).toFixed(1))]);
+      const path = smoothPath(pts);
+      const lx = pts[pts.length - 1][0], ly = pts[pts.length - 1][1];
       return svg`
-        ${s.fill !== false ? svg`<path d="${path} L${X(s.data.length - 1, s.data.length)},${h - PADB} L${PADL},${h - PADB} Z"
-          fill="${s.color}" opacity=".10"/>` : nothing}
-        <path d="${path}" fill="none" stroke="${s.color}" stroke-width="1.8"
+        <defs>
+          <linearGradient id="${gid}-${si}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${s.color}" stop-opacity=".32"/>
+            <stop offset="100%" stop-color="${s.color}" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        ${s.fill !== false ? svg`<path
+          d="${path} L${lx},${h - PADB} L${PADL},${h - PADB} Z"
+          fill="url(#${gid}-${si})"/>` : nothing}
+        <path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.2"
           stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${X(s.data.length - 1, s.data.length)}" cy="${Y(s.data[s.data.length - 1])}"
-          r="2.6" fill="${s.color}"/>`;
+        <circle cx="${lx}" cy="${ly}" r="6" fill="${s.color}" opacity=".18"/>
+        <circle cx="${lx}" cy="${ly}" r="3" fill="${s.color}"/>
+        <circle cx="${lx}" cy="${ly}" r="1.3" fill="rgba(10,14,18,.9)"/>`;
     })}
     <text x="${PADL}" y="${h - 3}" font-size="8" fill="rgba(255,255,255,.35)">-24h</text>
     <text x="${w - PADR}" y="${h - 3}" text-anchor="end" font-size="8" fill="rgba(255,255,255,.35)">jetzt</text>
