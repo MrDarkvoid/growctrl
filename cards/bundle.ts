@@ -2,7 +2,7 @@
  * GROWCTRL – bundle
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
  * Zweck   : Bundle-Einstieg: registriert alle GROWCTRL-Karten. Build-Ziel: dist/growctrl-cards.js (HACS Dashboard-Repo).
- * Version : 2.3.0  |  Lizenz: MIT
+ * Version : 2.4.0  |  Lizenz: MIT
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -18,14 +18,14 @@ import "./tank/card";
 import "./history/card";
 import "./metric/card";
 
-const VERSION = "2.3.0";
+const VERSION = "2.4.0";
 const CARDS = [
   { type: "growctrl-tent-card",     name: "GROWCTRL Tent",     description: "Zelt-Hero: Klima-KPIs, VPD-Skala, Status-Ampel" },
   { type: "growctrl-station-card",  name: "GROWCTRL Station",  description: "Station: Licht-/Pumpenbalken, Stage, Auto, Konfiguration" },
   { type: "growctrl-controls-card", name: "GROWCTRL Controls", description: "Aktoren-Raster mit Gruppen und Bestaetigung" },
   { type: "growctrl-sensors-card",  name: "GROWCTRL Sensors",  description: "Sensor-Kacheln mit Sparklines" },
   { type: "growctrl-plants-card",   name: "GROWCTRL Plants",   description: "Pflanzen, Keimdatum, Kalender" },
-  { type: "growctrl-status-card",   name: "GROWCTRL Status",   description: "Uebersetzte Logs, Ampel, Experten-Modus" },
+  { type: "growctrl-status-card",   name: "GROWCTRL Status",   description: "Ereignisprotokoll der Integration mit Schweregrad-Ampel" },
   { type: "growctrl-hero-card",     name: "GROWCTRL Hero",     description: "Globale Steuerung, Klima-KPIs, VPD-Chart, Informationssystem" },
   { type: "growctrl-checkup-card",  name: "GROWCTRL Checkup",  description: "Ampel-Uebersicht aller Zelte/Stationen mit Auswertung" },
   { type: "growctrl-tank-card",     name: "GROWCTRL Tank",     description: "DWC-Fuellstand mit Animation und Warnstufe" },

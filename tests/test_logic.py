@@ -175,3 +175,17 @@ def test_aggregate_light_votes():
     assert logic.aggregate_light_votes({"a": False, "b": True}) is True
     assert logic.aggregate_light_votes({"a": False, "b": False}) is False
     assert logic.aggregate_light_votes({}) is False
+
+
+def test_effective_climate_phase():
+    order = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"]
+    s2c = {"Seedling": "Seedling", "Veg": "Veg", "Bloom": "Bloom",
+           "Flush": "Bloom", "Trocknung": "Trocknung"}
+    # Manuell gewaehlt gewinnt immer
+    assert logic.effective_climate_phase("Bloom", ["Seedling"], s2c, order) == "Bloom"
+    # Auto: am weitesten fortgeschrittene Station fuehrt
+    assert logic.effective_climate_phase("Auto", ["Seedling", "Bloom"], s2c, order) == "Bloom"
+    # Flush zaehlt klimatisch als Bloom
+    assert logic.effective_climate_phase("Auto", ["Veg", "Flush"], s2c, order) == "Bloom"
+    # Keine Stationen -> Veg als sicherer Default
+    assert logic.effective_climate_phase("Auto", [], s2c, order) == "Veg"

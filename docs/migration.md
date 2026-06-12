@@ -18,7 +18,7 @@ in Entwicklertools → Zustände prüfen (HA-Slugification).
 |---|---|
 | `input_boolean.hydro_auto_<t>_<s>` | `switch.growctrl_<t>_<s>_automatik` |
 | `input_boolean.hydro_wartung_<t>_<s>` | `switch.growctrl_<t>_<s>_wartung` |
-| `input_boolean.hydro_testmodus_<t>_<s>` | `switch.growctrl_<t>_<s>_testmodus` |
+| `input_boolean.hydro_testmodus_<t>_<s>` | **entfällt** (v2.4: Wartung deckt den Anwendungsfall ab) |
 | `input_select.hydro_phase_<t>_<s>` | `select.growctrl_<t>_<s>_wachstumsphase` (inkl. **Trocknung**) |
 | `input_datetime.hydro_licht_an_<t>_<s>` | `time.growctrl_<t>_<s>_licht_an` |
 | `input_datetime.hydro_licht_aus_sv_<t>_<s>` | `time.growctrl_<t>_<s>_licht_aus_seedling_veg` |

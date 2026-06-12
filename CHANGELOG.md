@@ -1,5 +1,30 @@
 # Changelog – GROWCTRL
 
+## [2.4.0-dev]
+
+### Integration
+- **Manuelle Übernahme:** Handschaltungen werden erkannt und für eine konfigurierbare Zeit
+  respektiert (Number „Manuelle Übernahme" je Station, Default 60 min, 0 = sofort zurück);
+  danach kehrt die Automatik zum Lichtplan zurück
+- **Klima folgt der Phase:** Sollwerte (VPD min/max, RH min/max) je Phase als Number-Entities
+  (Seedling/Veg/Bloom/Trocknung; Flush nutzt Bloom); Select „Klima-Phase" mit **Auto** =
+  führende Stations-Phase; VPD-Sensor zeigt `phase_effektiv` + `sollwerte`
+- **Testmodus entfernt** — Wartung deckt den Anwendungsfall ab
+- Menü-Texte des Config Flows korrigiert (DLI ist Stations-Funktion)
+
+### Karten (integrations-nativ, v2.4)
+- **Station, Zelt, Hero, Ereignisprotokoll von Grund auf neu**: Entity-IDs werden automatisch
+  aus Zelt-/Stationsnamen abgeleitet (`overrides:` für Abweichungen) — keine Legacy-Helfer mehr
+- Station: Auto-Pill + Wartungs-Icon, Phasen-Chips schalten das Select, KPI-Reihe
+  (Licht/Pumpe/DLI mit Ziel/Alter mit Empfehlung), Ereigniszeile, Problem-Badges, Zahnrad-Einstellungen
+- Zelt: Modus-/Phasen-Chips, Sollband-Chart der effektiven Phase, Problemliste
+- Ereignisprotokoll liest die `verlauf`-Attribute der Letztes-Ereignis-Sensoren
+
+### Doku
+- README (Root + cards) komplett neu strukturiert; Tabellen für Entitäten, Erkennungen,
+  Failsafes; `docs/testplan.md` (kompletter Test-Leitfaden);
+  `examples/zelt_gross_komplett.yaml` (fertige View für ein Zelt inkl. Stationen)
+
 ## [2.3.0-dev]
 
 ### Geändert (Feedback)

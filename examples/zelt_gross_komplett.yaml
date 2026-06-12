@@ -1,0 +1,75 @@
+#==============================================================================
+# GROWCTRL – Beispiel: Zelt "gross" komplett (Hero + Klima + 2 Stationen)
+# Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
+# Zweck   : Fertige Dashboard-View fuer EIN Zelt inkl. Stationen, Protokoll,
+#           Diagrammen, EC/Fuellstand und Aktoren. Voraussetzung: Integration
+#           mit Zelt "gross" + Stationen "main1"/"main2" eingerichtet.
+#           Alle growctrl_*-Entity-IDs leiten die Karten automatisch ab.
+# Version : 2.4.0 | Lizenz: MIT
+# Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
+#==============================================================================
+title: Zelt Gross
+path: zelt-gross
+type: sections
+max_columns: 2
+sections:
+
+  # ───────── Spalte 1: Hero + Klima ─────────
+  - type: grid
+    cards:
+      - type: custom:growctrl-hero-card
+        tent: gross
+        title: Growroom · Gross
+        logo: /local/growctrl/logo.png          # Datei nach /config/www/growctrl/ kopieren
+        stations:
+          - { station: main1, name: Main 1 }
+          - { station: main2, name: Main 2 }
+
+      - type: custom:growctrl-tent-card
+        tent: gross
+        name: Klima Zelt Gross
+
+      - type: custom:growctrl-status-card
+        title: Ereignisprotokoll
+        limit: 14
+        sources:
+          - { entity: sensor.growctrl_gross_main1_letztes_ereignis, name: Main 1 }
+          - { entity: sensor.growctrl_gross_main2_letztes_ereignis, name: Main 2 }
+          - { entity: sensor.growctrl_zelt_gross_letztes_ereignis,  name: Klima }
+
+  # ───────── Spalte 2: Stationen + Messwerte ─────────
+  - type: grid
+    cards:
+      - type: custom:growctrl-station-card
+        tent: gross
+        station: main1
+        name: Grow · Main 1
+
+      - type: custom:growctrl-station-card
+        tent: gross
+        station: main2
+        name: Grow · Main 2
+
+      - type: custom:growctrl-history-card     # Zelt-Sensoren (eigene IDs eintragen)
+        title: Klima · 24h
+        sensors:
+          - { entity: sensor.us_grow_zelt_gross_temperature, name: Temp }
+          - { entity: sensor.us_grow_zelt_gross_humidity, name: RH }
+
+      - type: custom:growctrl-metric-card      # DWC-Wasserwert mit Sollband
+        entity: sensor.gc_slot1_ec1
+        name: EC · Main 1
+        min: 1.2
+        max: 2.2
+
+      - type: custom:growctrl-tank-card
+        title: Tank · Main 1
+        entity: sensor.gc_slot1_level1
+        min: 30
+        volume_l: 60
+
+      - type: custom:growctrl-controls-card    # zentrale Aktoren des Zelts
+        title: Aktoren Zelt Gross
+        controls:
+          - { entity: switch.gz_gross_o2_zentral, name: O₂ zentral, group: Zelt }
+          - { entity: switch.gz_gross_umluft, name: Umluft, group: Zelt }

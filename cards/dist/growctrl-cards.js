@@ -1,6 +1,6 @@
-var ut=globalThis,gt=ut.ShadowRoot&&(ut.ShadyCSS===void 0||ut.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,_t=Symbol(),ae=new WeakMap,et=class{constructor(t,e,s){if(this._$cssResult$=!0,s!==_t)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o,e=this.t;if(gt&&t===void 0){let s=e!==void 0&&e.length===1;s&&(t=ae.get(e)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),s&&ae.set(e,t))}return t}toString(){return this.cssText}},le=n=>new et(typeof n=="string"?n:n+"",void 0,_t),st=(n,...t)=>{let e=n.length===1?n[0]:t.reduce((s,i,o)=>s+(r=>{if(r._$cssResult$===!0)return r.cssText;if(typeof r=="number")return r;throw Error("Value passed to 'css' function must be a 'css' function result: "+r+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+n[o+1],n[0]);return new et(e,n,_t)},ce=(n,t)=>{if(gt)n.adoptedStyleSheets=t.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet);else for(let e of t){let s=document.createElement("style"),i=ut.litNonce;i!==void 0&&s.setAttribute("nonce",i),s.textContent=e.cssText,n.appendChild(s)}},wt=gt?n=>n:n=>n instanceof CSSStyleSheet?(t=>{let e="";for(let s of t.cssRules)e+=s.cssText;return le(e)})(n):n;var{is:Ge,defineProperty:We,getOwnPropertyDescriptor:Ve,getOwnPropertyNames:Ke,getOwnPropertySymbols:je,getPrototypeOf:Ze}=Object,mt=globalThis,de=mt.trustedTypes,qe=de?de.emptyScript:"",Xe=mt.reactiveElementPolyfillSupport,it=(n,t)=>n,St={toAttribute(n,t){switch(t){case Boolean:n=n?qe:null;break;case Object:case Array:n=n==null?n:JSON.stringify(n)}return n},fromAttribute(n,t){let e=n;switch(t){case Boolean:e=n!==null;break;case Number:e=n===null?null:Number(n);break;case Object:case Array:try{e=JSON.parse(n)}catch{e=null}}return e}},he=(n,t)=>!Ge(n,t),pe={attribute:!0,type:String,converter:St,reflect:!1,useDefault:!1,hasChanged:he};Symbol.metadata??=Symbol("metadata"),mt.litPropertyMetadata??=new WeakMap;var z=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=pe){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){let s=Symbol(),i=this.getPropertyDescriptor(t,s,e);i!==void 0&&We(this.prototype,t,i)}}static getPropertyDescriptor(t,e,s){let{get:i,set:o}=Ve(this.prototype,t)??{get(){return this[e]},set(r){this[e]=r}};return{get:i,set(r){let d=i?.call(this);o?.call(this,r),this.requestUpdate(t,d,s)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??pe}static _$Ei(){if(this.hasOwnProperty(it("elementProperties")))return;let t=Ze(this);t.finalize(),t.l!==void 0&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(it("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(it("properties"))){let e=this.properties,s=[...Ke(e),...je(e)];for(let i of s)this.createProperty(i,e[i])}let t=this[Symbol.metadata];if(t!==null){let e=litPropertyMetadata.get(t);if(e!==void 0)for(let[s,i]of e)this.elementProperties.set(s,i)}this._$Eh=new Map;for(let[e,s]of this.elementProperties){let i=this._$Eu(e,s);i!==void 0&&this._$Eh.set(i,e)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){let e=[];if(Array.isArray(t)){let s=new Set(t.flat(1/0).reverse());for(let i of s)e.unshift(wt(i))}else t!==void 0&&e.push(wt(t));return e}static _$Eu(t,e){let s=e.attribute;return s===!1?void 0:typeof s=="string"?s:typeof t=="string"?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),this.renderRoot!==void 0&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){let t=new Map,e=this.constructor.elementProperties;for(let s of e.keys())this.hasOwnProperty(s)&&(t.set(s,this[s]),delete this[s]);t.size>0&&(this._$Ep=t)}createRenderRoot(){let t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return ce(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,s){this._$AK(t,s)}_$ET(t,e){let s=this.constructor.elementProperties.get(t),i=this.constructor._$Eu(t,s);if(i!==void 0&&s.reflect===!0){let o=(s.converter?.toAttribute!==void 0?s.converter:St).toAttribute(e,s.type);this._$Em=t,o==null?this.removeAttribute(i):this.setAttribute(i,o),this._$Em=null}}_$AK(t,e){let s=this.constructor,i=s._$Eh.get(t);if(i!==void 0&&this._$Em!==i){let o=s.getPropertyOptions(i),r=typeof o.converter=="function"?{fromAttribute:o.converter}:o.converter?.fromAttribute!==void 0?o.converter:St;this._$Em=i;let d=r.fromAttribute(e,o.type);this[i]=d??this._$Ej?.get(i)??d,this._$Em=null}}requestUpdate(t,e,s,i=!1,o){if(t!==void 0){let r=this.constructor;if(i===!1&&(o=this[t]),s??=r.getPropertyOptions(t),!((s.hasChanged??he)(o,e)||s.useDefault&&s.reflect&&o===this._$Ej?.get(t)&&!this.hasAttribute(r._$Eu(t,s))))return;this.C(t,e,s)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(t,e,{useDefault:s,reflect:i,wrapped:o},r){s&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??e??this[t]),o!==!0||r!==void 0)||(this._$AL.has(t)||(this.hasUpdated||s||(e=void 0),this._$AL.set(t,e)),i===!0&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(e){Promise.reject(e)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(let[i,o]of this._$Ep)this[i]=o;this._$Ep=void 0}let s=this.constructor.elementProperties;if(s.size>0)for(let[i,o]of s){let{wrapped:r}=o,d=this[i];r!==!0||this._$AL.has(i)||d===void 0||this.C(i,void 0,o,d)}}let t=!1,e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(s=>s.hostUpdate?.()),this.update(e)):this._$EM()}catch(s){throw t=!1,this._$EM(),s}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(e=>e.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(e=>this._$ET(e,this[e])),this._$EM()}updated(t){}firstUpdated(t){}};z.elementStyles=[],z.shadowRootOptions={mode:"open"},z[it("elementProperties")]=new Map,z[it("finalized")]=new Map,Xe?.({ReactiveElement:z}),(mt.reactiveElementVersions??=[]).push("2.1.2");var Tt=globalThis,ue=n=>n,ft=Tt.trustedTypes,ge=ft?ft.createPolicy("lit-html",{createHTML:n=>n}):void 0,ve="$lit$",B=`lit$${Math.random().toFixed(9).slice(2)}$`,xe="?"+B,Je=`<${xe}>`,V=document,rt=()=>V.createComment(""),ot=n=>n===null||typeof n!="object"&&typeof n!="function",Ot=Array.isArray,Qe=n=>Ot(n)||typeof n?.[Symbol.iterator]=="function",Ct=`[ 	
-\f\r]`,nt=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,me=/-->/g,fe=/>/g,G=RegExp(`>|${Ct}(?:([^\\s"'>=/]+)(${Ct}*=${Ct}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),be=/'/g,ye=/"/g,_e=/^(?:script|style|textarea|title)$/i,Pt=n=>(t,...e)=>({_$litType$:n,strings:t,values:e}),a=Pt(1),ct=Pt(2),Ms=Pt(3),K=Symbol.for("lit-noChange"),p=Symbol.for("lit-nothing"),$e=new WeakMap,W=V.createTreeWalker(V,129);function we(n,t){if(!Ot(n)||!n.hasOwnProperty("raw"))throw Error("invalid template strings array");return ge!==void 0?ge.createHTML(t):t}var Ye=(n,t)=>{let e=n.length-1,s=[],i,o=t===2?"<svg>":t===3?"<math>":"",r=nt;for(let d=0;d<e;d++){let c=n[d],h,m,g=-1,u=0;for(;u<c.length&&(r.lastIndex=u,m=r.exec(c),m!==null);)u=r.lastIndex,r===nt?m[1]==="!--"?r=me:m[1]!==void 0?r=fe:m[2]!==void 0?(_e.test(m[2])&&(i=RegExp("</"+m[2],"g")),r=G):m[3]!==void 0&&(r=G):r===G?m[0]===">"?(r=i??nt,g=-1):m[1]===void 0?g=-2:(g=r.lastIndex-m[2].length,h=m[1],r=m[3]===void 0?G:m[3]==='"'?ye:be):r===ye||r===be?r=G:r===me||r===fe?r=nt:(r=G,i=void 0);let x=r===G&&n[d+1].startsWith("/>")?" ":"";o+=r===nt?c+Je:g>=0?(s.push(h),c.slice(0,g)+ve+c.slice(g)+B+x):c+B+(g===-2?d:x)}return[we(n,o+(n[e]||"<?>")+(t===2?"</svg>":t===3?"</math>":"")),s]},at=class n{constructor({strings:t,_$litType$:e},s){let i;this.parts=[];let o=0,r=0,d=t.length-1,c=this.parts,[h,m]=Ye(t,e);if(this.el=n.createElement(h,s),W.currentNode=this.el.content,e===2||e===3){let g=this.el.content.firstChild;g.replaceWith(...g.childNodes)}for(;(i=W.nextNode())!==null&&c.length<d;){if(i.nodeType===1){if(i.hasAttributes())for(let g of i.getAttributeNames())if(g.endsWith(ve)){let u=m[r++],x=i.getAttribute(g).split(B),b=/([.?@])?(.*)/.exec(u);c.push({type:1,index:o,name:b[2],strings:x,ctor:b[1]==="."?Et:b[1]==="?"?kt:b[1]==="@"?Lt:X}),i.removeAttribute(g)}else g.startsWith(B)&&(c.push({type:6,index:o}),i.removeAttribute(g));if(_e.test(i.tagName)){let g=i.textContent.split(B),u=g.length-1;if(u>0){i.textContent=ft?ft.emptyScript:"";for(let x=0;x<u;x++)i.append(g[x],rt()),W.nextNode(),c.push({type:2,index:++o});i.append(g[u],rt())}}}else if(i.nodeType===8)if(i.data===xe)c.push({type:2,index:o});else{let g=-1;for(;(g=i.data.indexOf(B,g+1))!==-1;)c.push({type:7,index:o}),g+=B.length-1}o++}}static createElement(t,e){let s=V.createElement("template");return s.innerHTML=t,s}};function q(n,t,e=n,s){if(t===K)return t;let i=s!==void 0?e._$Co?.[s]:e._$Cl,o=ot(t)?void 0:t._$litDirective$;return i?.constructor!==o&&(i?._$AO?.(!1),o===void 0?i=void 0:(i=new o(n),i._$AT(n,e,s)),s!==void 0?(e._$Co??=[])[s]=i:e._$Cl=i),i!==void 0&&(t=q(n,i._$AS(n,t.values),i,s)),t}var At=class{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){let{el:{content:e},parts:s}=this._$AD,i=(t?.creationScope??V).importNode(e,!0);W.currentNode=i;let o=W.nextNode(),r=0,d=0,c=s[0];for(;c!==void 0;){if(r===c.index){let h;c.type===2?h=new lt(o,o.nextSibling,this,t):c.type===1?h=new c.ctor(o,c.name,c.strings,this,t):c.type===6&&(h=new Ft(o,this,t)),this._$AV.push(h),c=s[++d]}r!==c?.index&&(o=W.nextNode(),r++)}return W.currentNode=V,i}p(t){let e=0;for(let s of this._$AV)s!==void 0&&(s.strings!==void 0?(s._$AI(t,s,e),e+=s.strings.length-2):s._$AI(t[e])),e++}},lt=class n{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,s,i){this.type=2,this._$AH=p,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=s,this.options=i,this._$Cv=i?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode,e=this._$AM;return e!==void 0&&t?.nodeType===11&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=q(this,t,e),ot(t)?t===p||t==null||t===""?(this._$AH!==p&&this._$AR(),this._$AH=p):t!==this._$AH&&t!==K&&this._(t):t._$litType$!==void 0?this.$(t):t.nodeType!==void 0?this.T(t):Qe(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==p&&ot(this._$AH)?this._$AA.nextSibling.data=t:this.T(V.createTextNode(t)),this._$AH=t}$(t){let{values:e,_$litType$:s}=t,i=typeof s=="number"?this._$AC(t):(s.el===void 0&&(s.el=at.createElement(we(s.h,s.h[0]),this.options)),s);if(this._$AH?._$AD===i)this._$AH.p(e);else{let o=new At(i,this),r=o.u(this.options);o.p(e),this.T(r),this._$AH=o}}_$AC(t){let e=$e.get(t.strings);return e===void 0&&$e.set(t.strings,e=new at(t)),e}k(t){Ot(this._$AH)||(this._$AH=[],this._$AR());let e=this._$AH,s,i=0;for(let o of t)i===e.length?e.push(s=new n(this.O(rt()),this.O(rt()),this,this.options)):s=e[i],s._$AI(o),i++;i<e.length&&(this._$AR(s&&s._$AB.nextSibling,i),e.length=i)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){let s=ue(t).nextSibling;ue(t).remove(),t=s}}setConnected(t){this._$AM===void 0&&(this._$Cv=t,this._$AP?.(t))}},X=class{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,s,i,o){this.type=1,this._$AH=p,this._$AN=void 0,this.element=t,this.name=e,this._$AM=i,this.options=o,s.length>2||s[0]!==""||s[1]!==""?(this._$AH=Array(s.length-1).fill(new String),this.strings=s):this._$AH=p}_$AI(t,e=this,s,i){let o=this.strings,r=!1;if(o===void 0)t=q(this,t,e,0),r=!ot(t)||t!==this._$AH&&t!==K,r&&(this._$AH=t);else{let d=t,c,h;for(t=o[0],c=0;c<o.length-1;c++)h=q(this,d[s+c],e,c),h===K&&(h=this._$AH[c]),r||=!ot(h)||h!==this._$AH[c],h===p?t=p:t!==p&&(t+=(h??"")+o[c+1]),this._$AH[c]=h}r&&!i&&this.j(t)}j(t){t===p?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},Et=class extends X{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===p?void 0:t}},kt=class extends X{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==p)}},Lt=class extends X{constructor(t,e,s,i,o){super(t,e,s,i,o),this.type=5}_$AI(t,e=this){if((t=q(this,t,e,0)??p)===K)return;let s=this._$AH,i=t===p&&s!==p||t.capture!==s.capture||t.once!==s.once||t.passive!==s.passive,o=t!==p&&(s===p||i);i&&this.element.removeEventListener(this.name,this,s),o&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}},Ft=class{constructor(t,e,s){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=s}get _$AU(){return this._$AM._$AU}_$AI(t){q(this,t)}};var ts=Tt.litHtmlPolyfillSupport;ts?.(at,lt),(Tt.litHtmlVersions??=[]).push("3.3.3");var Se=(n,t,e)=>{let s=e?.renderBefore??t,i=s._$litPart$;if(i===void 0){let o=e?.renderBefore??null;s._$litPart$=i=new lt(t.insertBefore(rt(),o),o,void 0,e??{})}return i._$AI(n),i};var Rt=globalThis,P=class extends z{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){let t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){let e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=Se(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return K}};P._$litElement$=!0,P.finalized=!0,Rt.litElementHydrateSupport?.({LitElement:P});var es=Rt.litElementPolyfillSupport;es?.({LitElement:P});(Rt.litElementVersions??=[]).push("4.2.2");var w=class extends P{constructor(){super(...arguments);this._config={};this._label=e=>e.label??e.name}static{this.properties={hass:{attribute:!1},_config:{state:!0}}}static{this.styles=st`
+var it=globalThis,nt=it.ShadowRoot&&(it.ShadyCSS===void 0||it.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,ht=Symbol(),qt=new WeakMap,K=class{constructor(t,e,s){if(this._$cssResult$=!0,s!==ht)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o,e=this.t;if(nt&&t===void 0){let s=e!==void 0&&e.length===1;s&&(t=qt.get(e)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),s&&qt.set(e,t))}return t}toString(){return this.cssText}},Xt=n=>new K(typeof n=="string"?n:n+"",void 0,ht),q=(n,...t)=>{let e=n.length===1?n[0]:t.reduce((s,i,r)=>s+(o=>{if(o._$cssResult$===!0)return o.cssText;if(typeof o=="number")return o;throw Error("Value passed to 'css' function must be a 'css' function result: "+o+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+n[r+1],n[0]);return new K(e,n,ht)},Qt=(n,t)=>{if(nt)n.adoptedStyleSheets=t.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet);else for(let e of t){let s=document.createElement("style"),i=it.litNonce;i!==void 0&&s.setAttribute("nonce",i),s.textContent=e.cssText,n.appendChild(s)}},gt=nt?n=>n:n=>n instanceof CSSStyleSheet?(t=>{let e="";for(let s of t.cssRules)e+=s.cssText;return Xt(e)})(n):n;var{is:Ce,defineProperty:Ee,getOwnPropertyDescriptor:Te,getOwnPropertyNames:Le,getOwnPropertySymbols:Oe,getPrototypeOf:Pe}=Object,rt=globalThis,Jt=rt.trustedTypes,Fe=Jt?Jt.emptyScript:"",ze=rt.reactiveElementPolyfillSupport,X=(n,t)=>n,ut={toAttribute(n,t){switch(t){case Boolean:n=n?Fe:null;break;case Object:case Array:n=n==null?n:JSON.stringify(n)}return n},fromAttribute(n,t){let e=n;switch(t){case Boolean:e=n!==null;break;case Number:e=n===null?null:Number(n);break;case Object:case Array:try{e=JSON.parse(n)}catch{e=null}}return e}},te=(n,t)=>!Ce(n,t),Yt={attribute:!0,type:String,converter:ut,reflect:!1,useDefault:!1,hasChanged:te};Symbol.metadata??=Symbol("metadata"),rt.litPropertyMetadata??=new WeakMap;var R=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=Yt){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){let s=Symbol(),i=this.getPropertyDescriptor(t,s,e);i!==void 0&&Ee(this.prototype,t,i)}}static getPropertyDescriptor(t,e,s){let{get:i,set:r}=Te(this.prototype,t)??{get(){return this[e]},set(o){this[e]=o}};return{get:i,set(o){let c=i?.call(this);r?.call(this,o),this.requestUpdate(t,c,s)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??Yt}static _$Ei(){if(this.hasOwnProperty(X("elementProperties")))return;let t=Pe(this);t.finalize(),t.l!==void 0&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(X("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(X("properties"))){let e=this.properties,s=[...Le(e),...Oe(e)];for(let i of s)this.createProperty(i,e[i])}let t=this[Symbol.metadata];if(t!==null){let e=litPropertyMetadata.get(t);if(e!==void 0)for(let[s,i]of e)this.elementProperties.set(s,i)}this._$Eh=new Map;for(let[e,s]of this.elementProperties){let i=this._$Eu(e,s);i!==void 0&&this._$Eh.set(i,e)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){let e=[];if(Array.isArray(t)){let s=new Set(t.flat(1/0).reverse());for(let i of s)e.unshift(gt(i))}else t!==void 0&&e.push(gt(t));return e}static _$Eu(t,e){let s=e.attribute;return s===!1?void 0:typeof s=="string"?s:typeof t=="string"?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),this.renderRoot!==void 0&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){let t=new Map,e=this.constructor.elementProperties;for(let s of e.keys())this.hasOwnProperty(s)&&(t.set(s,this[s]),delete this[s]);t.size>0&&(this._$Ep=t)}createRenderRoot(){let t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return Qt(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,s){this._$AK(t,s)}_$ET(t,e){let s=this.constructor.elementProperties.get(t),i=this.constructor._$Eu(t,s);if(i!==void 0&&s.reflect===!0){let r=(s.converter?.toAttribute!==void 0?s.converter:ut).toAttribute(e,s.type);this._$Em=t,r==null?this.removeAttribute(i):this.setAttribute(i,r),this._$Em=null}}_$AK(t,e){let s=this.constructor,i=s._$Eh.get(t);if(i!==void 0&&this._$Em!==i){let r=s.getPropertyOptions(i),o=typeof r.converter=="function"?{fromAttribute:r.converter}:r.converter?.fromAttribute!==void 0?r.converter:ut;this._$Em=i;let c=o.fromAttribute(e,r.type);this[i]=c??this._$Ej?.get(i)??c,this._$Em=null}}requestUpdate(t,e,s,i=!1,r){if(t!==void 0){let o=this.constructor;if(i===!1&&(r=this[t]),s??=o.getPropertyOptions(t),!((s.hasChanged??te)(r,e)||s.useDefault&&s.reflect&&r===this._$Ej?.get(t)&&!this.hasAttribute(o._$Eu(t,s))))return;this.C(t,e,s)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(t,e,{useDefault:s,reflect:i,wrapped:r},o){s&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,o??e??this[t]),r!==!0||o!==void 0)||(this._$AL.has(t)||(this.hasUpdated||s||(e=void 0),this._$AL.set(t,e)),i===!0&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(e){Promise.reject(e)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(let[i,r]of this._$Ep)this[i]=r;this._$Ep=void 0}let s=this.constructor.elementProperties;if(s.size>0)for(let[i,r]of s){let{wrapped:o}=r,c=this[i];o!==!0||this._$AL.has(i)||c===void 0||this.C(i,void 0,r,c)}}let t=!1,e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(s=>s.hostUpdate?.()),this.update(e)):this._$EM()}catch(s){throw t=!1,this._$EM(),s}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(e=>e.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(e=>this._$ET(e,this[e])),this._$EM()}updated(t){}firstUpdated(t){}};R.elementStyles=[],R.shadowRootOptions={mode:"open"},R[X("elementProperties")]=new Map,R[X("finalized")]=new Map,ze?.({ReactiveElement:R}),(rt.reactiveElementVersions??=[]).push("2.1.2");var $t=globalThis,ee=n=>n,ot=$t.trustedTypes,se=ot?ot.createPolicy("lit-html",{createHTML:n=>n}):void 0,le="$lit$",M=`lit$${Math.random().toFixed(9).slice(2)}$`,ce="?"+M,Re=`<${ce}>`,G=document,J=()=>G.createComment(""),Y=n=>n===null||typeof n!="object"&&typeof n!="function",_t=Array.isArray,Ie=n=>_t(n)||typeof n?.[Symbol.iterator]=="function",mt=`[ 	
+\f\r]`,Q=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,ie=/-->/g,ne=/>/g,H=RegExp(`>|${mt}(?:([^\\s"'>=/]+)(${mt}*=${mt}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`,"g"),re=/'/g,oe=/"/g,de=/^(?:script|style|textarea|title)$/i,wt=n=>(t,...e)=>({_$litType$:n,strings:t,values:e}),l=wt(1),st=wt(2),us=wt(3),V=Symbol.for("lit-noChange"),d=Symbol.for("lit-nothing"),ae=new WeakMap,D=G.createTreeWalker(G,129);function pe(n,t){if(!_t(n)||!n.hasOwnProperty("raw"))throw Error("invalid template strings array");return se!==void 0?se.createHTML(t):t}var Me=(n,t)=>{let e=n.length-1,s=[],i,r=t===2?"<svg>":t===3?"<math>":"",o=Q;for(let c=0;c<e;c++){let a=n[c],h,f,m=-1,u=0;for(;u<a.length&&(o.lastIndex=u,f=o.exec(a),f!==null);)u=o.lastIndex,o===Q?f[1]==="!--"?o=ie:f[1]!==void 0?o=ne:f[2]!==void 0?(de.test(f[2])&&(i=RegExp("</"+f[2],"g")),o=H):f[3]!==void 0&&(o=H):o===H?f[0]===">"?(o=i??Q,m=-1):f[1]===void 0?m=-2:(m=o.lastIndex-f[2].length,h=f[1],o=f[3]===void 0?H:f[3]==='"'?oe:re):o===oe||o===re?o=H:o===ie||o===ne?o=Q:(o=H,i=void 0);let b=o===H&&n[c+1].startsWith("/>")?" ":"";r+=o===Q?a+Re:m>=0?(s.push(h),a.slice(0,m)+le+a.slice(m)+M+b):a+M+(m===-2?c:b)}return[pe(n,r+(n[e]||"<?>")+(t===2?"</svg>":t===3?"</math>":"")),s]},tt=class n{constructor({strings:t,_$litType$:e},s){let i;this.parts=[];let r=0,o=0,c=t.length-1,a=this.parts,[h,f]=Me(t,e);if(this.el=n.createElement(h,s),D.currentNode=this.el.content,e===2||e===3){let m=this.el.content.firstChild;m.replaceWith(...m.childNodes)}for(;(i=D.nextNode())!==null&&a.length<c;){if(i.nodeType===1){if(i.hasAttributes())for(let m of i.getAttributeNames())if(m.endsWith(le)){let u=f[o++],b=i.getAttribute(m).split(M),v=/([.?@])?(.*)/.exec(u);a.push({type:1,index:r,name:v[2],strings:b,ctor:v[1]==="."?bt:v[1]==="?"?yt:v[1]==="@"?xt:j}),i.removeAttribute(m)}else m.startsWith(M)&&(a.push({type:6,index:r}),i.removeAttribute(m));if(de.test(i.tagName)){let m=i.textContent.split(M),u=m.length-1;if(u>0){i.textContent=ot?ot.emptyScript:"";for(let b=0;b<u;b++)i.append(m[b],J()),D.nextNode(),a.push({type:2,index:++r});i.append(m[u],J())}}}else if(i.nodeType===8)if(i.data===ce)a.push({type:2,index:r});else{let m=-1;for(;(m=i.data.indexOf(M,m+1))!==-1;)a.push({type:7,index:r}),m+=M.length-1}r++}}static createElement(t,e){let s=G.createElement("template");return s.innerHTML=t,s}};function Z(n,t,e=n,s){if(t===V)return t;let i=s!==void 0?e._$Co?.[s]:e._$Cl,r=Y(t)?void 0:t._$litDirective$;return i?.constructor!==r&&(i?._$AO?.(!1),r===void 0?i=void 0:(i=new r(n),i._$AT(n,e,s)),s!==void 0?(e._$Co??=[])[s]=i:e._$Cl=i),i!==void 0&&(t=Z(n,i._$AS(n,t.values),i,s)),t}var ft=class{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){let{el:{content:e},parts:s}=this._$AD,i=(t?.creationScope??G).importNode(e,!0);D.currentNode=i;let r=D.nextNode(),o=0,c=0,a=s[0];for(;a!==void 0;){if(o===a.index){let h;a.type===2?h=new et(r,r.nextSibling,this,t):a.type===1?h=new a.ctor(r,a.name,a.strings,this,t):a.type===6&&(h=new vt(r,this,t)),this._$AV.push(h),a=s[++c]}o!==a?.index&&(r=D.nextNode(),o++)}return D.currentNode=G,i}p(t){let e=0;for(let s of this._$AV)s!==void 0&&(s.strings!==void 0?(s._$AI(t,s,e),e+=s.strings.length-2):s._$AI(t[e])),e++}},et=class n{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,s,i){this.type=2,this._$AH=d,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=s,this.options=i,this._$Cv=i?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode,e=this._$AM;return e!==void 0&&t?.nodeType===11&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=Z(this,t,e),Y(t)?t===d||t==null||t===""?(this._$AH!==d&&this._$AR(),this._$AH=d):t!==this._$AH&&t!==V&&this._(t):t._$litType$!==void 0?this.$(t):t.nodeType!==void 0?this.T(t):Ie(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==d&&Y(this._$AH)?this._$AA.nextSibling.data=t:this.T(G.createTextNode(t)),this._$AH=t}$(t){let{values:e,_$litType$:s}=t,i=typeof s=="number"?this._$AC(t):(s.el===void 0&&(s.el=tt.createElement(pe(s.h,s.h[0]),this.options)),s);if(this._$AH?._$AD===i)this._$AH.p(e);else{let r=new ft(i,this),o=r.u(this.options);r.p(e),this.T(o),this._$AH=r}}_$AC(t){let e=ae.get(t.strings);return e===void 0&&ae.set(t.strings,e=new tt(t)),e}k(t){_t(this._$AH)||(this._$AH=[],this._$AR());let e=this._$AH,s,i=0;for(let r of t)i===e.length?e.push(s=new n(this.O(J()),this.O(J()),this,this.options)):s=e[i],s._$AI(r),i++;i<e.length&&(this._$AR(s&&s._$AB.nextSibling,i),e.length=i)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){let s=ee(t).nextSibling;ee(t).remove(),t=s}}setConnected(t){this._$AM===void 0&&(this._$Cv=t,this._$AP?.(t))}},j=class{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,s,i,r){this.type=1,this._$AH=d,this._$AN=void 0,this.element=t,this.name=e,this._$AM=i,this.options=r,s.length>2||s[0]!==""||s[1]!==""?(this._$AH=Array(s.length-1).fill(new String),this.strings=s):this._$AH=d}_$AI(t,e=this,s,i){let r=this.strings,o=!1;if(r===void 0)t=Z(this,t,e,0),o=!Y(t)||t!==this._$AH&&t!==V,o&&(this._$AH=t);else{let c=t,a,h;for(t=r[0],a=0;a<r.length-1;a++)h=Z(this,c[s+a],e,a),h===V&&(h=this._$AH[a]),o||=!Y(h)||h!==this._$AH[a],h===d?t=d:t!==d&&(t+=(h??"")+r[a+1]),this._$AH[a]=h}o&&!i&&this.j(t)}j(t){t===d?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},bt=class extends j{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===d?void 0:t}},yt=class extends j{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==d)}},xt=class extends j{constructor(t,e,s,i,r){super(t,e,s,i,r),this.type=5}_$AI(t,e=this){if((t=Z(this,t,e,0)??d)===V)return;let s=this._$AH,i=t===d&&s!==d||t.capture!==s.capture||t.once!==s.once||t.passive!==s.passive,r=t!==d&&(s===d||i);i&&this.element.removeEventListener(this.name,this,s),r&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}},vt=class{constructor(t,e,s){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=s}get _$AU(){return this._$AM._$AU}_$AI(t){Z(this,t)}};var Ne=$t.litHtmlPolyfillSupport;Ne?.(tt,et),($t.litHtmlVersions??=[]).push("3.3.3");var he=(n,t,e)=>{let s=e?.renderBefore??t,i=s._$litPart$;if(i===void 0){let r=e?.renderBefore??null;s._$litPart$=i=new et(t.insertBefore(J(),r),r,void 0,e??{})}return i._$AI(n),i};var St=globalThis,F=class extends R{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){let t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){let e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=he(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return V}};F._$litElement$=!0,F.finalized=!0,St.litElementHydrateSupport?.({LitElement:F});var Be=St.litElementPolyfillSupport;Be?.({LitElement:F});(St.litElementVersions??=[]).push("4.2.2");var _=class extends F{constructor(){super(...arguments);this._config={};this._label=e=>e.label??e.name}static{this.properties={hass:{attribute:!1},_config:{state:!0}}}static{this.styles=q`
     .lt { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
           color: var(--secondary-text-color); margin: 16px 0 6px; }
     .row { display: flex; align-items: flex-start; gap: 4px;
@@ -12,23 +12,21 @@ var ut=globalThis,gt=ut.ShadowRoot&&(ut.ShadyCSS===void 0||ut.ShadyCSS.nativeSha
     button.add { all: unset; cursor: pointer; color: var(--primary-color);
                  font-size: 13px; font-weight: 600; padding: 4px 0; }
     .hint { font-size: 11px; color: var(--secondary-text-color); margin-top: 12px; }
-  `}setConfig(e){this._config={...e}}_fire(e){this._config=e,this.dispatchEvent(new CustomEvent("config-changed",{detail:{config:e},bubbles:!0,composed:!0}))}form(e){return a`<ha-form .hass=${this.hass} .data=${this._config} .schema=${e}
+  `}setConfig(e){this._config={...e}}_fire(e){this._config=e,this.dispatchEvent(new CustomEvent("config-changed",{detail:{config:e},bubbles:!0,composed:!0}))}form(e){return l`<ha-form .hass=${this.hass} .data=${this._config} .schema=${e}
       .computeLabel=${this._label}
-      @value-changed=${s=>this._fire({...this._config,...s.detail.value})}></ha-form>`}list(e){let s=this._config[e.key]??[],i=o=>this._fire({...this._config,[e.key]:o});return a`
-      ${e.title?a`<div class="lt">${e.title}</div>`:p}
-      ${s.map((o,r)=>a`<div class="row">
-        <ha-form .hass=${this.hass} .data=${o} .schema=${e.rowSchema}
+      @value-changed=${s=>this._fire({...this._config,...s.detail.value})}></ha-form>`}list(e){let s=this._config[e.key]??[],i=r=>this._fire({...this._config,[e.key]:r});return l`
+      ${e.title?l`<div class="lt">${e.title}</div>`:d}
+      ${s.map((r,o)=>l`<div class="row">
+        <ha-form .hass=${this.hass} .data=${r} .schema=${e.rowSchema}
           .computeLabel=${this._label}
-          @value-changed=${d=>{let c=[...s];c[r]={...d.detail.value},i(c)}}></ha-form>
+          @value-changed=${c=>{let a=[...s];a[o]={...c.detail.value},i(a)}}></ha-form>
         <button class="del" title="Entfernen"
-          @click=${()=>i(s.filter((d,c)=>c!==r))}>\u2715</button>
+          @click=${()=>i(s.filter((c,a)=>a!==o))}>\u2715</button>
       </div>`)}
-      <button class="add" @click=${()=>i([...s,e.newItem()])}>+ ${e.addLabel}</button>`}styleSection(){let e=this._config.style??{},s=[l.text("background","Hintergrund (Farbe, 'a,b' = Gradient oder CSS)"),l.num("opacity","Deckkraft (0\u20131)",0,1,.05),l.bool("glass","Glas-Effekt (Blur)"),l.text("accent","Akzentfarbe"),l.num("radius","Eckenradius (px)",0,40)];return a`<div class="lt">Stil</div>
+      <button class="add" @click=${()=>i([...s,e.newItem()])}>+ ${e.addLabel}</button>`}styleSection(){let e=this._config.style??{},s=[p.text("background","Hintergrund (Farbe, 'a,b' = Gradient oder CSS)"),p.num("opacity","Deckkraft (0\u20131)",0,1,.05),p.bool("glass","Glas-Effekt (Blur)"),p.text("accent","Akzentfarbe"),p.num("radius","Eckenradius (px)",0,40)];return l`<div class="lt">Stil</div>
       <ha-form .hass=${this.hass} .data=${e} .schema=${s}
         .computeLabel=${i=>i.label??i.name}
-        @value-changed=${i=>this._fire({...this._config,style:{...i.detail.value}})}></ha-form>`}},l={text:(n,t)=>({name:n,label:t,selector:{text:{}}}),bool:(n,t)=>({name:n,label:t,selector:{boolean:{}}}),num:(n,t,e,s,i)=>({name:n,label:t,selector:{number:{min:e,max:s,step:i,mode:"box"}}}),entity:(n,t,e)=>({name:n,label:t,selector:{entity:e?{domain:e}:{}}}),entities:(n,t,e)=>({name:n,label:t,selector:{entity:{multiple:!0,...e?{domain:e}:{}}}}),select:(n,t,e)=>({name:n,label:t,selector:{select:{mode:"dropdown",options:e}}})};var ss=[l.text("title","Titel"),l.text("subtitle","Untertitel"),l.entity("temperature","Temperatursensor (Pflicht)","sensor"),l.entity("humidity","Feuchtesensor (Pflicht)","sensor"),l.entity("power","Leistungssensor (optional)","sensor"),l.num("leaf_offset","Blatt-Offset (K, z.B. -1.5)",-5,5),l.text("gradient","Gradient (z.B. #E87B2E,#C45A10)"),l.entity("climate_auto","Klima-Automatik (Badge)","input_boolean"),l.entity("maintenance","Wartung (Badge)","input_boolean"),l.entity("dehum_request","Entfeuchter-Anforderung","input_boolean"),l.num("temp_min","Temp-Warnung unter (\xB0C)"),l.num("temp_max","Temp-Warnung \xFCber (\xB0C)"),l.bool("show_vpd_scale","VPD-Skala anzeigen"),l.text("tap_navigation","Navigation bei Tap (z.B. /grow-zelt/gz_mittel)")],is=[l.entity("entity","Log-Entity","input_text"),l.select("type","Typ",[{value:"station",label:"Station"},{value:"climate",label:"Klima"}])],Mt=class extends w{render(){return a`${this.form(ss)}
-      ${this.list({key:"logs",rowSchema:is,title:"Logs (Status-Ampel)",addLabel:"Log hinzuf\xFCgen",newItem:()=>({entity:"",type:"station"})})}
-      ${this.styleSection()}`}};customElements.define("growctrl-tent-editor",Mt);var bt=n=>n===null||isNaN(n)?"\u2013":n<60?`${n} min`:`${Math.floor(n/60)}h ${n%60}min`,zt=n=>{let t=n.split(" ").pop().substring(0,5).split(":");return parseInt(t[0])*60+parseInt(t[1])},_=(n,t=null)=>{if(n===void 0||["unknown","unavailable",""].includes(n))return t;let e=parseFloat(n);return isNaN(e)?t:e},Ce=n=>{let t=Date.parse(n);return isNaN(t)?null:Math.floor((Date.now()-t)/864e5)};var Ae=n=>.61078*Math.exp(17.27*n/(n+237.3)),dt=(n,t,e=0)=>{let s=n+e;return Ae(s)-Ae(n)*(t/100)},J=[{max:.4,label:"Zu feucht",color:"#4FC3F7"},{max:.8,label:"Seedling",color:"#7EC8FF"},{max:1.2,label:"Veg",color:"#7EE87E"},{max:1.6,label:"Bloom",color:"#FFB432"},{max:9.9,label:"Zu trocken",color:"#FF6B6B"}],yt=n=>J.find(t=>n<=t.max)??J[J.length-1];var Ee=n=>!n||["unknown","unavailable",""].includes(n),ke=n=>n.length>=16?n.substring(11,16):"",N=n=>{if(Ee(n))return{level:"none",label:"\u2014",ts:""};let t=n,e=ke(t);if(t.includes("SENSOR INVALID"))return{level:"critical",label:"\u{1F6A8} Sensor ung\xFCltig \u2014 Befeuchtung gesperrt",ts:e};if(t.includes("MAINTENANCE"))return{level:"info",label:"\u{1F527} Wartungsmodus aktiv",ts:e};if(t.includes("TESTMODE"))return{level:"info",label:"\u{1F9EA} Testmodus aktiv",ts:e};if(t.includes("AUTO OFF"))return{level:"info",label:"\u{1F534} Klima-Automatik deaktiviert",ts:e};let s=t.match(/(?:IST|SOLL)\s+(?:F|CIRC)=(\w+)/i)?.[1]?.toLowerCase(),i=t.match(/IST\s+(?:CIRC|F)=\w+\s+HUM=(\w+)/i)?.[1]?.toUpperCase(),o=t.match(/REQ=(\w+)/i)?.[1]?.toUpperCase();if(i!==void 0){let r=[];return s==="on"?r.push("Umluft AN"):s==="manual"?r.push("Umluft Manuell"):s==="off"&&r.push("Umluft AUS"),r.push(i==="ON"?"Befeuchtung AN":"Befeuchtung AUS"),r.push(o==="ON"?"Entfeuchtung AN":"Entfeuchtung AUS"),t.includes("ZENTRAL-BLOCK")&&r.push("(Zentral-Block)"),{level:"ok",label:r.join(" \xB7 "),ts:e}}return{level:"ok",label:t.replace(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*/,"").substring(0,45),ts:e}},R=n=>{if(Ee(n))return{level:"none",label:"\u2014",ts:""};let t=n,e=ke(t);if(t.includes("FAILSAFE LIGHT"))return{level:"critical",label:"\u{1F6A8} Failsafe: Licht-Zwangsabschaltung \u2014 Auto deaktiviert",ts:e};if(t.includes("FAILSAFE PUMP"))return{level:"critical",label:"\u{1F6A8} Failsafe: Pumpen-Zwangsabschaltung \u2014 Auto deaktiviert",ts:e};if(t.includes("TIME INVALID"))return{level:"critical",label:"\u26A0\uFE0F Lichtzeiten nicht konfiguriert",ts:e};if(t.includes("MISMATCH")){let m=x=>t.match(x)?.[1];return{level:"warning",label:"\u26A0\uFE0F Ger\xE4t antwortet nicht: "+([["Licht",m(/IST.*?\bL=(\w+)/i),m(/SOLL.*?\bL=(\w+)/i)],["Pumpe",m(/IST.*?\bP=(\w+)/i),m(/SOLL.*?\bP=(\w+)/i)],["O\u2082",m(/IST.*?\bO2=(\w+)/i),m(/SOLL.*?\bO2=(\w+)/i)]].filter(([,x,b])=>x&&b&&x!==b).map(([x,b,E])=>`${x} (IST ${b.toUpperCase()} / SOLL ${E.toUpperCase()})`).join(", ")||"Abweichung"),ts:e}}if(t.includes("MAINTENANCE"))return{level:"info",label:"\u{1F527} Wartungsmodus aktiv",ts:e};if(t.includes("TESTMODE"))return{level:"info",label:"\u{1F9EA} Testmodus aktiv",ts:e};let s=t.match(/IST.*?\bL=(\w+)/i)?.[1],i=t.match(/IST.*?\bP=(\w+)/i)?.[1],o=t.match(/IST.*?\bO2=(\w+)/i)?.[1],r=t.includes("OVRUNTIL")?" (Override aktiv)":"",d=[s&&s!=="n/a"?s==="on"?"\u{1F4A1} Licht AN":"\u{1F311} Licht AUS":null,i&&i!=="n/a"?i==="on"?"\u{1F4A7} Pumpe AN":"\u23F8\uFE0F Pumpe AUS":null,o&&o!=="n/a"?o==="on"?"\u{1FAE7} O\u2082 AN":"\u{1FAE7} O\u2082 AUS":null].filter(Boolean).join(" \xB7 "),c="";return t.includes("AUTO ON")?c="\u{1F7E2} Auto gestartet":t.includes("AUTO OFF")?c="\u{1F534} Auto gestoppt":t.match(/STAGE\s*\u2192/)?c=`\u{1F331} Phase: ${t.match(/STAGE\s*\u2192\s*(\w+)/)?.[1]??""}`:t.includes("LIGHT \u2192 ON")?c="\u{1F4A1} Licht eingeschaltet":t.includes("LIGHT \u2192 OFF")?c="\u{1F311} Licht ausgeschaltet":t.includes("PUMP \u2192 ON")?c="\u{1F4A7} Pumpe eingeschaltet":t.includes("PUMP \u2192 OFF")?c="\u23F8\uFE0F Pumpe ausgeschaltet":t.includes("O2 \u2192 ON")?c="\u{1FAE7} O\u2082 eingeschaltet":t.includes("FAN \u2192 ON")?c="\u{1F300} L\xFCfter eingeschaltet":t.includes("MANUAL OVERRIDE")?c="\u270B Manuell \xFCbersteuert":t.includes("OVERRIDE END")&&(c="\u2705 Override beendet"),{level:"ok",label:[c,d].filter(Boolean).join(" \u2014 ")+r||t.substring(17,55),ts:e}},Le=n=>n?.match(/IST.*?\bP=(\w+)/i)?.[1]==="on";var Fe={auto:"input_boolean.hydro_auto_{tent}_{station}",stage:"input_select.hydro_stage_{tent}_{station}",log:"input_text.hydro_log_{tent}_{station}",climate_log:"input_text.hydro_climate_log_{tent}",light_on:"input_datetime.hydro_light_on_{tent}_{station}",light_off_sv:"input_datetime.hydro_light_off_sv_{tent}_{station}",light_off_bloom:"input_datetime.hydro_light_off_bloom_{tent}_{station}",pump_on_seedling:"input_number.hydro_pump_on_seedling_{tent}_{station}",pump_off_seedling:"input_number.hydro_pump_off_seedling_{tent}_{station}",pump_on_veg:"input_number.hydro_pump_on_veg_{tent}_{station}",pump_off_veg:"input_number.hydro_pump_off_veg_{tent}_{station}",pump_on_bloom:"input_number.hydro_pump_on_bloom_{tent}_{station}",pump_off_bloom:"input_number.hydro_pump_off_bloom_{tent}_{station}",light_rest:"sensor.{tent}_{station}_licht_restzeit",pump_rest:"sensor.{tent}_{station}_pumpe_restzeit",maintenance:"input_boolean.hydro_maintenance_{tent}",testmode:"input_boolean.hydro_testmode_{tent}",climate_auto:"input_boolean.hydro_climate_auto_{tent}",dehum_request:"input_boolean.hydro_dehum_request_{tent}"},ns=(n,t)=>n.replaceAll("{tent}",t.tent).replaceAll("{station}",t.station),Te=(n,t)=>{let e={};return Object.keys(Fe).forEach(s=>{let i=t.overrides?.[s];if(i){e[s]=i;return}let o=t.templates?.[s]??Fe[s],r=ns(o,t);n.states[r]&&(e[s]=r)}),e};var Oe=new Map,Pe=new Map;async function I(n,t,e=24,s=48){let i=`${t}:${e}`,o=Oe.get(i);if(o&&Date.now()-o.t<5*6e4)return o.data;try{let r=new Date(Date.now()-e*36e5).toISOString(),c=((await n.callApi("GET",`history/period/${r}?filter_entity_id=${t}&minimal_response&no_attributes`))?.[0]??[]).map(g=>parseFloat(g.state??g.s)).filter(g=>!isNaN(g)),h=Math.max(1,Math.floor(c.length/s)),m=c.filter((g,u)=>u%h===0);return Oe.set(i,{t:Date.now(),data:m}),m}catch{return o?.data??[]}}async function Re(n,t,e=14){let s=Pe.get(t);if(s&&Date.now()-s.t<10*6e4)return s.data;try{let i=new Date().toISOString(),o=new Date(Date.now()+e*864e5).toISOString(),r=await n.callApi("GET",`calendars/${t}?start=${i}&end=${o}`);return Pe.set(t,{t:Date.now(),data:r??[]}),r??[]}catch{return s?.data??[]}}var Me=(n,t=100,e=24)=>{if(n.length<2)return"";let s=Math.min(...n),i=Math.max(...n),o=i-s||1;return n.map((r,d)=>`${d===0?"M":"L"}${(d/(n.length-1)*t).toFixed(1)},${(e-(r-s)/o*e).toFixed(1)}`).join(" ")};var f={label:"rgba(255,255,255,0.55)",value:"rgba(255,255,255,0.97)",muted:"rgba(255,255,255,0.45)",logLabel:"rgba(255,255,255,0.70)",logText:"rgba(255,255,255,0.88)",ok:"#4DFFC3",warn:"#FFD166",crit:"#FF6B6B",info:"#7EC8FF",tileBg:"rgba(255,255,255,0.045)",rowBg:"rgba(255,255,255,0.04)"},O={critical:"rgba(255,107,107,.16)",warning:"rgba(255,209,102,.14)",info:"rgba(126,200,255,.10)",ok:f.rowBg,none:"rgba(255,255,255,.025)"},M={critical:f.crit,warning:f.warn,info:f.info,ok:f.logText,none:"rgba(255,255,255,.35)"},It={Seedling:{bg:"rgba(126,200,255,0.16)",color:"#7EC8FF"},Veg:{bg:"rgba(126,232,126,0.16)",color:"#7EE87E"},Bloom:{bg:"rgba(255,180,50,0.18)",color:"#FFB432"},Flush:{bg:"rgba(255,180,50,0.18)",color:"#FFB432"},Trocknung:{bg:"rgba(201,155,95,0.18)",color:"#C99B5F"}},S=n=>{let t=[];if(n?.background){let e=n.background.trim(),s=e.includes(",")&&!/^(linear|radial|conic|rgb|hsl)/i.test(e)?`linear-gradient(160deg, ${e})`:e;t.push(`--gc-bg:${s}`)}return n?.opacity!==void 0&&t.push(`--gc-opacity:${n.opacity}`),n?.accent&&t.push(`--gc-accent:${n.accent}`),n?.radius!==void 0&&t.push(`--gc-radius:${n.radius}px`),t.join(";")},D=n=>n.includes("critical")?"critical":n.includes("warning")?"warning":n.includes("info")?"info":"ok",C=st`
+        @value-changed=${i=>this._fire({...this._config,style:{...i.detail.value}})}></ha-form>`}},p={text:(n,t)=>({name:n,label:t,selector:{text:{}}}),bool:(n,t)=>({name:n,label:t,selector:{boolean:{}}}),num:(n,t,e,s,i)=>({name:n,label:t,selector:{number:{min:e,max:s,step:i,mode:"box"}}}),entity:(n,t,e)=>({name:n,label:t,selector:{entity:e?{domain:e}:{}}}),entities:(n,t,e)=>({name:n,label:t,selector:{entity:{multiple:!0,...e?{domain:e}:{}}}}),select:(n,t,e)=>({name:n,label:t,selector:{select:{mode:"dropdown",options:e}}})};var Ue=[p.text("tent","Zelt (Name wie in der Integration, z.B. gross)"),p.text("name","Anzeigename (optional)"),p.bool("show_chart","VPD-Chart anzeigen"),p.num("hours","Chart-Zeitraum (h)",1,168)],At=class extends _{render(){return l`${this.form(Ue)}${this.styleSection()}`}};customElements.define("growctrl-tent-editor",At);var A=(n,t=null)=>{if(n===void 0||["unknown","unavailable",""].includes(n))return t;let e=parseFloat(n);return isNaN(e)?t:e},ge=n=>{let t=Date.parse(n);return isNaN(t)?null:Math.floor((Date.now()-t)/864e5)};var ue=n=>!n||["unknown","unavailable",""].includes(n),me=n=>n.length>=16?n.substring(11,16):"",fe=n=>{if(ue(n))return{level:"none",label:"\u2014",ts:""};let t=n,e=me(t);if(t.includes("SENSOR INVALID"))return{level:"critical",label:"\u{1F6A8} Sensor ung\xFCltig \u2014 Befeuchtung gesperrt",ts:e};if(t.includes("MAINTENANCE"))return{level:"info",label:"\u{1F527} Wartungsmodus aktiv",ts:e};if(t.includes("TESTMODE"))return{level:"info",label:"\u{1F9EA} Testmodus aktiv",ts:e};if(t.includes("AUTO OFF"))return{level:"info",label:"\u{1F534} Klima-Automatik deaktiviert",ts:e};let s=t.match(/(?:IST|SOLL)\s+(?:F|CIRC)=(\w+)/i)?.[1]?.toLowerCase(),i=t.match(/IST\s+(?:CIRC|F)=\w+\s+HUM=(\w+)/i)?.[1]?.toUpperCase(),r=t.match(/REQ=(\w+)/i)?.[1]?.toUpperCase();if(i!==void 0){let o=[];return s==="on"?o.push("Umluft AN"):s==="manual"?o.push("Umluft Manuell"):s==="off"&&o.push("Umluft AUS"),o.push(i==="ON"?"Befeuchtung AN":"Befeuchtung AUS"),o.push(r==="ON"?"Entfeuchtung AN":"Entfeuchtung AUS"),t.includes("ZENTRAL-BLOCK")&&o.push("(Zentral-Block)"),{level:"ok",label:o.join(" \xB7 "),ts:e}}return{level:"ok",label:t.replace(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}\s*/,"").substring(0,45),ts:e}},be=n=>{if(ue(n))return{level:"none",label:"\u2014",ts:""};let t=n,e=me(t);if(t.includes("FAILSAFE LIGHT"))return{level:"critical",label:"\u{1F6A8} Failsafe: Licht-Zwangsabschaltung \u2014 Auto deaktiviert",ts:e};if(t.includes("FAILSAFE PUMP"))return{level:"critical",label:"\u{1F6A8} Failsafe: Pumpen-Zwangsabschaltung \u2014 Auto deaktiviert",ts:e};if(t.includes("TIME INVALID"))return{level:"critical",label:"\u26A0\uFE0F Lichtzeiten nicht konfiguriert",ts:e};if(t.includes("MISMATCH")){let f=b=>t.match(b)?.[1];return{level:"warning",label:"\u26A0\uFE0F Ger\xE4t antwortet nicht: "+([["Licht",f(/IST.*?\bL=(\w+)/i),f(/SOLL.*?\bL=(\w+)/i)],["Pumpe",f(/IST.*?\bP=(\w+)/i),f(/SOLL.*?\bP=(\w+)/i)],["O\u2082",f(/IST.*?\bO2=(\w+)/i),f(/SOLL.*?\bO2=(\w+)/i)]].filter(([,b,v])=>b&&v&&b!==v).map(([b,v,k])=>`${b} (IST ${v.toUpperCase()} / SOLL ${k.toUpperCase()})`).join(", ")||"Abweichung"),ts:e}}if(t.includes("MAINTENANCE"))return{level:"info",label:"\u{1F527} Wartungsmodus aktiv",ts:e};if(t.includes("TESTMODE"))return{level:"info",label:"\u{1F9EA} Testmodus aktiv",ts:e};let s=t.match(/IST.*?\bL=(\w+)/i)?.[1],i=t.match(/IST.*?\bP=(\w+)/i)?.[1],r=t.match(/IST.*?\bO2=(\w+)/i)?.[1],o=t.includes("OVRUNTIL")?" (Override aktiv)":"",c=[s&&s!=="n/a"?s==="on"?"\u{1F4A1} Licht AN":"\u{1F311} Licht AUS":null,i&&i!=="n/a"?i==="on"?"\u{1F4A7} Pumpe AN":"\u23F8\uFE0F Pumpe AUS":null,r&&r!=="n/a"?r==="on"?"\u{1FAE7} O\u2082 AN":"\u{1FAE7} O\u2082 AUS":null].filter(Boolean).join(" \xB7 "),a="";return t.includes("AUTO ON")?a="\u{1F7E2} Auto gestartet":t.includes("AUTO OFF")?a="\u{1F534} Auto gestoppt":t.match(/STAGE\s*\u2192/)?a=`\u{1F331} Phase: ${t.match(/STAGE\s*\u2192\s*(\w+)/)?.[1]??""}`:t.includes("LIGHT \u2192 ON")?a="\u{1F4A1} Licht eingeschaltet":t.includes("LIGHT \u2192 OFF")?a="\u{1F311} Licht ausgeschaltet":t.includes("PUMP \u2192 ON")?a="\u{1F4A7} Pumpe eingeschaltet":t.includes("PUMP \u2192 OFF")?a="\u23F8\uFE0F Pumpe ausgeschaltet":t.includes("O2 \u2192 ON")?a="\u{1FAE7} O\u2082 eingeschaltet":t.includes("FAN \u2192 ON")?a="\u{1F300} L\xFCfter eingeschaltet":t.includes("MANUAL OVERRIDE")?a="\u270B Manuell \xFCbersteuert":t.includes("OVERRIDE END")&&(a="\u2705 Override beendet"),{level:"ok",label:[a,c].filter(Boolean).join(" \u2014 ")+o||t.substring(17,55),ts:e}};var ye=new Map,xe=new Map;async function z(n,t,e=24,s=48){let i=`${t}:${e}`,r=ye.get(i);if(r&&Date.now()-r.t<5*6e4)return r.data;try{let o=new Date(Date.now()-e*36e5).toISOString(),a=((await n.callApi("GET",`history/period/${o}?filter_entity_id=${t}&minimal_response&no_attributes`))?.[0]??[]).map(m=>parseFloat(m.state??m.s)).filter(m=>!isNaN(m)),h=Math.max(1,Math.floor(a.length/s)),f=a.filter((m,u)=>u%h===0);return ye.set(i,{t:Date.now(),data:f}),f}catch{return r?.data??[]}}async function ve(n,t,e=14){let s=xe.get(t);if(s&&Date.now()-s.t<10*6e4)return s.data;try{let i=new Date().toISOString(),r=new Date(Date.now()+e*864e5).toISOString(),o=await n.callApi("GET",`calendars/${t}?start=${i}&end=${r}`);return xe.set(t,{t:Date.now(),data:o??[]}),o??[]}catch{return s?.data??[]}}var $e=(n,t=100,e=24)=>{if(n.length<2)return"";let s=Math.min(...n),i=Math.max(...n),r=i-s||1;return n.map((o,c)=>`${c===0?"M":"L"}${(c/(n.length-1)*t).toFixed(1)},${(e-(o-s)/r*e).toFixed(1)}`).join(" ")};var g={label:"rgba(255,255,255,0.55)",value:"rgba(255,255,255,0.97)",muted:"rgba(255,255,255,0.45)",logLabel:"rgba(255,255,255,0.70)",logText:"rgba(255,255,255,0.88)",ok:"#4DFFC3",warn:"#FFD166",crit:"#FF6B6B",info:"#7EC8FF",tileBg:"rgba(255,255,255,0.045)",rowBg:"rgba(255,255,255,0.04)"},N={critical:"rgba(255,107,107,.16)",warning:"rgba(255,209,102,.14)",info:"rgba(126,200,255,.10)",ok:g.rowBg,none:"rgba(255,255,255,.025)"},T={critical:g.crit,warning:g.warn,info:g.info,ok:g.logText,none:"rgba(255,255,255,.35)"},at={Seedling:{bg:"rgba(126,200,255,0.16)",color:"#7EC8FF"},Veg:{bg:"rgba(126,232,126,0.16)",color:"#7EE87E"},Bloom:{bg:"rgba(255,180,50,0.18)",color:"#FFB432"},Flush:{bg:"rgba(255,180,50,0.18)",color:"#FFB432"},Trocknung:{bg:"rgba(201,155,95,0.18)",color:"#C99B5F"}},w=n=>{let t=[];if(n?.background){let e=n.background.trim(),s=e.includes(",")&&!/^(linear|radial|conic|rgb|hsl)/i.test(e)?`linear-gradient(160deg, ${e})`:e;t.push(`--gc-bg:${s}`)}return n?.opacity!==void 0&&t.push(`--gc-opacity:${n.opacity}`),n?.accent&&t.push(`--gc-accent:${n.accent}`),n?.radius!==void 0&&t.push(`--gc-radius:${n.radius}px`),t.join(";")},W=n=>n.includes("critical")?"critical":n.includes("warning")?"warning":n.includes("info")?"info":"ok",S=q`
   :host { display: block; }
   .card {
     position: relative; isolation: isolate;
@@ -91,32 +89,32 @@ var ut=globalThis,gt=ut.ShadowRoot&&(ut.ShadyCSS===void 0||ut.ShadyCSS.nativeSha
   .barrow .time { font-size: 11px; min-width: 78px; flex-shrink: 0; text-align: right;
                   font-variant-numeric: tabular-nums; }
   button.gc { all: unset; cursor: pointer; }
-`,j={ok:{bg:"rgba(77,255,195,.14)",color:f.ok,label:"Alles OK"},info:{bg:"rgba(126,200,255,.14)",color:f.info,label:"Info"},warning:{bg:"rgba(255,209,102,.16)",color:f.warn,label:"Warnung"},critical:{bg:"rgba(255,107,107,.18)",color:f.crit,label:"Fehler"}};var H=30,$t=4,ze=6,Bt=14;function Q(n,t={}){let e=t.w??300,s=t.h??110,i=n.flatMap(u=>u.data);if(!i.length)return a`<div style="height:${s}px;display:flex;align-items:center;justify-content:center;
-    font-size:11px;color:rgba(255,255,255,.35)">Keine Verlaufsdaten</div>`;let o=t.min??Math.min(...i,t.band?.min??1/0),r=t.max??Math.max(...i,t.band?.max??-1/0);r-o<.001&&(r+=1,o-=1);let d=(r-o)*.08;o-=d,r+=d;let c=(u,x)=>H+u/Math.max(1,x-1)*(e-H-$t),h=u=>ze+(1-(u-o)/(r-o))*(s-ze-Bt),m=t.grid??3,g=u=>Math.abs(u)>=100?u.toFixed(0):Math.abs(u)>=10?u.toFixed(1):u.toFixed(2);return a`<svg viewBox="0 0 ${e} ${s}" preserveAspectRatio="none" style="width:100%;height:${s}px;display:block">
-    ${t.band&&(t.band.min!==void 0||t.band.max!==void 0)?ct`
-      <rect x="${H}" y="${h(t.band.max??r)}" width="${e-H-$t}"
-        height="${Math.max(0,h(t.band.min??o)-h(t.band.max??r))}"
-        fill="${t.band.color??"rgba(77,255,195,.08)"}" />`:p}
-    ${Array.from({length:m+1},(u,x)=>{let b=o+(r-o)*x/m;return ct`
-        <line x1="${H}" y1="${h(b)}" x2="${e-$t}" y2="${h(b)}"
+`,L={ok:{bg:"rgba(77,255,195,.14)",color:g.ok,label:"Alles OK"},info:{bg:"rgba(126,200,255,.14)",color:g.info,label:"Info"},warning:{bg:"rgba(255,209,102,.16)",color:g.warn,label:"Warnung"},critical:{bg:"rgba(255,107,107,.18)",color:g.crit,label:"Fehler"}};var B=30,lt=4,_e=6,kt=14;function U(n,t={}){let e=t.w??300,s=t.h??110,i=n.flatMap(u=>u.data);if(!i.length)return l`<div style="height:${s}px;display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:rgba(255,255,255,.35)">Keine Verlaufsdaten</div>`;let r=t.min??Math.min(...i,t.band?.min??1/0),o=t.max??Math.max(...i,t.band?.max??-1/0);o-r<.001&&(o+=1,r-=1);let c=(o-r)*.08;r-=c,o+=c;let a=(u,b)=>B+u/Math.max(1,b-1)*(e-B-lt),h=u=>_e+(1-(u-r)/(o-r))*(s-_e-kt),f=t.grid??3,m=u=>Math.abs(u)>=100?u.toFixed(0):Math.abs(u)>=10?u.toFixed(1):u.toFixed(2);return l`<svg viewBox="0 0 ${e} ${s}" preserveAspectRatio="none" style="width:100%;height:${s}px;display:block">
+    ${t.band&&(t.band.min!==void 0||t.band.max!==void 0)?st`
+      <rect x="${B}" y="${h(t.band.max??o)}" width="${e-B-lt}"
+        height="${Math.max(0,h(t.band.min??r)-h(t.band.max??o))}"
+        fill="${t.band.color??"rgba(77,255,195,.08)"}" />`:d}
+    ${Array.from({length:f+1},(u,b)=>{let v=r+(o-r)*b/f;return st`
+        <line x1="${B}" y1="${h(v)}" x2="${e-lt}" y2="${h(v)}"
           stroke="rgba(255,255,255,.07)" stroke-width="1"/>
-        <text x="${H-4}" y="${h(b)+3}" text-anchor="end"
-          font-size="8" fill="rgba(255,255,255,.4)">${g(b)}</text>`})}
-    ${n.map(u=>{if(u.data.length<2)return p;let b=`M${u.data.map((E,k)=>`${c(k,u.data.length).toFixed(1)},${h(E).toFixed(1)}`).join(" L")}`;return ct`
-        ${u.fill!==!1?ct`<path d="${b} L${c(u.data.length-1,u.data.length)},${s-Bt} L${H},${s-Bt} Z"
-          fill="${u.color}" opacity=".10"/>`:p}
-        <path d="${b}" fill="none" stroke="${u.color}" stroke-width="1.8"
+        <text x="${B-4}" y="${h(v)+3}" text-anchor="end"
+          font-size="8" fill="rgba(255,255,255,.4)">${m(v)}</text>`})}
+    ${n.map(u=>{if(u.data.length<2)return d;let v=`M${u.data.map((k,P)=>`${a(P,u.data.length).toFixed(1)},${h(k).toFixed(1)}`).join(" L")}`;return st`
+        ${u.fill!==!1?st`<path d="${v} L${a(u.data.length-1,u.data.length)},${s-kt} L${B},${s-kt} Z"
+          fill="${u.color}" opacity=".10"/>`:d}
+        <path d="${v}" fill="none" stroke="${u.color}" stroke-width="1.8"
           stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${c(u.data.length-1,u.data.length)}" cy="${h(u.data[u.data.length-1])}"
+        <circle cx="${a(u.data.length-1,u.data.length)}" cy="${h(u.data[u.data.length-1])}"
           r="2.6" fill="${u.color}"/>`})}
-    <text x="${H}" y="${s-3}" font-size="8" fill="rgba(255,255,255,.35)">-24h</text>
-    <text x="${e-$t}" y="${s-3}" text-anchor="end" font-size="8" fill="rgba(255,255,255,.35)">jetzt</text>
-  </svg>`}var Ie=n=>a`
+    <text x="${B}" y="${s-3}" font-size="8" fill="rgba(255,255,255,.35)">-24h</text>
+    <text x="${e-lt}" y="${s-3}" text-anchor="end" font-size="8" fill="rgba(255,255,255,.35)">jetzt</text>
+  </svg>`}var we=n=>l`
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
-    ${n.filter(t=>t.name).map(t=>a`<span style="display:inline-flex;align-items:center;gap:5px;
+    ${n.filter(t=>t.name).map(t=>l`<span style="display:inline-flex;align-items:center;gap:5px;
       font-size:10px;color:rgba(255,255,255,.6)">
       <span style="width:10px;height:3px;border-radius:2px;background:${t.color}"></span>${t.name}</span>`)}
-  </div>`;var v=class extends P{constructor(){super(...arguments);this._config={};this._confirm=null}static{this.properties={hass:{attribute:!1},_config:{state:!0},_confirm:{state:!0}}}setConfig(e){this.validateConfig(e),this._config=e}validateConfig(e){}getCardSize(){return 4}st(e){return e?this.hass?.states[e]?.state:void 0}isOn(e){return this.st(e)==="on"}friendly(e){return e&&this.hass?.states[e]?.attributes?.friendly_name||e||""}unit(e){return e&&this.hass?.states[e]?.attributes?.unit_of_measurement||""}moreInfo(e){this.dispatchEvent(new CustomEvent("hass-more-info",{detail:{entityId:e},bubbles:!0,composed:!0}))}navigate(e){history.pushState(null,"",e),window.dispatchEvent(new CustomEvent("location-changed"))}toggle(e){let s=e.split(".")[0],i=["switch","input_boolean","light","fan"].includes(s)?s:"homeassistant";this.hass.callService(i,"toggle",{entity_id:e})}confirmToggle(e,s){this._confirm={text:`${s} wirklich schalten?`,action:()=>this.toggle(e)}}renderConfirm(){return this._confirm?a`<div style="position:absolute;inset:0;background:rgba(0,0,0,.6);border-radius:16px;
+  </div>`;var Ct=n=>n.toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,""),ct=(n,t,e,s,i)=>i?.[s]??`${n}.growctrl_${Ct(t)}_${Ct(e)}_${s}`,dt=(n,t,e,s)=>s?.[e]??`${n}.growctrl_zelt_${Ct(t)}_${e}`,Se={auto:["switch","automatik"],wartung:["switch","wartung"],stage:["select","wachstumsphase"],lightOn:["time","licht_an"],lightOffSv:["time","licht_aus_seedling_veg"],lightOffBloom:["time","licht_aus_bloom_flush"],lightRest:["sensor","licht_restzeit"],pumpRest:["sensor","pumpe_restzeit"],age:["sensor","alter_seit_keimung"],rec:["sensor","phasen_empfehlung"],event:["sensor","letztes_ereignis"],dli:["sensor","dli_heute"],dliFc:["sensor","dli_prognose"],germination:["date","keimstart"],overrideMin:["number","manuelle_ubernahme"],pOverride:["binary_sensor","manueller_eingriff"],pFailsafe:["binary_sensor","licht_failsafe"],pTime:["binary_sensor","lichtzeiten_unvollstandig"]},pt={enabled:["switch","zelt_aktiv"],climate:["switch","klima_automatik"],mode:["select","klima_modus"],phase:["select","klima_phase"],vpd:["sensor","vpd"],status:["sensor","status"],event:["sensor","letztes_ereignis"],todo:["todo","aufgaben"]};var x=class extends F{constructor(){super(...arguments);this._config={};this._confirm=null}static{this.properties={hass:{attribute:!1},_config:{state:!0},_confirm:{state:!0}}}setConfig(e){this.validateConfig(e),this._config=e}validateConfig(e){}getCardSize(){return 4}st(e){return e?this.hass?.states[e]?.state:void 0}isOn(e){return this.st(e)==="on"}friendly(e){return e&&this.hass?.states[e]?.attributes?.friendly_name||e||""}unit(e){return e&&this.hass?.states[e]?.attributes?.unit_of_measurement||""}moreInfo(e){this.dispatchEvent(new CustomEvent("hass-more-info",{detail:{entityId:e},bubbles:!0,composed:!0}))}navigate(e){history.pushState(null,"",e),window.dispatchEvent(new CustomEvent("location-changed"))}toggle(e){let s=e.split(".")[0],i=["switch","input_boolean","light","fan"].includes(s)?s:"homeassistant";this.hass.callService(i,"toggle",{entity_id:e})}confirmToggle(e,s){this._confirm={text:`${s} wirklich schalten?`,action:()=>this.toggle(e)}}renderConfirm(){return this._confirm?l`<div style="position:absolute;inset:0;background:rgba(0,0,0,.6);border-radius:16px;
         display:flex;align-items:center;justify-content:center;z-index:5">
       <div style="background:#1c2330;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:16px;max-width:80%">
         <div style="font-size:13px;margin-bottom:12px">${this._confirm.text}</div>
@@ -127,324 +125,328 @@ var ut=globalThis,gt=ut.ShadowRoot&&(ut.ShadyCSS===void 0||ut.ShadyCSS.nativeSha
             @click=${()=>{this._confirm.action(),this._confirm=null}}>Schalten</button>
         </div>
       </div>
-    </div>`:p}};var Nt=class extends v{static{this.styles=C}validateConfig(t){if(!t.temperature||!t.humidity)throw new Error("growctrl-tent-card: 'temperature' und 'humidity' sind Pflicht.")}static getConfigElement(){return document.createElement("growctrl-tent-editor")}static getStubConfig(){return{temperature:"sensor.zelt_temperature",humidity:"sensor.zelt_humidity",title:"Mein Zelt"}}render(){let t=this._config;if(!this.hass)return p;let e=_(this.st(t.temperature)),s=_(this.st(t.humidity)),i=t.power?_(this.st(t.power)):null,o=e!==null&&s!==null?dt(e,s,t.leaf_offset??0):null,r=o!==null?yt(o):null,d=(t.logs??[]).map(b=>(b.type==="climate"?N:R)(this.st(b.entity))),c=D(d.map(b=>b.level)),h=j[c].label;c==="ok"&&(this.isOn(t.dehum_request)?(c="warning",h="Dehum AN"):e!==null&&(e<(t.temp_min??18)||e>(t.temp_max??30))&&(c="warning",h="Temp!"));let m=j[c],g=t.style??(t.gradient?{background:t.gradient}:void 0),u=2,x=o!==null?Math.min(100,Math.max(0,o/u*100)):null;return a`<div class="card ${g?.glass?"glass":""} ${t.tap_navigation?"clickable":""}"
-        data-level=${c} style=${S(g)}
-        @click=${()=>t.tap_navigation&&this.navigate(t.tap_navigation)}>
+    </div>`:d}};var He=["VPD","RH"],De=["Auto","Seedling","Veg","Bloom","Trocknung"],Et=class extends x{constructor(){super(...arguments);this._hist=[]}static{this.styles=S}static{this.properties={...x.properties,_hist:{state:!0}}}validateConfig(e){if(!e.tent)throw new Error("growctrl-tent-card: 'tent' ist Pflicht (Zelt-Name aus der Integration).")}static getConfigElement(){return document.createElement("growctrl-tent-editor")}static getStubConfig(){return{tent:"gross"}}e(e){let[s,i]=pt[e],r=this._config;return dt(s,r.tent,i,r.overrides)}_select(e,s){this.hass.callService("select","select_option",{entity_id:e,option:s})}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}this._hist=await z(this.hass,this.e("vpd"),this._config.hours??24)}chips(e,s,i){return l`<div style="display:flex;gap:5px;flex-wrap:wrap">
+      ${s.map(r=>l`<button class="gc" style="padding:4px 11px;border-radius:9px;font-size:10.5px;
+          font-weight:700;transition:all .15s;
+          background:${r===i?"rgba(77,255,195,.13)":"rgba(255,255,255,.04)"};
+          border:1.5px solid ${r===i?g.ok:"rgba(255,255,255,.09)"};
+          color:${r===i?g.ok:"rgba(255,255,255,.45)"}"
+        @click=${()=>this._select(e,r)}>${r}</button>`)}
+    </div>`}render(){let e=this._config;if(!this.hass)return d;let s=this.hass.states[this.e("vpd")],i=A(s?.state),r=s?.attributes?.temp,o=s?.attributes?.rh,c=s?.attributes?.phase_effektiv??"Veg",a=s?.attributes?.sollwerte,h=this.isOn(this.e("enabled")),f=this.isOn(this.e("climate")),m=this.hass.states[this.e("status")],u=m?.attributes?.probleme??[],b=m?.state==="problem"?"warning":h?"ok":"none",v=L[b]??L.none,k=this.hass.states[this.e("event")],P=i!==null&&a&&i>=a.vpd_min&&i<=a.vpd_max,I=(C,$,E,O)=>l`
+      <button class="gc" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+          padding:9px 10px;border-radius:13px;transition:all .18s;
+          background:${E?"rgba(77,255,195,.12)":"rgba(255,255,255,.05)"};
+          border:1.5px solid ${E?g.ok:"rgba(255,255,255,.12)"};
+          color:${E?g.ok:"rgba(255,255,255,.5)"}"
+        @click=${()=>this.confirmToggle(C,$)}>
+        <ha-icon .icon=${O} style="--mdc-icon-size:15px"></ha-icon>
+        <span style="font-size:11px;font-weight:800">${$} ${E?"AN":"AUS"}</span>
+      </button>`,y=(C,$,E,O)=>l`
+      <div class="tile" style="text-align:center">
+        <div class="lbl">${C}</div>
+        <div class="val" style="font-size:22px;${O?`color:${O}`:""}">${$}<span class="unit">${E}</span></div>
+      </div>`;return l`<div class="card ${e.style?.glass?"glass":""}" data-level=${b==="none"?"ok":b}
+        style="${w(e.style)};position:relative">
       <div class="hdr">
         <div>
-          <div class="title">${t.title??"Zelt"}</div>
-          ${t.subtitle?a`<div class="subtitle">${t.subtitle}</div>`:p}
+          <div class="title">${e.name??`Zelt ${e.tent}`}</div>
+          <div class="subtitle">Klima \u00b7 Phase ${c}${a?` \xB7 Soll ${a.vpd_min}\u2013${a.vpd_max} kPa / ${a.rh_min}\u2013${a.rh_max} %`:""}</div>
         </div>
-        <div class="badges">
-          ${this.isOn(t.climate_auto)?a`<span class="badge">\u2699 Klima</span>`:p}
-          ${this.isOn(t.maintenance)?a`<span class="badge warn">\u{1F527} Wartung</span>`:p}
-          <span class="status-pill" style="background:${m.bg};color:${m.color}">
-            <span class="dot" style="background:${m.color}"></span>${h}</span>
-        </div>
+        <span class="status-pill" style="background:${v.bg};color:${v.color}">
+          <span class="dot" style="background:${v.color}"></span>${h?v.label:"Deaktiviert"}</span>
       </div>
-      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:14px">
-        <div class="tile"><div class="lbl">Temperatur</div>
-          <div class="val">${e!==null?e.toFixed(1):"--"}<span class="unit">\u00b0C</span></div></div>
-        <div class="tile"><div class="lbl">Luftfeuchte</div>
-          <div class="val">${s!==null?Math.round(s):"--"}<span class="unit">%</span></div></div>
-        <div class="tile"><div class="lbl">VPD</div>
-          <div class="val" style=${r?`color:${r.color}`:""}>${o!==null?o.toFixed(2):"--"}<span class="unit">kPa</span></div></div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        ${I(this.e("enabled"),"Zelt",h,"mdi:power")}
+        ${I(this.e("climate"),"Klima",f,"mdi:thermostat")}
       </div>
-      ${t.show_vpd_scale!==!1&&x!==null?a`
-        <div style="margin-top:10px">
-          <div style="position:relative;height:8px;border-radius:4px;overflow:visible;display:flex">
-            ${J.map((b,E)=>{let k=E===0?0:Math.min(J[E-1].max,u),$=Math.max(0,(Math.min(b.max,u)-k)/u*100),A=E===0,L=b.max>=u;return a`<div style="width:${$}%;background:${b.color};opacity:.5;
-                ${A?"border-radius:4px 0 0 4px;":""}${L?"border-radius:0 4px 4px 0;":""}"></div>`})}
-            <div style="position:absolute;left:${x}%;top:-3px;width:3px;height:14px;background:#fff;
-              border-radius:2px;transform:translateX(-50%);box-shadow:0 0 6px rgba(255,255,255,.8)"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:${f.muted};margin-top:4px">
-            <span>${r.label}${t.leaf_offset?` \xB7 Blatt ${t.leaf_offset>0?"+":""}${t.leaf_offset}K`:""}</span>
-            ${i!==null?a`<span style="font-weight:700;color:rgba(255,255,255,.7)">\u26A1 ${Math.round(i)} W</span>`:p}
-          </div>
-        </div>`:i!==null?a`<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-top:8px">\u26A1 ${Math.round(i)} W</div>`:p}
-      ${d.length?a`<div class="seclbl">Letzte Ereignisse</div>
-        ${d.map(b=>a`<div class="logrow" style="background:${O[b.level]};margin-top:4px">
-          <span class="txt" style="color:${M[b.level]}">${b.label}</span>
-          ${b.ts?a`<span class="ts">${b.ts}</span>`:p}
-        </div>`)}`:p}
-    </div>`}};customElements.define("growctrl-tent-card",Nt);var rs=[l.text("name","Anzeigename"),l.select("system","Systemtyp",[{value:"generic",label:"Generisch"},{value:"dwc",label:"DWC (Wasserkultur)"},{value:"soil",label:"Erde"}]),l.text("tent","Zelt (Profil, z.B. mittel)"),l.text("station_id","Station (Profil, z.B. main1)"),l.entity("light_switch","Licht-Switch (Hardware, Pflicht)","switch"),l.entity("pump_switch","Pumpen-Switch (optional)","switch"),l.entity("o2_switch","O\u2082-Switch (optional)","switch"),l.entity("fan_switch","Umluft-Switch (optional)","switch"),l.bool("show_stage_chips","Phasen-Chips anzeigen"),l.bool("show_settings","Konfigurations-Kacheln anzeigen")],Dt=class extends w{constructor(){super(...arguments);this._origStation={}}setConfig(e){let s=e.station??{};this._origStation=s,this._config={...e,tent:s.tent??"",station_id:s.station??"",light_switch:s.light_switch,pump_switch:s.pump_switch,o2_switch:s.o2_switch,fan_switch:s.fan_switch}}_fire(e){let{tent:s,station_id:i,light_switch:o,pump_switch:r,o2_switch:d,fan_switch:c,...h}=e,m=this._origStation,g={...h,station:{...m,tent:s??"",station:i??"",light_switch:o,pump_switch:r,o2_switch:d,fan_switch:c}};this._config=e,this.dispatchEvent(new CustomEvent("config-changed",{detail:{config:g},bubbles:!0,composed:!0}))}range(e,s,i){let o=(this._config[e]??{})[s]??{},r=[l.entity("entity",i,"sensor"),l.num("min","Min"),l.num("max","Max")];return a`<div class="row"><ha-form .hass=${this.hass} .data=${o} .schema=${r}
-      .computeLabel=${d=>d.label??d.name}
-      @value-changed=${d=>{let c={...this._config[e]??{},[s]:{...d.detail.value}};this._fire({...this._config,[e]:c})}}></ha-form></div>`}render(){let e=this._config.system??"generic";return a`${this.form(rs)}
-      ${e==="dwc"?a`<div class="lt">DWC-Wasserwerte (Ampel bei Sollbereich-Verletzung)</div>
-        ${this.range("dwc","ec","EC-Sensor")}
-        ${this.range("dwc","ph","pH-Sensor")}
-        ${this.range("dwc","water_temp","Wassertemperatur-Sensor")}
-        ${this.range("dwc","level","F\xFCllstand-Sensor")}`:p}
-      ${e==="soil"?a`<div class="lt">Erde-Bodenwerte (Ampel bei Sollbereich-Verletzung)</div>
-        ${this.range("soil","moisture","Bodenfeuchte-Sensor")}
-        ${this.range("soil","soil_temp","Bodentemperatur-Sensor")}
-        ${this.range("soil","ec","EC-Sensor")}
-        ${this.range("soil","ph","pH-Sensor")}`:p}
-      ${this.styleSection()}
-      <div class="hint">Erweitert (nur YAML): <code>station.overrides</code> /
-        <code>station.templates</code> zum \u00dcberschreiben einzelner Rollen bzw. des Namensschemas.</div>`}};customElements.define("growctrl-station-editor",Dt);var os=["Seedling","Veg","Bloom","Flush","Trocknung"],as=[["ec","EC","mS/cm"],["ph","pH",""],["water_temp","Wasser","\xB0C"],["level","F\xFCllstand","%"]],ls=[["moisture","Bodenfeuchte","%"],["soil_temp","Bodentemp","\xB0C"],["ec","EC Boden","mS/cm"],["ph","pH Boden",""]],Ht=class extends v{constructor(){super(...arguments);this._open=!1}static{this.styles=C}static{this.properties={...v.properties,_open:{state:!0}}}validateConfig(e){if(!e.station?.tent||!e.station?.station)throw new Error("growctrl-station-card: 'station: { tent, station }' ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-station-editor")}static getStubConfig(){return{station:{tent:"mittel",station:"main1",light_switch:"switch.licht"}}}rangeColor(e,s){return e===null?"rgba(255,255,255,.35)":s.min!==void 0&&e<s.min?f.crit:s.max!==void 0&&e>s.max?f.crit:f.ok}rangeBad(e,s){return e!==null&&(s.min!==void 0&&e<s.min||s.max!==void 0&&e>s.max)}render(){let e=this._config;if(!this.hass)return p;let s=e.station,i=Te(this.hass,s),o=y=>i[y],r=this.st(o("stage"))??"",d=this.isOn(o("auto")),c=s.light_switch?this.isOn(s.light_switch):!1,h=this.st(o("log")),m=_(this.st(o("light_rest"))),g=_(this.st(o("pump_rest"))),u=this.st(o("light_on"))??"",x=r==="Bloom"||r==="Flush"?this.st(o("light_off_bloom"))??"":this.st(o("light_off_sv"))??"",b=(x?zt(x):0)-(u?zt(u):0);b<=0&&(b+=24*60);let E=24*60-b,k=r==="Seedling"?"seedling":r==="Veg"?"veg":"bloom",$=_(this.st(o(`pump_on_${k}`)),10),A=_(this.st(o(`pump_off_${k}`)),15),L=$+A,vt=Le(h),Ne=m!==null&&b>0?Math.min(100,Math.round(m/b*100)):0,De=m!==null&&E>0?Math.min(100,Math.round(m/E*100)):0,He=g!==null&&L>0?Math.min(100,Math.round(g/L*100)):0,oe=It[r]??{bg:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.5)"},U=R(h),pt=(e.system==="dwc"?as.filter(([y])=>e.dwc?.[y]?.entity).map(([y,F,T])=>[y,F,T,e.dwc[y]]):e.system==="soil"?ls.filter(([y])=>e.soil?.[y]?.entity).map(([y,F,T])=>[y,F,T,e.soil[y]]):[]).map(([y,F,T,Z])=>{let tt=_(this.st(Z.entity));return{key:y,label:F,unit:T,v:tt,color:this.rangeColor(tt,Z),bad:this.rangeBad(tt,Z),entity:Z.entity}}),xt=U.level==="none"?"ok":U.level;pt.some(y=>y.bad)&&xt!=="critical"&&(xt="warning");let Y=(y,F,T,Z,tt,Ue=!1)=>a`
-      <div class="barrow">
-        <span class="ico" style=${Ue?"opacity:.25":""}>${y}</span>
-        <div class="track"><div class="fill" style="background:${F};width:${T}%"></div></div>
-        <span class="time" style="color:${tt}">${Z}</span>
-      </div>`,ht=[{eid:o("light_on"),name:"Licht AN",val:(this.st(o("light_on"))??"").substring(0,5)},{eid:o(r==="Bloom"||r==="Flush"?"light_off_bloom":"light_off_sv"),name:"Licht AUS",val:(x??"").substring(0,5)},{eid:o(`pump_on_${k}`),name:"Pumpe AN",val:`${$} min`},{eid:o(`pump_off_${k}`),name:"Pumpe AUS",val:`${A} min`}].filter(y=>y.eid);return a`<div class="card ${e.style?.glass?"glass":""}" data-level=${xt}
-        style="${S(e.style)};position:relative">
-      <div class="hdr">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="title" style="font-size:15px">${e.name??`${s.tent} \xB7 ${s.station}`}</span>
-          <span class="stagebadge" style="background:${oe.bg};color:${oe.color}">${r||"\u2013"}</span>
-          ${e.system&&e.system!=="generic"?a`<span class="badge" style="font-size:9px">${e.system==="dwc"?"DWC":"Erde"}</span>`:p}
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;
-            background:${c?"#FFD700":d?"#8B9FC4":"rgba(255,255,255,.18)"};
-            ${c?"box-shadow:0 0 8px #FFD700aa":""}"></span>
-          <span style="font-size:11px;font-weight:700;color:${c?"rgba(255,255,255,.9)":d?"#B0BED4":"rgba(255,255,255,.3)"}">
-            ${c?"Licht AN":d?"Nacht":"Inaktiv"}</span>
-          ${e.show_settings!==!1&&ht.length?a`<button class="gc"
-              title="Konfiguration" style="width:26px;height:26px;border-radius:8px;display:flex;align-items:center;
-                justify-content:center;background:${this._open?"rgba(255,255,255,.12)":"rgba(255,255,255,.05)"};
-                border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6)"
-              @click=${()=>{this._open=!this._open}}>
-              <ha-icon icon="mdi:tune-variant" style="--mdc-icon-size:14px"></ha-icon></button>`:p}
-          ${o("auto")?a`<button class="gc stagebadge"
-              style="background:${d?"rgba(77,255,195,.14)":"rgba(255,107,107,.14)"};
-                border:1px solid ${d?"rgba(77,255,195,.3)":"rgba(255,107,107,.3)"};
-                color:${d?"#4DFFC3":"#FF6B6B"}"
-              @click=${()=>this.toggle(o("auto"))}>Auto ${d?"AN":"AUS"}</button>`:p}
-        </div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:10px">
+        ${y("Temperatur",r!=null?Number(r).toFixed(1):"\u2013","\xB0C")}
+        ${y("Luftfeuchte",o!=null?String(Math.round(Number(o))):"\u2013","%")}
+        ${y("VPD",i!==null?i.toFixed(2):"\u2013","kPa",i===null?void 0:P?g.ok:"#FFD166")}
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-        ${c?Y("\u{1F4A1}","linear-gradient(90deg,#FFD700,#FFA500)",Ne,bt(m),f.muted):d?Y("\u{1F319}","linear-gradient(90deg,#8B9FC4,#5B6F96)",De,`AN in ${bt(m)}`,f.label):Y("\u{1F4A1}","transparent",0,"\u2013","rgba(255,255,255,.25)",!0)}
-        ${vt?Y("\u{1F4A7}","linear-gradient(90deg,#4FC3F7,#0288D1)",He,bt(g),f.muted):Y("\u{1F4A7}","transparent",0,"\u2013","rgba(255,255,255,.25)",!0)}
+
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;align-items:center">
+        <span class="lbl" style="margin:0">Modus</span>
+        ${this.chips(this.e("mode"),He,this.st(this.e("mode"))??"VPD")}
+        <span class="lbl" style="margin:0">Phase</span>
+        ${this.chips(this.e("phase"),De,this.st(this.e("phase"))??"Auto")}
       </div>
-      ${pt.length?a`
-        <div class="grid" style="grid-template-columns:repeat(${Math.min(4,pt.length)},1fr)">
-          ${pt.map(y=>a`<button class="gc tile" style="text-align:left;padding:9px 11px;
-              ${y.bad?"border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)":""}"
-            @click=${()=>this.moreInfo(y.entity)}>
-            <div class="lbl">${y.label}</div>
-            <div class="val sm" style="color:${y.color}">${y.v!==null?y.v:"--"}<span class="unit">${y.unit}</span></div>
-          </button>`)}
-        </div>`:p}
-      ${e.show_stage_chips!==!1&&o("stage")?a`
-        <div style="display:flex;gap:6px;margin-top:10px">
-          ${os.map(y=>{let F=It[y],T=r===y;return a`<button class="gc" style="flex:1;text-align:center;padding:9px 4px;border-radius:12px;
-                font-size:11px;font-weight:700;transition:all .15s;
-                background:${T?F.bg:"rgba(255,255,255,.04)"};
-                border:1px solid ${T?F.color:"rgba(255,255,255,.1)"};
-                color:${T?F.color:"rgba(255,255,255,.45)"}"
-              @click=${()=>this.hass.callService("input_select","select_option",{entity_id:o("stage"),option:y})}>${y}</button>`})}
-        </div>`:p}
-      ${e.show_settings!==!1&&ht.length?a`
-        ${this._open?a`<div class="grid" style="grid-template-columns:repeat(${Math.min(4,ht.length)},1fr);margin-top:10px">
-          ${ht.map(y=>a`<button class="gc tile" style="text-align:left;padding:9px 11px"
-              @click=${()=>this.moreInfo(y.eid)}>
-            <div class="lbl">${y.name}</div><div class="val sm">${y.val||"\u2013"}</div></button>`)}
-        </div>`:p}`:p}
-      <div class="logrow" style="background:${O[U.level]};margin-top:10px">
-        <span class="txt" style="color:${M[U.level]}">${U.label}</span>
-        ${U.ts?a`<span class="ts">${U.ts}</span>`:p}
-      </div>
+
+      ${e.show_chart!==!1&&this._hist.length>1?l`
+        <div class="seclbl">VPD \u00b7 ${e.hours??24}h</div>
+        ${U([{data:this._hist,color:P===!1?"#FFD166":g.ok}],{h:100,band:a?{min:a.vpd_min,max:a.vpd_max}:void 0,grid:3})}`:d}
+
+      ${u.length?l`<div style="margin-top:9px">
+        ${u.map(C=>l`<div class="logrow" style="background:rgba(255,209,102,.08);margin-top:4px">
+          <span class="txt" style="color:#FFD166">\u26A0 ${C}</span></div>`)}</div>`:d}
+
+      ${k?l`<button class="gc logrow" style="width:100%;margin-top:9px;text-align:left"
+          @click=${()=>this.moreInfo(this.e("event"))}>
+          <span class="dot" style="background:${T[k.attributes?.schweregrad]??g.info};flex-shrink:0"></span>
+          <span class="txt" style="color:rgba(255,255,255,.6)">${k.state}</span>
+        </button>`:d}
       ${this.renderConfirm()}
-    </div>`}};customElements.define("growctrl-station-card",Ht);var cs=[l.text("title","Titel"),l.num("columns","Spalten",1,6)],ds=[l.entity("entity","Aktor",["switch","input_boolean","light","fan"]),l.text("name","Name (optional)"),l.text("group","Gruppe (optional, z.B. Zelt / Pflanzen)"),l.bool("confirm","Mit Best\xE4tigung schalten")],Ut=class extends w{render(){return a`${this.form(cs)}
-      ${this.list({key:"controls",rowSchema:ds,title:"Aktoren",addLabel:"Aktor hinzuf\xFCgen",newItem:()=>({entity:""})})}
-      ${this.styleSection()}`}};customElements.define("growctrl-controls-editor",Ut);var ps={switch:"mdi:power",light:"mdi:lightbulb",fan:"mdi:fan",input_boolean:"mdi:toggle-switch"},Gt=class extends v{static{this.styles=C}validateConfig(t){if(!Array.isArray(t.controls)||!t.controls.length)throw new Error("growctrl-controls-card: 'controls' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-controls-editor")}static getStubConfig(){return{controls:[{entity:"switch.beispiel"}]}}render(){let t=this._config;if(!this.hass)return p;let e=t.style?.accent??"#4DFFC3",s=new Map;t.controls.forEach(o=>{let r=o.group??"";s.has(r)||s.set(r,[]),s.get(r).push(o)});let i=t.columns?`repeat(${t.columns},1fr)`:"repeat(auto-fill,minmax(92px,1fr))";return a`<div class="card ${t.style?.glass?"glass":""}" style="${S(t.style)};position:relative">
-      ${t.title?a`<div class="title" style="font-size:15px">${t.title}</div>`:p}
-      ${[...s.entries()].map(([o,r])=>a`
-        ${o?a`<div class="seclbl">${o}</div>`:p}
-        <div class="grid" style="grid-template-columns:${i};gap:8px;margin-top:${o?0:10}px">
-          ${r.map(d=>{let c=this.isOn(d.entity),h=d.name??this.friendly(d.entity),m=this.hass.states[d.entity],g=d.icon??m?.attributes?.icon??ps[d.entity.split(".")[0]]??"mdi:power";return a`<button class="gc" style="display:flex;flex-direction:column;align-items:center;gap:5px;
+    </div>`}};customElements.define("growctrl-tent-card",Et);var Ge=[p.text("tent","Zelt (Name wie in der Integration, z.B. gross)"),p.text("station","Station (z.B. main1)"),p.text("name","Anzeigename (optional)"),p.bool("show_settings","Einstellungen-Zahnrad anzeigen")],Tt=class extends _{render(){return l`${this.form(Ge)}
+      ${this.styleSection()}
+      <div class="hint">Entity-IDs werden automatisch abgeleitet
+        (z.B. <code>switch.growctrl_gross_main1_automatik</code>). Abweichende IDs
+        per YAML: <code>overrides: { automatik: switch.mein_schalter }</code></div>`}};customElements.define("growctrl-station-editor",Tt);var Ve=["Seedling","Veg","Bloom","Flush","Trocknung"],Lt=class extends x{constructor(){super(...arguments);this._open=!1}static{this.styles=S}static{this.properties={...x.properties,_open:{state:!0}}}validateConfig(e){if(!e.tent||!e.station)throw new Error("growctrl-station-card: 'tent' und 'station' sind Pflicht (wie in der Integration angelegt).")}static getConfigElement(){return document.createElement("growctrl-station-editor")}static getStubConfig(){return{tent:"gross",station:"main1"}}e(e){let[s,i]=Se[e],r=this._config;return ct(s,r.tent,r.station,i,r.overrides)}_select(e,s){this.hass.callService("select","select_option",{entity_id:e,option:s})}render(){let e=this._config;if(!this.hass)return d;let s=this.st(this.e("stage"))??"Veg",i=at[s]??at.Veg,r=this.isOn(this.e("auto")),o=this.isOn(this.e("wartung")),c=[{e:this.e("pOverride"),label:"Manueller Eingriff"},{e:this.e("pFailsafe"),label:"Licht-Failsafe"},{e:this.e("pTime"),label:"Zeiten unvollst\xE4ndig"}].filter($=>this.isOn($.e)),a=this.hass.states[this.e("event")],h=c.length?this.isOn(this.e("pFailsafe"))?"critical":"warning":a?.attributes?.schweregrad==="critical"?"warning":"ok",f=L[h]??L.ok,m=A(this.st(this.e("dli"))),u=A(this.st(this.e("dliFc"))),b=this.hass.states[this.e("dli")]?.attributes?.ziel_aktuelle_phase,v=A(this.st(this.e("age"))),k=this.st(this.e("rec")),P=!!this.hass.states[this.e("pumpRest")],I=!!this.hass.states[this.e("dli")],y=($,E,O,ke)=>l`
+      <div class="tile" style="min-width:0">
+        <div class="lbl">${$}</div>
+        <div style="font-size:19px;font-weight:800;letter-spacing:-.3px;line-height:1.15;
+          color:${ke??"rgba(255,255,255,.92)"}">${E}</div>
+        ${O?l`<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:2px">${O}</div>`:d}
+      </div>`,C=($,E)=>l`
+      <button class="gc tile" style="text-align:left;min-width:0" @click=${()=>this.moreInfo($)}>
+        <div class="lbl">${E}</div>
+        <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.85)">
+          ${this.st($)??"\u2013"}</div>
+      </button>`;return l`<div class="card ${e.style?.glass?"glass":""}" data-level=${h}
+        style="${w(e.style)};position:relative">
+      <div class="hdr">
+        <div style="min-width:0">
+          <div class="title" style="display:flex;align-items:center;gap:8px">
+            ${e.name??`${e.tent} \xB7 ${e.station}`}
+            <span class="stagebadge" style="background:${i.bg};color:${i.color}">${s}</span>
+          </div>
+          <div class="subtitle" style="display:flex;align-items:center;gap:6px;margin-top:3px">
+            <span class="dot" style="background:${f.color}"></span>${f.label}
+            ${o?l`<span style="color:#FFD166;font-weight:700">\u00b7 Wartung</span>`:d}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="gc" title="Wartung (System greift nicht ein)"
+            style="width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+              background:${o?"rgba(255,209,102,.16)":"rgba(255,255,255,.05)"};
+              border:1px solid ${o?"rgba(255,209,102,.5)":"rgba(255,255,255,.1)"};
+              color:${o?"#FFD166":"rgba(255,255,255,.5)"}"
+            @click=${()=>this.toggle(this.e("wartung"))}>
+            <ha-icon icon="mdi:wrench-outline" style="--mdc-icon-size:14px"></ha-icon></button>
+          ${e.show_settings!==!1?l`<button class="gc" title="Einstellungen"
+            style="width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+              background:${this._open?"rgba(255,255,255,.12)":"rgba(255,255,255,.05)"};
+              border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55)"
+            @click=${()=>{this._open=!this._open}}>
+            <ha-icon icon="mdi:tune-variant" style="--mdc-icon-size:14px"></ha-icon></button>`:d}
+          <button class="gc" style="padding:6px 13px;border-radius:12px;font-size:11px;font-weight:800;
+              letter-spacing:.4px;transition:all .18s;
+              background:${r?"rgba(77,255,195,.13)":"rgba(255,255,255,.05)"};
+              border:1.5px solid ${r?g.ok:"rgba(255,255,255,.14)"};
+              color:${r?g.ok:"rgba(255,255,255,.5)"}"
+            @click=${()=>this.confirmToggle(this.e("auto"),"Automatik")}>
+            AUTO ${r?"AN":"AUS"}</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
+        ${Ve.map($=>{let E=at[$],O=$===s;return l`<button class="gc" style="padding:5px 12px;border-radius:10px;font-size:11px;
+              font-weight:700;transition:all .15s;
+              background:${O?E.bg:"rgba(255,255,255,.04)"};
+              border:1.5px solid ${O?E.color:"rgba(255,255,255,.09)"};
+              color:${O?E.color:"rgba(255,255,255,.45)"}"
+            @click=${()=>this._select(this.e("stage"),$)}>${$}</button>`})}
+      </div>
+
+      <div class="grid" style="grid-template-columns:repeat(${I?4:P?3:2},1fr);margin-top:12px">
+        ${y("Licht",this.st(this.e("lightRest"))??"\u2013",`${this.unit(this.e("lightRest"))||"min"} Restzeit`)}
+        ${P?y("Pumpe",this.st(this.e("pumpRest"))??"\u2013",`${this.unit(this.e("pumpRest"))||"min"} Restzeit`):d}
+        ${I?y("DLI heute",m!==null?m.toFixed(1):"\u2013",b?`Ziel ${b} \xB7 Prognose ${u!==null?u.toFixed(1):"\u2013"}`:void 0,b&&m!==null&&m>=b?g.ok:void 0):d}
+        ${y("Alter",v!==null?`${v} d`:"\u2013",k&&k!==s?`\u2192 ${k} empfohlen`:"Phase passt",k&&k!==s?"#FFD166":void 0)}
+      </div>
+
+      ${c.length?l`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        ${c.map($=>l`<span class="badge warn">\u26A0 ${$.label}</span>`)}</div>`:d}
+
+      ${a?l`<button class="gc logrow" style="width:100%;margin-top:10px;text-align:left"
+          @click=${()=>this.moreInfo(this.e("event"))}>
+          <span class="dot" style="background:${T[a.attributes?.schweregrad==="ok"?"info":a.attributes?.schweregrad]??g.info};flex-shrink:0"></span>
+          <span class="txt" style="color:rgba(255,255,255,.65)">${a.state}</span>
+        </button>`:d}
+
+      ${this._open?l`<div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
+        ${C(this.e("lightOn"),"Licht AN")}
+        ${C(this.e("lightOffSv"),"AUS Seed/Veg")}
+        ${C(this.e("lightOffBloom"),"AUS Bloom")}
+        ${C(this.e("germination"),"Keimstart")}
+        ${C(this.e("overrideMin"),"Man. \xDCbernahme")}
+      </div>`:d}
+      ${this.renderConfirm()}
+    </div>`}};customElements.define("growctrl-station-card",Lt);var Ze=[p.text("title","Titel"),p.num("columns","Spalten",1,6)],je=[p.entity("entity","Aktor",["switch","input_boolean","light","fan"]),p.text("name","Name (optional)"),p.text("group","Gruppe (optional, z.B. Zelt / Pflanzen)"),p.bool("confirm","Mit Best\xE4tigung schalten")],Ot=class extends _{render(){return l`${this.form(Ze)}
+      ${this.list({key:"controls",rowSchema:je,title:"Aktoren",addLabel:"Aktor hinzuf\xFCgen",newItem:()=>({entity:""})})}
+      ${this.styleSection()}`}};customElements.define("growctrl-controls-editor",Ot);var We={switch:"mdi:power",light:"mdi:lightbulb",fan:"mdi:fan",input_boolean:"mdi:toggle-switch"},Pt=class extends x{static{this.styles=S}validateConfig(t){if(!Array.isArray(t.controls)||!t.controls.length)throw new Error("growctrl-controls-card: 'controls' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-controls-editor")}static getStubConfig(){return{controls:[{entity:"switch.beispiel"}]}}render(){let t=this._config;if(!this.hass)return d;let e=t.style?.accent??"#4DFFC3",s=new Map;t.controls.forEach(r=>{let o=r.group??"";s.has(o)||s.set(o,[]),s.get(o).push(r)});let i=t.columns?`repeat(${t.columns},1fr)`:"repeat(auto-fill,minmax(92px,1fr))";return l`<div class="card ${t.style?.glass?"glass":""}" style="${w(t.style)};position:relative">
+      ${t.title?l`<div class="title" style="font-size:15px">${t.title}</div>`:d}
+      ${[...s.entries()].map(([r,o])=>l`
+        ${r?l`<div class="seclbl">${r}</div>`:d}
+        <div class="grid" style="grid-template-columns:${i};gap:8px;margin-top:${r?0:10}px">
+          ${o.map(c=>{let a=this.isOn(c.entity),h=c.name??this.friendly(c.entity),f=this.hass.states[c.entity],m=c.icon??f?.attributes?.icon??We[c.entity.split(".")[0]]??"mdi:power";return l`<button class="gc" style="display:flex;flex-direction:column;align-items:center;gap:5px;
                 padding:11px 6px 9px;border-radius:14px;transition:all .18s;min-width:0;
-                background:${c?`color-mix(in srgb, ${e} 12%, transparent)`:"rgba(255,255,255,.04)"};
-                border:1.5px solid ${c?e:"rgba(255,255,255,.08)"};
-                box-shadow:${c?`0 4px 18px -8px ${e}`:"none"}"
-              @click=${()=>d.confirm?this.confirmToggle(d.entity,h):this.toggle(d.entity)}>
+                background:${a?`color-mix(in srgb, ${e} 12%, transparent)`:"rgba(255,255,255,.04)"};
+                border:1.5px solid ${a?e:"rgba(255,255,255,.08)"};
+                box-shadow:${a?`0 4px 18px -8px ${e}`:"none"}"
+              @click=${()=>c.confirm?this.confirmToggle(c.entity,h):this.toggle(c.entity)}>
               <span style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
                   transition:all .18s;
-                  background:${c?e:"rgba(255,255,255,.07)"};
-                  color:${c?"#0C1117":"rgba(255,255,255,.55)"}">
-                <ha-icon .icon=${g} style="--mdc-icon-size:18px"></ha-icon>
+                  background:${a?e:"rgba(255,255,255,.07)"};
+                  color:${a?"#0C1117":"rgba(255,255,255,.55)"}">
+                <ha-icon .icon=${m} style="--mdc-icon-size:18px"></ha-icon>
               </span>
               <span style="font-size:11px;font-weight:700;max-width:100%;overflow:hidden;white-space:nowrap;
-                  text-overflow:ellipsis;color:${c?"rgba(255,255,255,.95)":"rgba(255,255,255,.65)"}">
-                ${h}${d.confirm?" \u{1F512}":""}</span>
+                  text-overflow:ellipsis;color:${a?"rgba(255,255,255,.95)":"rgba(255,255,255,.65)"}">
+                ${h}${c.confirm?" \u{1F512}":""}</span>
               <span style="font-size:9px;font-weight:800;letter-spacing:.8px;
-                  color:${c?e:"rgba(255,255,255,.35)"}">${c?"AN":"AUS"}</span>
+                  color:${a?e:"rgba(255,255,255,.35)"}">${a?"AN":"AUS"}</span>
             </button>`})}
         </div>`)}
       ${this.renderConfirm()}
-    </div>`}};customElements.define("growctrl-controls-card",Gt);var hs=[l.text("title","Titel"),l.num("columns","Spalten",1,6),l.num("sparkline_hours","Sparkline-Zeitraum (h)",1,168)],us=[l.entity("entity","Sensor","sensor"),l.text("name","Name (optional)"),l.num("min","Sollbereich Min (optional)"),l.num("max","Sollbereich Max (optional)")],Wt=class extends w{render(){return a`${this.form(hs)}
-      ${this.list({key:"sensors",rowSchema:us,title:"Sensoren",addLabel:"Sensor hinzuf\xFCgen",newItem:()=>({entity:""})})}
-      ${this.styleSection()}`}};customElements.define("growctrl-sensors-editor",Wt);var Vt=class extends v{constructor(){super(...arguments);this._hist={}}static{this.styles=C}static{this.properties={...v.properties,_hist:{state:!0}}}validateConfig(e){if(!Array.isArray(e.sensors)||!e.sensors.length)throw new Error("growctrl-sensors-card: 'sensors' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-sensors-editor")}static getStubConfig(){return{sensors:[{entity:"sensor.beispiel"}]}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}let e=this._config,s={};for(let i of e.sensors)s[i.entity]=await I(this.hass,i.entity,e.sparkline_hours??24);this._hist=s}bad(e,s){return e!==null&&(s.min!==void 0&&e<s.min||s.max!==void 0&&e>s.max)}render(){let e=this._config;if(!this.hass)return p;let s=e.columns??2,i=e.sensors.some(o=>this.bad(_(this.st(o.entity)),o));return a`<div class="card ${e.style?.glass?"glass":""}" data-level=${i?"warning":"ok"}
-        style=${S(e.style)}>
-      ${e.title?a`<div class="title" style="font-size:15px;margin-bottom:2px">${e.title}</div>`:p}
+    </div>`}};customElements.define("growctrl-controls-card",Pt);var Ke=[p.text("title","Titel"),p.num("columns","Spalten",1,6),p.num("sparkline_hours","Sparkline-Zeitraum (h)",1,168)],qe=[p.entity("entity","Sensor","sensor"),p.text("name","Name (optional)"),p.num("min","Sollbereich Min (optional)"),p.num("max","Sollbereich Max (optional)")],Ft=class extends _{render(){return l`${this.form(Ke)}
+      ${this.list({key:"sensors",rowSchema:qe,title:"Sensoren",addLabel:"Sensor hinzuf\xFCgen",newItem:()=>({entity:""})})}
+      ${this.styleSection()}`}};customElements.define("growctrl-sensors-editor",Ft);var zt=class extends x{constructor(){super(...arguments);this._hist={}}static{this.styles=S}static{this.properties={...x.properties,_hist:{state:!0}}}validateConfig(e){if(!Array.isArray(e.sensors)||!e.sensors.length)throw new Error("growctrl-sensors-card: 'sensors' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-sensors-editor")}static getStubConfig(){return{sensors:[{entity:"sensor.beispiel"}]}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}let e=this._config,s={};for(let i of e.sensors)s[i.entity]=await z(this.hass,i.entity,e.sparkline_hours??24);this._hist=s}bad(e,s){return e!==null&&(s.min!==void 0&&e<s.min||s.max!==void 0&&e>s.max)}render(){let e=this._config;if(!this.hass)return d;let s=e.columns??2,i=e.sensors.some(r=>this.bad(A(this.st(r.entity)),r));return l`<div class="card ${e.style?.glass?"glass":""}" data-level=${i?"warning":"ok"}
+        style=${w(e.style)}>
+      ${e.title?l`<div class="title" style="font-size:15px;margin-bottom:2px">${e.title}</div>`:d}
       <div class="grid" style="grid-template-columns:repeat(${s},1fr)">
-        ${e.sensors.map(o=>{let r=_(this.st(o.entity)),d=this.bad(r,o),c=Me(this._hist[o.entity]??[],100,26),h=o.name??this.friendly(o.entity);return a`<button class="gc tile" style="text-align:left;position:relative;overflow:hidden;
-              ${d?"border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)":""}"
-            @click=${()=>this.moreInfo(o.entity)}>
-            ${c?a`<svg viewBox="0 0 100 26" preserveAspectRatio="none"
+        ${e.sensors.map(r=>{let o=A(this.st(r.entity)),c=this.bad(o,r),a=$e(this._hist[r.entity]??[],100,26),h=r.name??this.friendly(r.entity);return l`<button class="gc tile" style="text-align:left;position:relative;overflow:hidden;
+              ${c?"border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)":""}"
+            @click=${()=>this.moreInfo(r.entity)}>
+            ${a?l`<svg viewBox="0 0 100 26" preserveAspectRatio="none"
               style="position:absolute;left:0;right:0;bottom:0;width:100%;height:30px;opacity:.5">
-              <path d="${c} L100,26 L0,26 Z" fill="${d?"rgba(255,107,107,.25)":"rgba(77,255,195,.18)"}"/>
-              <path d="${c}" fill="none" stroke="${d?f.crit:"rgba(77,255,195,.8)"}" stroke-width="1.4"/>
-            </svg>`:p}
+              <path d="${a} L100,26 L0,26 Z" fill="${c?"rgba(255,107,107,.25)":"rgba(77,255,195,.18)"}"/>
+              <path d="${a}" fill="none" stroke="${c?g.crit:"rgba(77,255,195,.8)"}" stroke-width="1.4"/>
+            </svg>`:d}
             <div class="lbl" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h}</div>
-            <div class="val" style="font-size:22px;${d?`color:${f.crit}`:""}">${r!==null?r:"--"}<span class="unit">${this.unit(o.entity)}</span></div>
+            <div class="val" style="font-size:22px;${c?`color:${g.crit}`:""}">${o!==null?o:"--"}<span class="unit">${this.unit(r.entity)}</span></div>
             <div style="height:14px"></div>
           </button>`})}
       </div>
-    </div>`}};customElements.define("growctrl-sensors-card",Vt);var gs=[l.text("title","Titel"),l.num("columns","Spalten",1,4),l.entity("calendar","Kalender (optional)","calendar")],ms=[l.text("name","Pflanzenname"),l.text("strain","Sorte (optional)"),l.entity("germination_helper","Keimdatum-Helper (optional)",["input_datetime","date","datetime"]),l.entities("sensors","Sensoren der Pflanze (optional)","sensor"),l.entity("camera","Kamera (Live-Bild, optional)","camera"),l.text("image","Bild-URL (optional, statt Kamera)")],Kt=class extends w{render(){return a`${this.form(gs)}
-      ${this.list({key:"plants",rowSchema:ms,title:"Pflanzen",addLabel:"Pflanze hinzuf\xFCgen",newItem:()=>({name:"Pflanze"})})}
-      ${this.styleSection()}`}};customElements.define("growctrl-plants-editor",Kt);var jt=class extends v{constructor(){super(...arguments);this._events=[];this._tick=0}static{this.styles=C}static{this.properties={...v.properties,_events:{state:!0},_tick:{state:!0}}}validateConfig(e){if(!Array.isArray(e.plants)||!e.plants.length)throw new Error("growctrl-plants-card: 'plants' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-plants-editor")}static getStubConfig(){return{plants:[{name:"Pflanze 1"}]}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),10*6e4),this._mediaTimer=window.setInterval(()=>{this._tick++},1e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer),this._mediaTimer&&clearInterval(this._mediaTimer)}async _load(){let e=this._config;if(e.calendar){if(!this.hass){setTimeout(()=>this._load(),1e3);return}this._events=(await Re(this.hass,e.calendar)).slice(0,3)}}render(){let e=this._config;return this.hass?a`<div class="card ${e.style?.glass?"glass":""}" style=${S(e.style)}>
-      ${e.title?a`<div class="title" style="font-size:15px">${e.title}</div>`:p}
+    </div>`}};customElements.define("growctrl-sensors-card",zt);var Xe=[p.text("title","Titel"),p.num("columns","Spalten",1,4),p.entity("calendar","Kalender (optional)","calendar")],Qe=[p.text("name","Pflanzenname"),p.text("strain","Sorte (optional)"),p.entity("germination_helper","Keimdatum-Helper (optional)",["input_datetime","date","datetime"]),p.entities("sensors","Sensoren der Pflanze (optional)","sensor"),p.entity("camera","Kamera (Live-Bild, optional)","camera"),p.text("image","Bild-URL (optional, statt Kamera)")],Rt=class extends _{render(){return l`${this.form(Xe)}
+      ${this.list({key:"plants",rowSchema:Qe,title:"Pflanzen",addLabel:"Pflanze hinzuf\xFCgen",newItem:()=>({name:"Pflanze"})})}
+      ${this.styleSection()}`}};customElements.define("growctrl-plants-editor",Rt);var It=class extends x{constructor(){super(...arguments);this._events=[];this._tick=0}static{this.styles=S}static{this.properties={...x.properties,_events:{state:!0},_tick:{state:!0}}}validateConfig(e){if(!Array.isArray(e.plants)||!e.plants.length)throw new Error("growctrl-plants-card: 'plants' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-plants-editor")}static getStubConfig(){return{plants:[{name:"Pflanze 1"}]}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),10*6e4),this._mediaTimer=window.setInterval(()=>{this._tick++},1e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer),this._mediaTimer&&clearInterval(this._mediaTimer)}async _load(){let e=this._config;if(e.calendar){if(!this.hass){setTimeout(()=>this._load(),1e3);return}this._events=(await ve(this.hass,e.calendar)).slice(0,3)}}render(){let e=this._config;return this.hass?l`<div class="card ${e.style?.glass?"glass":""}" style=${w(e.style)}>
+      ${e.title?l`<div class="title" style="font-size:15px">${e.title}</div>`:d}
       <div class="grid" style="grid-template-columns:repeat(${e.columns??2},1fr)">
-        ${e.plants.map(s=>{let i=s.germination_helper?this.st(s.germination_helper):void 0,o=i?Ce(i):null,r=s.camera?this.hass.states[s.camera]?.attributes?.entity_picture?`${this.hass.states[s.camera].attributes.entity_picture}&t=${this._tick}`:void 0:s.image;return a`<div class="tile" style="overflow:hidden">
-            ${r?a`<button class="gc" style="display:block;width:calc(100% + 26px);margin:-11px -13px 9px"
+        ${e.plants.map(s=>{let i=s.germination_helper?this.st(s.germination_helper):void 0,r=i?ge(i):null,o=s.camera?this.hass.states[s.camera]?.attributes?.entity_picture?`${this.hass.states[s.camera].attributes.entity_picture}&t=${this._tick}`:void 0:s.image;return l`<div class="tile" style="overflow:hidden">
+            ${o?l`<button class="gc" style="display:block;width:calc(100% + 26px);margin:-11px -13px 9px"
                 @click=${()=>s.camera&&this.moreInfo(s.camera)}>
-                <img src=${r} style="width:100%;height:120px;object-fit:cover;display:block" loading="lazy"
-                  alt=${s.name} /></button>`:p}
+                <img src=${o} style="width:100%;height:120px;object-fit:cover;display:block" loading="lazy"
+                  alt=${s.name} /></button>`:d}
             <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap">
               <span style="font-size:13px;font-weight:800">\u{1F331} ${s.name}</span>
-              ${s.strain?a`<span style="font-size:10px;color:rgba(255,255,255,.55)">${s.strain}</span>`:p}
+              ${s.strain?l`<span style="font-size:10px;color:rgba(255,255,255,.55)">${s.strain}</span>`:d}
             </div>
-            ${o!==null?a`<div class="lbl" style="margin-top:4px">Tag ${o}</div>`:p}
-            ${(s.sensors??[]).map(d=>{let c=typeof d=="string"?{entity:d}:d;return a`
+            ${r!==null?l`<div class="lbl" style="margin-top:4px">Tag ${r}</div>`:d}
+            ${(s.sensors??[]).map(c=>{let a=typeof c=="string"?{entity:c}:c;return l`
               <button class="gc" style="display:flex;justify-content:space-between;width:100%;font-size:11px;margin-top:4px;color:rgba(255,255,255,.75)"
-                @click=${()=>this.moreInfo(c.entity)}>
-                <span>${c.name??this.friendly(c.entity)}</span>
-                <span style="font-weight:700">${_(this.st(c.entity))??"--"} ${this.unit(c.entity)}</span>
+                @click=${()=>this.moreInfo(a.entity)}>
+                <span>${a.name??this.friendly(a.entity)}</span>
+                <span style="font-weight:700">${A(this.st(a.entity))??"--"} ${this.unit(a.entity)}</span>
               </button>`})}
           </div>`})}
       </div>
-      ${e.calendar?a`<div class="seclbl">Anstehend</div>
-        ${this._events.length?this._events.map(s=>a`
+      ${e.calendar?l`<div class="seclbl">Anstehend</div>
+        ${this._events.length?this._events.map(s=>l`
           <div class="logrow" style="background:rgba(0,0,0,.18);margin-top:4px">
             <span class="txt">${s.summary}</span>
             <span class="ts">${(s.start?.date??s.start?.dateTime??"").substring(0,10)}</span>
-          </div>`):a`<div class="logrow" style="background:rgba(0,0,0,.12)"><span class="txt" style="color:rgba(255,255,255,.35)">Keine Ereignisse</span></div>`}`:p}
-    </div>`:p}};customElements.define("growctrl-plants-card",jt);var fs=[l.text("title","Titel")],bs=[l.entity("entity","Log-Entity","input_text"),l.text("name","Label (optional)"),l.select("type","Typ",[{value:"station",label:"Station"},{value:"climate",label:"Klima"}])],ys=[l.entity("entity","Schalter",["input_boolean","switch"]),l.text("name","Name (optional)")],Zt=class extends w{render(){let t=this._config.expert??{},e=i=>this._fire({...this._config,expert:{...t,...i}}),s=t.controls??[];return a`${this.form(fs)}
-      ${this.list({key:"logs",rowSchema:bs,title:"Logs",addLabel:"Log hinzuf\xFCgen",newItem:()=>({entity:"",type:"station"})})}
-      <div class="lt">Experten-Bereich</div>
-      <ha-form .hass=${this.hass} .data=${{show_raw:t.show_raw!==!1}}
-        .schema=${[l.bool("show_raw","Roh-Logs anzeigen")]}
-        .computeLabel=${i=>i.label??i.name}
-        @value-changed=${i=>e({show_raw:i.detail.value.show_raw})}></ha-form>
-      ${s.map((i,o)=>a`<div class="row">
-        <ha-form .hass=${this.hass} .data=${i} .schema=${ys}
-          .computeLabel=${r=>r.label??r.name}
-          @value-changed=${r=>{let d=[...s];d[o]={...r.detail.value},e({controls:d})}}></ha-form>
-        <button class="del" @click=${()=>e({controls:s.filter((r,d)=>d!==o)})}>\u2715</button>
-      </div>`)}
-      <button class="add" @click=${()=>e({controls:[...s,{entity:""}]})}>+ Experten-Schalter</button>
-      ${this.styleSection()}`}};customElements.define("growctrl-status-editor",Zt);var qt=class extends v{constructor(){super(...arguments);this._expert=!1}static{this.styles=C}static{this.properties={...v.properties,_expert:{state:!0}}}validateConfig(e){if(!Array.isArray(e.logs)||!e.logs.length)throw new Error("growctrl-status-card: 'logs' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-status-editor")}static getStubConfig(){return{logs:[{entity:"input_text.hydro_log_mittel_main1"}]}}render(){let e=this._config;if(!this.hass)return p;let s=e.logs.map(r=>({l:r,r:(r.type==="climate"?N:R)(this.st(r.entity))})),i=s.map(r=>r.r.level),o={label:"\u2713 Alles OK",color:f.ok};return i.includes("critical")?o={label:"\u{1F6A8} Fehler",color:f.crit}:i.includes("warning")?o={label:"\u26A0\uFE0F Warnung",color:f.warn}:i.includes("info")&&(o={label:"\u2139\uFE0F Info",color:f.info}),a`<div class="card ${e.style?.glass?"glass":""}" data-level=${D(i)} style="${S(e.style)};position:relative">
-      <div class="hdr" style="align-items:center">
-        <div class="title" style="font-size:15px">${e.title??"Status"}</div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="stagebadge" style="background:rgba(0,0,0,.25);color:${o.color}">${o.label}</span>
-          ${e.expert?a`<button class="gc" title="Experten-Modus"
-            style="width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-              background:${this._expert?"rgba(255,165,0,.18)":"rgba(255,255,255,.05)"};
-              border:1px solid ${this._expert?"rgba(255,165,0,.4)":"rgba(255,255,255,.1)"};
-              color:${this._expert?"#FFD166":"rgba(255,255,255,.5)"}"
-            @click=${()=>{this._expert=!this._expert}}>
-            <ha-icon icon="mdi:wrench-outline" style="--mdc-icon-size:14px"></ha-icon></button>`:p}
-        </div>
+          </div>`):l`<div class="logrow" style="background:rgba(0,0,0,.12)"><span class="txt" style="color:rgba(255,255,255,.35)">Keine Ereignisse</span></div>`}`:d}
+    </div>`:d}};customElements.define("growctrl-plants-card",It);var Je=[p.text("title","Titel"),p.num("limit","Max. Zeilen",3,50)],Ye=[p.entity("entity","Letztes-Ereignis-Sensor","sensor"),p.text("name","Label (optional)")],Mt=class extends _{render(){return l`${this.form(Je)}
+      ${this.list({key:"sources",rowSchema:Ye,title:"Quellen",addLabel:"Quelle hinzuf\xFCgen",newItem:()=>({entity:""})})}
+      ${this.styleSection()}`}};customElements.define("growctrl-status-editor",Mt);var Nt=class extends x{static{this.styles=S}validateConfig(t){if(!Array.isArray(t.sources)||!t.sources.length)throw new Error("growctrl-status-card: 'sources' (Letztes-Ereignis-Sensoren) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-status-editor")}static getStubConfig(){return{sources:[{entity:"sensor.growctrl_gross_main1_letztes_ereignis"}]}}render(){let t=this._config;if(!this.hass)return d;let e=[],s=[];for(let c of t.sources){let a=this.hass.states[c.entity],h=a?.attributes?.verlauf??[];s.push(a?.attributes?.schweregrad??"ok"),h.forEach(f=>e.push({...f,src:c.name??this.friendly(c.entity)}))}e.reverse();let i=e.slice(0,t.limit??12),r=W(s.map(c=>c==="ok"?"ok":c)),o=L[r];return l`<div class="card ${t.style?.glass?"glass":""}" data-level=${r} style=${w(t.style)}>
+      <div class="hdr">
+        <div class="title" style="font-size:15px">${t.title??"Ereignisprotokoll"}</div>
+        <span class="status-pill" style="background:${o.bg};color:${o.color}">
+          <span class="dot" style="background:${o.color}"></span>${o.label}</span>
       </div>
-      ${s.map(({l:r,r:d})=>a`
-        <div class="logrow" style="background:${O[d.level]};margin-top:6px">
-          ${r.name?a`<span style="font-size:11px;font-weight:700;color:${f.logLabel};min-width:42px;flex-shrink:0">${r.name}</span>`:p}
-          <span class="txt" style="color:${M[d.level]}">${d.label}</span>
-          ${d.ts?a`<span class="ts">${d.ts}</span>`:p}
-        </div>`)}
-      ${e.expert?a`
-        ${this._expert?a`
-          ${(e.expert.controls??[]).length?a`<div class="grid" style="grid-template-columns:repeat(2,1fr)">
-            ${e.expert.controls.map(r=>{let d=this.isOn(r.entity),c=r.name??this.friendly(r.entity);return a`<button class="gc tile" style="text-align:left;
-                  background:${d?"rgba(255,165,0,.18)":"rgba(0,0,0,.18)"};
-                  border:1px solid ${d?"rgba(255,165,0,.38)":"rgba(255,165,0,.15)"}"
-                @click=${()=>this.confirmToggle(r.entity,c)}>
-                <div class="lbl" style="color:${d?"#FFD166":"rgba(255,255,255,.45)"}">${c}</div>
-                <div class="val sm" style="color:${d?"#FFD166":"rgba(255,255,255,.5)"}">${d?"AN":"AUS"}</div>
-              </button>`})}
-          </div>`:p}
-          ${e.expert.show_raw!==!1?e.logs.map(r=>a`
-            <div style="background:rgba(0,0,0,.28);border-radius:8px;padding:9px 11px;margin-top:6px">
-              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,215,0,.65);margin-bottom:4px">${r.name??r.entity}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.72);font-family:monospace;word-break:break-all;line-height:1.6">${this.st(r.entity)??"\u2013"}</div>
-            </div>`):p}`:p}`:p}
-      ${this.renderConfirm()}
-    </div>`}};customElements.define("growctrl-status-card",qt);var $s=[l.text("title","Titel"),l.text("logo","Logo-URL (z.B. /local/growctrl/logo.png)"),l.entity("temperature","Temperatursensor (Pflicht)","sensor"),l.entity("humidity","Feuchtesensor (Pflicht)","sensor"),l.num("leaf_offset","Blatt-Offset (K)",-5,5,.5),l.entity("power","Gesamtleistung (optional)","sensor"),l.entity("tent_enable","Zelt aktiv (Hauptschalter)",["input_boolean","switch"]),l.entity("climate_enable","Klima aktiv",["input_boolean","switch"]),l.entities("problem_sensors","Problem-Sensoren (binary_sensor)",["binary_sensor","sensor"]),l.num("hours","Chart-Zeitraum (h)",1,168),l.bool("show_chart","VPD-Chart anzeigen")],vs=[l.entity("entity","Schalter",["switch","input_boolean","light","fan"]),l.text("name","Name (optional)"),l.text("icon","Icon (mdi:..., optional)")],xs=[l.entity("entity","Log-Entity","input_text"),l.text("name","Label (optional)"),l.select("type","Typ",[{value:"station",label:"Station"},{value:"climate",label:"Klima"}])],Xt=class extends w{render(){return a`${this.form($s)}
-      ${this.list({key:"controls",rowSchema:vs,title:"Globale Schalter",addLabel:"Schalter hinzuf\xFCgen",newItem:()=>({entity:""})})}
-      ${this.list({key:"logs",rowSchema:xs,title:"Logs (Informationssystem)",addLabel:"Log hinzuf\xFCgen",newItem:()=>({entity:"",type:"station"})})}
-      ${this.styleSection()}`}};customElements.define("growctrl-hero-editor",Xt);var Jt=class extends v{constructor(){super(...arguments);this._hist={t:[],h:[]}}static{this.styles=C}static{this.properties={...v.properties,_hist:{state:!0}}}validateConfig(e){if(!e.temperature||!e.humidity)throw new Error("growctrl-hero-card: 'temperature' und 'humidity' sind Pflicht.")}static getConfigElement(){return document.createElement("growctrl-hero-editor")}static getStubConfig(){return{temperature:"sensor.zelt_temperature",humidity:"sensor.zelt_humidity",title:"GROWCTRL"}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}let e=this._config,s=e.hours??24;this._hist={t:await I(this.hass,e.temperature,s),h:await I(this.hass,e.humidity,s)}}render(){let e=this._config;if(!this.hass)return p;let s=_(this.st(e.temperature)),i=_(this.st(e.humidity)),o=e.power?_(this.st(e.power)):null,r=s!==null&&i!==null?dt(s,i,e.leaf_offset??0):null,d=r!==null?yt(r):null,c=(e.logs??[]).map($=>({name:$.name,r:($.type==="climate"?N:R)(this.st($.entity))})),h=[];c.forEach($=>{($.r.level==="warning"||$.r.level==="critical")&&h.push({label:`${$.name?$.name+": ":""}${$.r.label}`,level:$.r.level})}),(e.problem_sensors??[]).forEach($=>{let A=this.st($);(A==="on"||A==="problem")&&h.push({label:this.friendly($),level:"warning"})});let m=D([...c.map($=>$.r.level),...h.map($=>$.level)]),g=j[m],u=Math.min(this._hist.t.length,this._hist.h.length),x=Array.from({length:u},($,A)=>dt(this._hist.t[A],this._hist.h[A],e.leaf_offset??0)),b=e.tent_enable?this.isOn(e.tent_enable):null,E=e.climate_enable?this.isOn(e.climate_enable):null,k=($,A,L,vt)=>a`
-      <button class="gc" style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:14px;
+      <div style="margin-top:9px">
+        ${i.length?i.map(c=>l`
+          <div class="logrow" style="background:${c.level==="info"?"transparent":N[c.level]??"transparent"};
+              margin-top:3px;padding:6px 9px">
+            <span class="ts" style="min-width:36px;flex-shrink:0">${c.ts}</span>
+            ${t.sources.length>1?l`<span style="font-size:10.5px;font-weight:800;min-width:62px;
+              flex-shrink:0;color:rgba(255,255,255,.55)">${c.src}</span>`:d}
+            <span class="txt" style="color:${c.level==="info"?"rgba(255,255,255,.6)":T[c.level]??"rgba(255,255,255,.6)"}">${c.text}</span>
+          </div>`):l`<div class="logrow"><span class="txt" style="color:${g.ok}">
+            \u2713 Noch keine Ereignisse</span></div>`}
+      </div>
+    </div>`}};customElements.define("growctrl-status-card",Nt);var ts=[p.text("tent","Zelt (Name wie in der Integration, z.B. gross)"),p.text("title","Titel (optional)"),p.text("logo","Logo-URL (z.B. /local/growctrl/logo.png)"),p.bool("show_chart","VPD-Chart anzeigen"),p.num("hours","Chart-Zeitraum (h)",1,168)],es=[p.text("station","Station (z.B. main1)"),p.text("name","Label (optional)")],Bt=class extends _{render(){return l`${this.form(ts)}
+      ${this.list({key:"stations",rowSchema:es,title:"Stationen (Informationssystem)",addLabel:"Station hinzuf\xFCgen",newItem:()=>({station:""})})}
+      ${this.styleSection()}`}};customElements.define("growctrl-hero-editor",Bt);var Ut=class extends x{constructor(){super(...arguments);this._hist=[]}static{this.styles=S}static{this.properties={...x.properties,_hist:{state:!0}}}validateConfig(e){if(!e.tent)throw new Error("growctrl-hero-card: 'tent' ist Pflicht (Zelt-Name aus der Integration).")}static getConfigElement(){return document.createElement("growctrl-hero-editor")}static getStubConfig(){return{tent:"gross",stations:[{station:"main1"}]}}te(e){let[s,i]=pt[e],r=this._config;return dt(s,r.tent,i,r.overrides)}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}this._hist=await z(this.hass,this.te("vpd"),this._config.hours??24)}render(){let e=this._config;if(!this.hass)return d;let s=this.hass.states[this.te("vpd")],i=A(s?.state),r=s?.attributes?.temp,o=s?.attributes?.rh,c=s?.attributes?.phase_effektiv??"",a=s?.attributes?.sollwerte,h=this.isOn(this.te("enabled")),f=this.isOn(this.te("climate")),m=this.hass.states[this.te("status")],u=m?.attributes?.probleme??[],b=(e.stations??[]).map(y=>{let C=this.hass.states[ct("sensor",e.tent,y.station,"letztes_ereignis",e.overrides)],$=C?.attributes?.schweregrad??"ok";return{name:y.name??y.station,text:C?.state??"\u2013",level:$}}),v=W([m?.state==="problem"?"warning":"ok",...b.map(y=>y.level)]),k=L[v],P=[...u.map(y=>({label:y,level:"warning"})),...b.filter(y=>y.level!=="ok").map(y=>({label:`${y.name}: ${y.text}`,level:y.level}))],I=(y,C,$,E)=>l`
+      <button class="gc" style="display:flex;align-items:center;gap:8px;padding:8px 15px;border-radius:14px;
           transition:all .18s;
-          background:${L?"rgba(77,255,195,.12)":"rgba(255,255,255,.05)"};
-          border:1.5px solid ${L?"#4DFFC3":"rgba(255,255,255,.12)"};
-          color:${L?"#4DFFC3":"rgba(255,255,255,.5)"}"
-        @click=${()=>this.confirmToggle($,A)}>
-        <ha-icon .icon=${vt} style="--mdc-icon-size:16px"></ha-icon>
-        <span style="font-size:11px;font-weight:800">${A} ${L?"AN":"AUS"}</span>
-      </button>`;return a`<div class="card ${e.style?.glass?"glass":""}" data-level=${m}
-        style="${S(e.style)};position:relative">
+          background:${$?"rgba(77,255,195,.12)":"rgba(255,255,255,.05)"};
+          border:1.5px solid ${$?g.ok:"rgba(255,255,255,.12)"};
+          color:${$?g.ok:"rgba(255,255,255,.5)"}"
+        @click=${()=>this.confirmToggle(y,C)}>
+        <ha-icon .icon=${E} style="--mdc-icon-size:16px"></ha-icon>
+        <span style="font-size:11px;font-weight:800">${C} ${$?"AN":"AUS"}</span>
+      </button>`;return l`<div class="card ${e.style?.glass?"glass":""}" data-level=${v}
+        style="${w(e.style)};position:relative">
       <div class="hdr">
         <div style="display:flex;align-items:center;gap:11px">
-          ${e.logo?a`<img src=${e.logo} alt="Logo"
-            style="width:42px;height:42px;border-radius:11px;object-fit:contain;background:rgba(255,255,255,.92);padding:3px" />`:p}
+          ${e.logo?l`<img src=${e.logo} alt="Logo"
+            style="width:42px;height:42px;border-radius:11px;object-fit:contain;background:rgba(255,255,255,.92);padding:3px" />`:d}
           <div>
-            <div class="title">${e.title??"GROWCTRL"}</div>
-            ${o!==null?a`<div class="subtitle">\u26A1 ${Math.round(o)} W Gesamtleistung</div>`:p}
+            <div class="title">${e.title??`GROWCTRL \xB7 ${e.tent}`}</div>
+            ${c?l`<div class="subtitle">Klima-Phase ${c}</div>`:d}
           </div>
         </div>
-        <span class="status-pill" style="background:${g.bg};color:${g.color}">
-          <span class="dot" style="background:${g.color}"></span>${g.label}</span>
+        <span class="status-pill" style="background:${k.bg};color:${k.color}">
+          <span class="dot" style="background:${k.color}"></span>${k.label}</span>
       </div>
-      ${b!==null||E!==null||(e.controls??[]).length?a`
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:13px">
-          ${b!==null?k(e.tent_enable,"Zelt",b,"mdi:power"):p}
-          ${E!==null?k(e.climate_enable,"Klima",E,"mdi:thermostat"):p}
-          ${(e.controls??[]).map($=>{let A=this.isOn($.entity),L=$.name??this.friendly($.entity);return k($.entity,L,A,$.icon??"mdi:power")})}
-        </div>`:p}
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:13px">
+        ${I(this.te("enabled"),"Zelt",h,"mdi:power")}
+        ${I(this.te("climate"),"Klima",f,"mdi:thermostat")}
+      </div>
+
       <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:12px">
-        <div class="tile"><div class="lbl">Temperatur</div>
-          <div class="val">${s!==null?s.toFixed(1):"--"}<span class="unit">\u00b0C</span></div></div>
-        <div class="tile"><div class="lbl">Luftfeuchte</div>
-          <div class="val">${i!==null?Math.round(i):"--"}<span class="unit">%</span></div></div>
-        <div class="tile"><div class="lbl">VPD ${d?`\xB7 ${d.label}`:""}</div>
-          <div class="val" style=${d?`color:${d.color}`:""}>${r!==null?r.toFixed(2):"--"}<span class="unit">kPa</span></div></div>
+        <div class="tile" style="text-align:center"><div class="lbl">Temperatur</div>
+          <div class="val" style="font-size:22px">${r!=null?Number(r).toFixed(1):"\u2013"}<span class="unit">\u00b0C</span></div></div>
+        <div class="tile" style="text-align:center"><div class="lbl">Luftfeuchte</div>
+          <div class="val" style="font-size:22px">${o!=null?Math.round(Number(o)):"\u2013"}<span class="unit">%</span></div></div>
+        <div class="tile" style="text-align:center"><div class="lbl">VPD</div>
+          <div class="val" style="font-size:22px;color:${i!==null&&a&&i>=a.vpd_min&&i<=a.vpd_max?g.ok:"#FFD166"}">${i!==null?i.toFixed(2):"\u2013"}<span class="unit">kPa</span></div></div>
       </div>
-      ${e.show_chart!==!1&&x.length>1?a`
+
+      ${e.show_chart!==!1&&this._hist.length>1?l`
         <div class="seclbl">VPD \u00b7 ${e.hours??24}h</div>
-        ${Q([{data:x,color:d?.color??"#4DFFC3"}],{h:105,band:{min:.8,max:1.2},grid:3})}`:p}
+        ${U([{data:this._hist,color:g.ok}],{h:100,band:a?{min:a.vpd_min,max:a.vpd_max}:void 0,grid:3})}`:d}
+
+      ${b.length?l`<div class="seclbl">Stationen</div>
+        ${b.map(y=>l`<div class="logrow" style="margin-top:3px;padding:6px 9px">
+          <span class="dot" style="background:${y.level==="ok"?g.ok:T[y.level]??g.warn};flex-shrink:0"></span>
+          <span style="font-size:11px;font-weight:800;min-width:62px;flex-shrink:0;
+            color:rgba(255,255,255,.8)">${y.name}</span>
+          <span class="txt" style="color:rgba(255,255,255,.55)">${y.text}</span>
+        </div>`)}`:d}
+
       <div class="seclbl">Informationssystem</div>
-      ${h.length?h.map($=>a`<div class="logrow" style="background:${O[$.level]};margin-top:4px">
-            <span class="txt" style="color:${M[$.level]}">\u26A0 ${$.label}</span></div>`):a`<div class="logrow" style="background:${O.ok};margin-top:4px">
-            <span class="txt" style="color:${f.ok}">\u2713 Alle Systeme arbeiten normal</span></div>`}
+      ${P.length?P.map(y=>l`<div class="logrow" style="background:${N[y.level]??N.warning};margin-top:4px">
+            <span class="txt" style="color:${T[y.level]??T.warning}">\u26A0 ${y.label}</span></div>`):l`<div class="logrow" style="background:${N.ok};margin-top:4px">
+            <span class="txt" style="color:${g.ok}">\u2713 Alle Systeme arbeiten normal</span></div>`}
       ${this.renderConfirm()}
-    </div>`}};customElements.define("growctrl-hero-card",Jt);var _s=[l.text("title","Titel"),l.bool("compact","Kompakte Zeilen")],ws=[l.text("name","Name (z.B. Main 1)"),l.entity("entity","Quelle (Log / Problem- / Ereignis-Sensor)",["input_text","binary_sensor","sensor"]),l.select("type","Typ",[{value:"station",label:"Stations-Log"},{value:"climate",label:"Klima-Log"},{value:"problem",label:"Problem-Sensor"},{value:"event",label:"Ereignis-Sensor (Integration)"}])],Qt=class extends w{render(){return a`${this.form(_s)}
-      ${this.list({key:"rows",rowSchema:ws,title:"Zeilen",addLabel:"Zeile hinzuf\xFCgen",newItem:()=>({name:"",entity:"",type:"station"})})}
-      ${this.styleSection()}`}};customElements.define("growctrl-checkup-editor",Qt);var Yt=class extends v{static{this.styles=C}validateConfig(t){if(!Array.isArray(t.rows)||!t.rows.length)throw new Error("growctrl-checkup-card: 'rows' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-checkup-editor")}static getStubConfig(){return{rows:[{name:"Main 1",entity:"input_text.hydro_log_mittel_main1"}]}}render(){let t=this._config;if(!this.hass)return p;let e=t.rows.map(r=>{if(r.type==="event"){let c=this.hass.states[r.entity],h=c?.attributes?.schweregrad??"ok";return{row:r,level:h==="ok"?"ok":h,label:c?.state??"\u2013",ts:""}}if(r.type==="problem"){let c=this.isOn(r.entity);return{row:r,level:c?"warning":"ok",label:c?"Problem erkannt":"OK",ts:""}}let d=(r.type==="climate"?N:R)(this.st(r.entity));return{row:r,level:d.level==="none"?"ok":d.level,label:d.label,ts:d.ts??""}}),s=D(e.map(r=>r.level)),i=j[s],o=r=>r==="critical"?f.crit:r==="warning"?f.warn:r==="info"?f.info:f.ok;return a`<div class="card ${t.style?.glass?"glass":""}" data-level=${s} style=${S(t.style)}>
+    </div>`}};customElements.define("growctrl-hero-card",Ut);var ss=[p.text("title","Titel"),p.bool("compact","Kompakte Zeilen")],is=[p.text("name","Name (z.B. Main 1)"),p.entity("entity","Quelle (Log / Problem- / Ereignis-Sensor)",["input_text","binary_sensor","sensor"]),p.select("type","Typ",[{value:"station",label:"Stations-Log"},{value:"climate",label:"Klima-Log"},{value:"problem",label:"Problem-Sensor"},{value:"event",label:"Ereignis-Sensor (Integration)"}])],Ht=class extends _{render(){return l`${this.form(ss)}
+      ${this.list({key:"rows",rowSchema:is,title:"Zeilen",addLabel:"Zeile hinzuf\xFCgen",newItem:()=>({name:"",entity:"",type:"station"})})}
+      ${this.styleSection()}`}};customElements.define("growctrl-checkup-editor",Ht);var Dt=class extends x{static{this.styles=S}validateConfig(t){if(!Array.isArray(t.rows)||!t.rows.length)throw new Error("growctrl-checkup-card: 'rows' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-checkup-editor")}static getStubConfig(){return{rows:[{name:"Main 1",entity:"input_text.hydro_log_mittel_main1"}]}}render(){let t=this._config;if(!this.hass)return d;let e=t.rows.map(o=>{if(o.type==="event"){let a=this.hass.states[o.entity],h=a?.attributes?.schweregrad??"ok";return{row:o,level:h==="ok"?"ok":h,label:a?.state??"\u2013",ts:""}}if(o.type==="problem"){let a=this.isOn(o.entity);return{row:o,level:a?"warning":"ok",label:a?"Problem erkannt":"OK",ts:""}}let c=(o.type==="climate"?fe:be)(this.st(o.entity));return{row:o,level:c.level==="none"?"ok":c.level,label:c.label,ts:c.ts??""}}),s=W(e.map(o=>o.level)),i=L[s],r=o=>o==="critical"?g.crit:o==="warning"?g.warn:o==="info"?g.info:g.ok;return l`<div class="card ${t.style?.glass?"glass":""}" data-level=${s} style=${w(t.style)}>
       <div class="hdr">
         <div class="title" style="font-size:15px">${t.title??"Checkup"}</div>
         <span class="status-pill" style="background:${i.bg};color:${i.color}">
           <span class="dot" style="background:${i.color}"></span>${i.label}</span>
       </div>
       <div style="margin-top:10px">
-        ${e.map(r=>a`<div class="logrow" style="background:${t.compact?"transparent":O[r.level==="ok"?"none":r.level]};
+        ${e.map(o=>l`<div class="logrow" style="background:${t.compact?"transparent":N[o.level==="ok"?"none":o.level]};
             margin-top:${t.compact?2:5}px;padding:${t.compact?"4px 6px":"8px 11px"}">
-          <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:${o(r.level)};
-            box-shadow:0 0 7px ${o(r.level)}66"></span>
-          <span style="font-size:11.5px;font-weight:800;min-width:64px;flex-shrink:0;color:rgba(255,255,255,.85)">${r.row.name}</span>
-          <span class="txt" style="color:${r.level==="ok"?"rgba(255,255,255,.55)":M[r.level]}">${r.label}</span>
-          ${r.ts?a`<span class="ts">${r.ts}</span>`:p}
+          <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:${r(o.level)};
+            box-shadow:0 0 7px ${r(o.level)}66"></span>
+          <span style="font-size:11.5px;font-weight:800;min-width:64px;flex-shrink:0;color:rgba(255,255,255,.85)">${o.row.name}</span>
+          <span class="txt" style="color:${o.level==="ok"?"rgba(255,255,255,.55)":T[o.level]}">${o.label}</span>
+          ${o.ts?l`<span class="ts">${o.ts}</span>`:d}
         </div>`)}
       </div>
-    </div>`}};customElements.define("growctrl-checkup-card",Yt);var Ss=[l.text("title","Titel"),l.entity("entity","F\xFCllstand-Sensor (%) (Pflicht)","sensor"),l.num("min","Mindeststand (%)",0,100),l.num("volume_l","Tankvolumen (Liter, optional)",0,2e3)],te=class extends w{render(){return a`${this.form(Ss)}${this.styleSection()}`}};customElements.define("growctrl-tank-editor",te);var ee=class extends v{static{this.styles=C}validateConfig(t){if(!t.entity)throw new Error("growctrl-tank-card: 'entity' (Fuellstand-Sensor in %) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-tank-editor")}static getStubConfig(){return{entity:"sensor.gc_slot1_level1",title:"Tank"}}render(){let t=this._config;if(!this.hass)return p;let e=Math.min(100,Math.max(0,_(this.st(t.entity))??0)),s=t.min!==void 0&&e<t.min,i=s?f.crit:e<(t.min??0)+15?f.warn:"#4FC3F7",o=t.volume_l?e/100*t.volume_l:null;return a`<div class="card ${t.style?.glass?"glass":""}" data-level=${s?"critical":"ok"}
-        style=${S(t.style)}>
+    </div>`}};customElements.define("growctrl-checkup-card",Dt);var ns=[p.text("title","Titel"),p.entity("entity","F\xFCllstand-Sensor (%) (Pflicht)","sensor"),p.num("min","Mindeststand (%)",0,100),p.num("volume_l","Tankvolumen (Liter, optional)",0,2e3)],Gt=class extends _{render(){return l`${this.form(ns)}${this.styleSection()}`}};customElements.define("growctrl-tank-editor",Gt);var Vt=class extends x{static{this.styles=S}validateConfig(t){if(!t.entity)throw new Error("growctrl-tank-card: 'entity' (Fuellstand-Sensor in %) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-tank-editor")}static getStubConfig(){return{entity:"sensor.gc_slot1_level1",title:"Tank"}}render(){let t=this._config;if(!this.hass)return d;let e=Math.min(100,Math.max(0,A(this.st(t.entity))??0)),s=t.min!==void 0&&e<t.min,i=s?g.crit:e<(t.min??0)+15?g.warn:"#4FC3F7",r=t.volume_l?e/100*t.volume_l:null;return l`<div class="card ${t.style?.glass?"glass":""}" data-level=${s?"critical":"ok"}
+        style=${w(t.style)}>
       <div class="hdr">
         <div class="title" style="font-size:15px">${t.title??"F\xFCllstand"}</div>
-        ${s?a`<span class="badge warn">\u26A0 Nachf\u00fcllen</span>`:p}
+        ${s?l`<span class="badge warn">\u26A0 Nachf\u00fcllen</span>`:d}
       </div>
       <div style="display:flex;align-items:center;gap:18px;margin-top:12px">
         <button class="gc" style="position:relative;width:74px;height:108px;flex-shrink:0;border-radius:12px 12px 16px 16px;
@@ -455,52 +457,52 @@ var ut=globalThis,gt=ut.ShadowRoot&&(ut.ShadyCSS===void 0||ut.ShadyCSS.nativeSha
             <div style="position:absolute;top:-5px;left:-10%;width:120%;height:10px;border-radius:50%;
               background:${i};opacity:.9"></div>
           </div>
-          ${t.min!==void 0?a`<div style="position:absolute;left:0;right:0;bottom:${t.min}%;
-            border-top:1.5px dashed rgba(255,107,107,.7)"></div>`:p}
+          ${t.min!==void 0?l`<div style="position:absolute;left:0;right:0;bottom:${t.min}%;
+            border-top:1.5px dashed rgba(255,107,107,.7)"></div>`:d}
         </button>
         <div style="flex:1;min-width:0">
           <div class="lbl">Aktueller F\u00fcllstand</div>
           <div class="val" style="font-size:34px;color:${i}">${Math.round(e)}<span class="unit">%</span></div>
-          ${o!==null?a`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.55);margin-top:2px">
-            \u2248 ${o.toFixed(1)} l von ${t.volume_l} l</div>`:p}
-          ${t.min!==void 0?a`<div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:6px">
-            Mindeststand ${t.min}%</div>`:p}
+          ${r!==null?l`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.55);margin-top:2px">
+            \u2248 ${r.toFixed(1)} l von ${t.volume_l} l</div>`:d}
+          ${t.min!==void 0?l`<div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:6px">
+            Mindeststand ${t.min}%</div>`:d}
         </div>
       </div>
-    </div>`}};customElements.define("growctrl-tank-card",ee);var Cs=[l.text("title","Titel"),l.num("hours","Zeitraum (h)",1,168),l.num("height","Diagrammh\xF6he (px)",80,300)],As=[l.entity("entity","Sensor","sensor"),l.text("name","Name (optional)"),l.text("color","Farbe (optional, z.B. #FF9F5A)")],se=class extends w{render(){return a`${this.form(Cs)}
-      ${this.list({key:"sensors",rowSchema:As,title:"Serien",addLabel:"Sensor hinzuf\xFCgen",newItem:()=>({entity:""})})}
-      ${this.styleSection()}`}};customElements.define("growctrl-history-editor",se);var Be=["#FF9F5A","#4FC3F7","#4DFFC3","#C792EA"],ie=class extends v{constructor(){super(...arguments);this._hist={}}static{this.styles=C}static{this.properties={...v.properties,_hist:{state:!0}}}validateConfig(e){if(!Array.isArray(e.sensors)||!e.sensors.length)throw new Error("growctrl-history-card: 'sensors' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-history-editor")}static getStubConfig(){return{sensors:[{entity:"sensor.zelt_temperature"}],hours:24}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}let e=this._config,s={};for(let i of e.sensors)s[i.entity]=await I(this.hass,i.entity,e.hours??24);this._hist=s}render(){let e=this._config;if(!this.hass)return p;let s=e.sensors.map((i,o)=>({data:this._hist[i.entity]??[],color:i.color??Be[o%Be.length],name:`${i.name??this.friendly(i.entity)} \xB7 ${_(this.st(i.entity))??"--"} ${this.unit(i.entity)}`,fill:e.sensors.length===1}));return a`<div class="card ${e.style?.glass?"glass":""}" style=${S(e.style)}>
+    </div>`}};customElements.define("growctrl-tank-card",Vt);var rs=[p.text("title","Titel"),p.num("hours","Zeitraum (h)",1,168),p.num("height","Diagrammh\xF6he (px)",80,300)],os=[p.entity("entity","Sensor","sensor"),p.text("name","Name (optional)"),p.text("color","Farbe (optional, z.B. #FF9F5A)")],Zt=class extends _{render(){return l`${this.form(rs)}
+      ${this.list({key:"sensors",rowSchema:os,title:"Serien",addLabel:"Sensor hinzuf\xFCgen",newItem:()=>({entity:""})})}
+      ${this.styleSection()}`}};customElements.define("growctrl-history-editor",Zt);var Ae=["#FF9F5A","#4FC3F7","#4DFFC3","#C792EA"],jt=class extends x{constructor(){super(...arguments);this._hist={}}static{this.styles=S}static{this.properties={...x.properties,_hist:{state:!0}}}validateConfig(e){if(!Array.isArray(e.sensors)||!e.sensors.length)throw new Error("growctrl-history-card: 'sensors' (min. 1 Eintrag) ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-history-editor")}static getStubConfig(){return{sensors:[{entity:"sensor.zelt_temperature"}],hours:24}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}let e=this._config,s={};for(let i of e.sensors)s[i.entity]=await z(this.hass,i.entity,e.hours??24);this._hist=s}render(){let e=this._config;if(!this.hass)return d;let s=e.sensors.map((i,r)=>({data:this._hist[i.entity]??[],color:i.color??Ae[r%Ae.length],name:`${i.name??this.friendly(i.entity)} \xB7 ${A(this.st(i.entity))??"--"} ${this.unit(i.entity)}`,fill:e.sensors.length===1}));return l`<div class="card ${e.style?.glass?"glass":""}" style=${w(e.style)}>
       <div class="hdr">
         <div class="title" style="font-size:15px">${e.title??"Verlauf"}</div>
         <span class="badge">${e.hours??24}h</span>
       </div>
-      <div style="margin-top:8px">${Q(s,{h:e.height??130,grid:3})}</div>
-      ${Ie(s)}
-    </div>`}};customElements.define("growctrl-history-card",ie);var Es=[l.text("title","Titel"),l.entity("entity","Sensor (Pflicht)","sensor"),l.text("name","Anzeigename (optional)"),l.num("min","Sollbereich Min"),l.num("max","Sollbereich Max"),l.num("decimals","Nachkommastellen",0,4),l.num("hours","Chart-Zeitraum (h)",1,168),l.num("height","Diagrammh\xF6he (px)",80,300)],ne=class extends w{render(){return a`${this.form(Es)}${this.styleSection()}`}};customElements.define("growctrl-metric-editor",ne);var re=class extends v{constructor(){super(...arguments);this._hist=[]}static{this.styles=C}static{this.properties={...v.properties,_hist:{state:!0}}}validateConfig(e){if(!e.entity)throw new Error("growctrl-metric-card: 'entity' ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-metric-editor")}static getStubConfig(){return{entity:"sensor.gc_slot1_ec1",name:"EC",min:1.2,max:2.2}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}let e=this._config;this._hist=await I(this.hass,e.entity,e.hours??24)}render(){let e=this._config;if(!this.hass)return p;let s=_(this.st(e.entity)),i=s!==null&&(e.min!==void 0&&s<e.min||e.max!==void 0&&s>e.max),o=s===null?"rgba(255,255,255,.4)":i?f.crit:f.ok,r=e.decimals??2;return a`<div class="card ${e.style?.glass?"glass":""}" data-level=${i?"warning":"ok"}
-        style=${S(e.style)}>
+      <div style="margin-top:8px">${U(s,{h:e.height??130,grid:3})}</div>
+      ${we(s)}
+    </div>`}};customElements.define("growctrl-history-card",jt);var as=[p.text("title","Titel"),p.entity("entity","Sensor (Pflicht)","sensor"),p.text("name","Anzeigename (optional)"),p.num("min","Sollbereich Min"),p.num("max","Sollbereich Max"),p.num("decimals","Nachkommastellen",0,4),p.num("hours","Chart-Zeitraum (h)",1,168),p.num("height","Diagrammh\xF6he (px)",80,300)],Wt=class extends _{render(){return l`${this.form(as)}${this.styleSection()}`}};customElements.define("growctrl-metric-editor",Wt);var Kt=class extends x{constructor(){super(...arguments);this._hist=[]}static{this.styles=S}static{this.properties={...x.properties,_hist:{state:!0}}}validateConfig(e){if(!e.entity)throw new Error("growctrl-metric-card: 'entity' ist Pflicht.")}static getConfigElement(){return document.createElement("growctrl-metric-editor")}static getStubConfig(){return{entity:"sensor.gc_slot1_ec1",name:"EC",min:1.2,max:2.2}}connectedCallback(){super.connectedCallback(),this._load(),this._timer=window.setInterval(()=>this._load(),5*6e4)}disconnectedCallback(){super.disconnectedCallback(),this._timer&&clearInterval(this._timer)}async _load(){if(!this.hass){setTimeout(()=>this._load(),1e3);return}let e=this._config;this._hist=await z(this.hass,e.entity,e.hours??24)}render(){let e=this._config;if(!this.hass)return d;let s=A(this.st(e.entity)),i=s!==null&&(e.min!==void 0&&s<e.min||e.max!==void 0&&s>e.max),r=s===null?"rgba(255,255,255,.4)":i?g.crit:g.ok,o=e.decimals??2;return l`<div class="card ${e.style?.glass?"glass":""}" data-level=${i?"warning":"ok"}
+        style=${w(e.style)}>
       <div class="hdr">
         <div>
           <div class="lbl" style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);font-weight:700">
             ${e.name??this.friendly(e.entity)}</div>
           <button class="gc" @click=${()=>this.moreInfo(e.entity)}>
-            <span class="val" style="font-size:36px;font-weight:800;letter-spacing:-1px;color:${o}">
-              ${s!==null?s.toFixed(r):"--"}</span>
+            <span class="val" style="font-size:36px;font-weight:800;letter-spacing:-1px;color:${r}">
+              ${s!==null?s.toFixed(o):"--"}</span>
             <span class="unit" style="font-size:14px">${this.unit(e.entity)}</span>
           </button>
         </div>
-        ${e.min!==void 0||e.max!==void 0?a`
+        ${e.min!==void 0||e.max!==void 0?l`
           <div style="text-align:right">
             <div class="lbl">Sollbereich</div>
-            <div style="font-size:13px;font-weight:700;color:${i?f.crit:"rgba(255,255,255,.7)"}">
+            <div style="font-size:13px;font-weight:700;color:${i?g.crit:"rgba(255,255,255,.7)"}">
               ${e.min??"\u2013"} \u2013 ${e.max??"\u2013"}</div>
-            ${i?a`<div style="font-size:10px;font-weight:800;color:${f.crit};margin-top:2px">
-              ${s<(e.min??-1/0)?"\u25BC ZU NIEDRIG":"\u25B2 ZU HOCH"}</div>`:p}
-          </div>`:p}
+            ${i?l`<div style="font-size:10px;font-weight:800;color:${g.crit};margin-top:2px">
+              ${s<(e.min??-1/0)?"\u25BC ZU NIEDRIG":"\u25B2 ZU HOCH"}</div>`:d}
+          </div>`:d}
       </div>
       <div style="margin-top:6px">
-        ${Q([{data:this._hist,color:i?f.crit:"#4DFFC3"}],{h:e.height??110,band:{min:e.min,max:e.max},grid:3})}
+        ${U([{data:this._hist,color:i?g.crit:"#4DFFC3"}],{h:e.height??110,band:{min:e.min,max:e.max},grid:3})}
       </div>
-    </div>`}};customElements.define("growctrl-metric-card",re);var ks="2.3.0",Ls=[{type:"growctrl-tent-card",name:"GROWCTRL Tent",description:"Zelt-Hero: Klima-KPIs, VPD-Skala, Status-Ampel"},{type:"growctrl-station-card",name:"GROWCTRL Station",description:"Station: Licht-/Pumpenbalken, Stage, Auto, Konfiguration"},{type:"growctrl-controls-card",name:"GROWCTRL Controls",description:"Aktoren-Raster mit Gruppen und Bestaetigung"},{type:"growctrl-sensors-card",name:"GROWCTRL Sensors",description:"Sensor-Kacheln mit Sparklines"},{type:"growctrl-plants-card",name:"GROWCTRL Plants",description:"Pflanzen, Keimdatum, Kalender"},{type:"growctrl-status-card",name:"GROWCTRL Status",description:"Uebersetzte Logs, Ampel, Experten-Modus"},{type:"growctrl-hero-card",name:"GROWCTRL Hero",description:"Globale Steuerung, Klima-KPIs, VPD-Chart, Informationssystem"},{type:"growctrl-checkup-card",name:"GROWCTRL Checkup",description:"Ampel-Uebersicht aller Zelte/Stationen mit Auswertung"},{type:"growctrl-tank-card",name:"GROWCTRL Tank",description:"DWC-Fuellstand mit Animation und Warnstufe"},{type:"growctrl-history-card",name:"GROWCTRL History",description:"24h-Diagramm (z.B. Temperatur + Luftfeuchte)"},{type:"growctrl-metric-card",name:"GROWCTRL Metric",description:"EC/pH gross mit Chart und Sollbereich"}];window.customCards=window.customCards??[];Ls.forEach(n=>window.customCards.push({...n,preview:!1,documentationURL:"https://github.com/MrDarkvoid/growctrl"}));console.info(`%c GROWCTRL Cards %c v${ks} `,"background:#1D9E75;color:#fff;font-weight:700","background:#0F6E56;color:#fff");
+    </div>`}};customElements.define("growctrl-metric-card",Kt);var ls="2.4.0",cs=[{type:"growctrl-tent-card",name:"GROWCTRL Tent",description:"Zelt-Hero: Klima-KPIs, VPD-Skala, Status-Ampel"},{type:"growctrl-station-card",name:"GROWCTRL Station",description:"Station: Licht-/Pumpenbalken, Stage, Auto, Konfiguration"},{type:"growctrl-controls-card",name:"GROWCTRL Controls",description:"Aktoren-Raster mit Gruppen und Bestaetigung"},{type:"growctrl-sensors-card",name:"GROWCTRL Sensors",description:"Sensor-Kacheln mit Sparklines"},{type:"growctrl-plants-card",name:"GROWCTRL Plants",description:"Pflanzen, Keimdatum, Kalender"},{type:"growctrl-status-card",name:"GROWCTRL Status",description:"Ereignisprotokoll der Integration mit Schweregrad-Ampel"},{type:"growctrl-hero-card",name:"GROWCTRL Hero",description:"Globale Steuerung, Klima-KPIs, VPD-Chart, Informationssystem"},{type:"growctrl-checkup-card",name:"GROWCTRL Checkup",description:"Ampel-Uebersicht aller Zelte/Stationen mit Auswertung"},{type:"growctrl-tank-card",name:"GROWCTRL Tank",description:"DWC-Fuellstand mit Animation und Warnstufe"},{type:"growctrl-history-card",name:"GROWCTRL History",description:"24h-Diagramm (z.B. Temperatur + Luftfeuchte)"},{type:"growctrl-metric-card",name:"GROWCTRL Metric",description:"EC/pH gross mit Chart und Sollbereich"}];window.customCards=window.customCards??[];cs.forEach(n=>window.customCards.push({...n,preview:!1,documentationURL:"https://github.com/MrDarkvoid/growctrl"}));console.info(`%c GROWCTRL Cards %c v${ls} `,"background:#1D9E75;color:#fff;font-weight:700","background:#0F6E56;color:#fff");
 /*! Bundled license information:
 
 @lit/reactive-element/css-tag.js:

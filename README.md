@@ -1,150 +1,145 @@
-<p align="center">
-
-<p align="center"><img src="assets/logo/logo.png" alt="GROWCTRL" width="160"/></p>
-</p>
+<p align="center"><img src="assets/logo/logo.png" alt="GROWCTRL" width="170"/></p>
 
 # GROWCTRL
 
-**Home-Assistant-Gesamtsystem zur Automatisierung von Growzelten (Hydroponik & Erde).**
+**Komplette Growzelt-Steuerung für Home Assistant** — eine native Integration
+(Zelte + Stationen, Klima, DLI, Failsafe, Informationssystem) plus elf aufeinander
+abgestimmte Dashboard-Karten. Keine YAML-Helfer, keine Blueprints nötig.
 
-> Version 2.0.0-dev · Lizenz: MIT
-> Entwickelt von **MrDarkvoid** in Zusammenarbeit mit **Claude (Anthropic)** – Vibe Coding
+> Entwickelt von **MrDarkvoid** in Zusammenarbeit mit Claude (Anthropic), Vibe Coding · Lizenz MIT
 
 ---
 
-## Was ist GROWCTRL?
+## 1. Architektur
 
-GROWCTRL steuert Licht, Pumpen, O₂, Umluft und Klima beliebig vieler Growzelte vollständig
-über Home Assistant. **HA ist die Steuerzentrale** – die eigentliche Logik (Lichtzeiten mit
-Mitternachtsüberlauf, Pumpenzyklen je Wachstumsphase, Klima-Hysterese, Failsafes,
-Manual-Override) läuft in HA.
+```
+Zelt (Master)                      Station (1..n je Zelt)
+├─ Zelt aktiv  ── Gate ──────────► stoppt ALLE Stationen
+├─ Klima-Automatik (VPD/RH)        ├─ Licht (Zeitplan, phasenabh. AUS-Zeit)
+├─ Klima-Phase (Auto/manuell)      ├─ Pumpe (Intervall oder 24/7)
+├─ Status + Ereignisprotokoll      ├─ O₂ / Umluft (dauerhaft AN)
+└─ Aufgabenliste (ToDo)            ├─ DLI aus eigenem Lux-Sensor
+                                   ├─ Keimstart → Alter → Phasen-Empfehlung
+                                   └─ Fehlererkennung + Ereignisprotokoll
+```
 
-Aktoren und Sensoren sind **hardware-agnostisch**:
+- **Aktoren sind beliebige HA-Switches** — nichts wird geraten, alles wird explizit zugeordnet.
+- **Geteilte Lichter erlaubt:** derselbe Switch darf in mehreren Stationen stehen;
+  die Integration verodert die Anforderungen (ODER-Votes).
+- **Lux-Sensoren** sind Stations-Sache und dürfen ebenfalls geteilt werden.
 
-| Ebene | Heute | Optional |
+## 2. Installation
+
+**HACS (empfohlen):** HACS → Custom Repositories → `MrDarkvoid/growctrl`
+(Kategorie *Integration*) hinzufügen → installieren → HA neu starten.
+Karten: `MrDarkvoid/growctrl-cards` (Kategorie *Dashboard*).
+
+**Manuell:** Ordner `custom_components/growctrl/` nach `/config/custom_components/`
+kopieren, HA neu starten. Karten: `cards/dist/growctrl-cards.js` nach `/config/www/`
+und als Ressource `/local/growctrl-cards.js` (JavaScript-Modul) eintragen.
+
+## 3. Einrichtung (Reihenfolge wichtig)
+
+1. Einstellungen → Geräte & Dienste → **GROWCTRL** hinzufügen → **„Zelt anlegen"**:
+   Name, Temp-/Feuchte-Sensor, Klima-Aktoren (Befeuchter/Entfeuchter/Abluft/Heizung).
+2. Erneut hinzufügen → **„Station anlegen"**: Zelt im Dropdown wählen, Licht-Switches
+   (Pflicht), optional Pumpe/O₂/Umluft, Lux-Sensor (für DLI), Systemtyp DWC/Erde mit Sensoren.
+3. Pro Station: Lichtzeiten setzen, Phase wählen, ggf. Keimstart-Datum → **Automatik AN**.
+4. Am Zelt: **Klima-Automatik AN**, Modus (VPD/RH) und Phasen-Sollwerte prüfen.
+
+Test-Leitfaden vor dem Echtbetrieb: **`docs/testplan.md`**.
+
+## 4. Entitäten-Referenz
+
+### Zelt (`GROWCTRL Zelt <name>`)
+| Entität | Typ | Funktion |
 |---|---|---|
-| Aktoren | Zigbee-Steckdosen (beliebige HA-Switches) | GROWCTRL Relay Board (ESPHome, 8 Relais) |
-| Sensorik | Beliebige HA-Sensoren | GROWCTRL Sensor Node + RS485-Addons (HYDRO2/TERRA2/POWER4) |
+| Zelt aktiv | switch | **Master-Gate** – AUS stoppt alle Stationen des Zelts |
+| Klima-Automatik | switch | Klima-Regelung zuschalten |
+| Klima-Modus | select | **VPD** oder **RH** geführt |
+| Klima-Phase | select | **Auto** (führende Stations-Phase) oder fest |
+| `<Phase>` VPD/RH Min/Max | number ×16 | Sollwerte je Phase (Seedling/Veg/Bloom/Trocknung; Flush nutzt Bloom) |
+| Blatt-Offset | number | Blatttemperatur-Korrektur für VPD |
+| VPD | sensor | aktueller VPD; Attribute: temp, rh, phase_effektiv, sollwerte |
+| Status | sensor | ok/problem + Attribut `probleme` (alle Stationen gesammelt) |
+| Letztes Ereignis | sensor | Klartext + Attribut `verlauf` (30 Einträge) |
+| Aufgaben | todo | Liste; Phasen-Empfehlungen landen automatisch hier |
 
-Die eigene Hardware (siehe `/firmware`) ist ein **verlängerter Arm**: Sie schaltet, misst und
-kalibriert lokal – gesteuert wird sie von HA, ihre Messwerte fließen zurück nach HA.
+### Station (`GROWCTRL <zelt> <station>`)
+| Entität | Typ | Funktion |
+|---|---|---|
+| Automatik / Wartung | switch | Regelung an/aus · Wartung = System greift nicht ein |
+| Wachstumsphase | select | Seedling/Veg/Bloom/Flush/**Trocknung** |
+| Licht AN / AUS Seed-Veg / AUS Bloom-Flush | time | Lichtplan (Mitternachtsüberlauf ok) |
+| Pumpe AN/AUS je Phase | number ×6 | Intervall in Minuten (nur mit Pumpe) |
+| Manuelle Übernahme | number | Minuten, die Handschaltungen respektiert werden (0 = sofort zurück) |
+| Lux→PPFD-Faktor | number | nur mit Lux-Sensor; Default 0.015 |
+| Licht/Pumpe Restzeit | sensor | Minuten bis zum nächsten Schaltpunkt |
+| DLI heute / DLI Prognose | sensor | aus Lux; Prognose über den **konfigurierten Lichtplan** |
+| Alter seit Keimung / Phasen-Empfehlung | sensor | aus Keimstart (Richtwerte, sortenabhängig) |
+| Letztes Ereignis | sensor | Klartext + `verlauf` + `schweregrad` |
+| Manueller Eingriff / Licht-Failsafe / Zeiten unvollständig | binary_sensor | Problem-Melder |
+| Keimstart | date | Startdatum der Pflanze |
 
-## Architektur
+## 5. Was das System überwacht und absichert
 
-```mermaid
-flowchart TD
-    subgraph HA["Home Assistant – Steuerzentrale"]
-        INT["GROWCTRL Integration (Ziel, Phase 3)\nConfig Flow · Entitäten · Steuerlogik · Events"]
-        LEG["Legacy: Packages + Blueprints\n(funktionierender Übergangsstand)"]
-        CARDS["GROWCTRL Karten-Cluster (Phase 2)\nfokussierte Lovelace Custom Cards"]
-    end
-    subgraph HW["Aktoren & Sensoren (austauschbar)"]
-        ZB["Zigbee-Steckdosen\n(aktueller Betrieb)"]
-        RB["Relay Board v4 (ESPHome)\n8 Relais · RS485-Master"]
-        SN["Sensor Node v4 (ESPHome)\nTemp/rF/CO₂/Lux/DS18B20"]
-        AD["RS485-Addons\nHYDRO2 · TERRA2 · POWER4"]
-    end
-    INT -- "schaltet beliebige switches" --> ZB
-    INT -- "schaltet beliebige switches" --> RB
-    LEG -. wird abgelöst .-> INT
-    SN -- RS485 --> RB
-    AD -- RS485 --> RB
-    RB -- "MQTT Discovery + States" --> HA
-    SN -- "ESPHome API" --> HA
-    CARDS -- liest/steuert --> INT
-    CARDS -. "liest (Übergang)" .-> LEG
-```
+### Fehlererkennungen
+| Erkennung | Auslöser | Reaktion |
+|---|---|---|
+| **Manueller Eingriff** | Licht-Ist weicht 2 Regelzyklen vom Soll ab | Automatik **respektiert** die Handschaltung für „Manuelle Übernahme"-Minuten, dann Rückkehr zum Plan; binary_sensor + Log |
+| **Licht-Failsafe** | Licht länger AN als Maximum (Default 1440 min) | **Not-Aus** aller Licht-Switches, Critical-Eintrag, binary_sensor |
+| **Lichtzeiten unvollständig** | AN/AUS-Zeit fehlt | Automatik pausiert (kein blindes Schalten), Warnung |
+| **Klima-Sensorausfall** | Klima AN, Temp/RH liefern nichts | Problem im Zelt-Status |
 
-## Repository-Struktur
+### Failsafe-Maßnahmen (by design)
+| Maßnahme | Wirkung |
+|---|---|
+| Zelt-Gate | „Zelt aktiv" AUS → alle Stations-Aktoren aus |
+| Wartungsmodus | Station wird vom System komplett in Ruhe gelassen |
+| Trocknung | Licht + Pumpe zwangsweise aus, Umluft bleibt an |
+| Befeuchter/Entfeuchter-Sperre | nie gleichzeitig; Konflikt → beide aus |
+| Hysterese | 0.05 kPa / 2 % RH gegen Schalt-Flattern |
+| ODER-Votes | keine Station schaltet einer anderen das geteilte Licht aus |
+| Idempotenz | Service-Calls nur bei tatsächlicher Abweichung |
 
-```
-growctrl/
-├── assets/                  Logo & Grafiken
-├── cards/                   Karten-Cluster (Phase 2) – fokussierte Custom Cards + core-Bibliothek
-├── custom_components/
-│   └── growctrl/            Die GROWCTRL-Integration (Phase 3) – ersetzt Packages & Blueprints
-├── docs/                    Architektur, Log-Referenz, Entitäten-Liste, Bestandsaufnahme
-├── firmware/                Optionale ESPHome-Hardware (Relay Board, Sensor Node)
-├── legacy/                  Heutiger funktionierender Stand (Packages, Blueprints, Dashboard)
-│   ├── packages/
-│   ├── blueprints/
-│   └── dashboard/
-├── CHANGELOG.md · CONTRIBUTING.md · LICENSE · README.md
-```
+Details und Log-Kanäle: **`docs/informationssystem.md`**.
 
-## Installation
+## 6. Dashboard-Karten (11)
 
-### Integration (HACS, empfohlen)
-1. HACS → ⋮ → **Benutzerdefinierte Repositories** → `MrDarkvoid/growctrl`, Kategorie **Integration**
-2. „GROWCTRL" installieren, HA neu starten
-3. Einstellungen → Geräte & Dienste → **Integration hinzufügen → GROWCTRL** → je Station einen Eintrag anlegen
-   (Zelt-/Stationsname, Licht-Switches Pflicht, Pumpe/O₂/Umluft optional)
+Hero · Zelt-Klima · Station · Ereignisprotokoll · Checkup · Sensoren · Aktoren ·
+Pflanzen · Tank · Verlauf · Metric — alle mit GUI-Editor und `style:`-Anpassung.
+Die GROWCTRL-Karten (Hero/Zelt/Station/Protokoll/Checkup) leiten ihre Entity-IDs
+**automatisch aus Zelt-/Stationsnamen** ab. Referenz: **`cards/README.md`**,
+fertiges Beispiel: **`examples/zelt_gross_komplett.yaml`**.
 
-### Karten (HACS)
-1. HACS → ⋮ → **Benutzerdefinierte Repositories** → `MrDarkvoid/growctrl-cards`, Kategorie **Dashboard**
-2. „GROWCTRL Cards" installieren – Ressource wird automatisch registriert
-3. Karten im Dashboard hinzufügen – **alle 6 Karten haben einen vollständigen GUI-Editor**
-   (Beispiele: `cards/examples/`, manueller Test ohne HACS: `cards/examples/INSTALLATION_TEST.md`)
+## 7. Dokumentation
 
-### Legacy-Weg (Übergangsstand)
-Packages aus `legacy/packages/` + Blueprints aus `legacy/blueprints/` wie bisher; Details in `legacy/README.md`.
+| Datei | Inhalt |
+|---|---|
+| `docs/testplan.md` | Schritt-für-Schritt-Test der gesamten Steuerung |
+| `docs/informationssystem.md` | Erkennungen, Failsafes, Log-Kanäle |
+| `docs/migration.md` | Legacy-Blueprints → Integration, Release-Checkliste |
+| `docs/branding.md` | Logo in HA (brands-PR) und in den Karten |
+| `docs/integration_konzept.md`, `docs/karten_cluster_konzept.md` | Architektur-Entscheidungen |
 
-### ⚠️ Integration lässt sich nicht installieren? (Checkliste)
+## 8. Troubleshooting
 
-1. **Repo-Struktur prüfen (häufigste Ursache):** Im GitHub-Repo `MrDarkvoid/growctrl` müssen `README.md`,
-   `hacs.json` und `custom_components/` **direkt im Repo-Root** liegen. Wenn das ZIP mit seinem
-   Wrapper-Ordner hochgeladen wurde (`growctrl/custom_components/...` im Repo), findet HACS nichts →
-   Inhalt des entpackten `growctrl/`-Ordners in den Repo-Root verschieben.
-2. **Release anlegen:** Auf GitHub ein Release `v2.1.0` taggen – HACS bevorzugt Releases gegenüber `main`.
-3. **Lokale Installation als Test (ohne HACS):** Ordner `custom_components/growctrl/` nach
-   `/config/custom_components/growctrl/` kopieren → HA neu starten → Einstellungen → Geräte & Dienste →
-   Integration hinzufügen → „GROWCTRL".
-4. **Fehler „Invalid handler specified" beim Einrichten:** HA konnte den Config-Flow-Handler
-   nicht laden. In dieser Reihenfolge prüfen:
-   - `/config/custom_components/growctrl/manifest.json` öffnen: steht dort `"version": "2.2.0"`
-     und `"config_flow": true`? Wenn eine ältere Version drinsteht, ist noch eine **alte Kopie
-     installiert** → Ordner komplett ersetzen.
-   - Nach jedem Dateitausch HA **vollständig neu starten** (Reload reicht nicht — Flow-Handler
-     werden beim Start geladen).
-   - Direkt nach dem Fehlversuch in Einstellungen → System → Protokolle nach
-     `growctrl` filtern: Die Zeile „Error occurred loading flow for integration growctrl"
-     enthält den echten Traceback. Diese Zeile bitte bei einer Fehlermeldung mitschicken.
-   - Alle v2.2-Module bestehen einen Import-Smoke-Test (`tests/test_imports.py`) —
-     ein Importfehler im ausgelieferten Code ist damit weitgehend ausgeschlossen.
-5. **Logs prüfen:** Einstellungen → System → Protokolle, nach `growctrl` filtern. Die konkrete
-   Fehlermeldung sagt, ob HACS (Repo nicht gefunden) oder HA (Setup-Fehler) das Problem ist.
+- **Integration taucht nicht auf:** `custom_components/` muss im Repo-/Config-Root liegen
+  (nicht in einem Wrapper-Ordner); HA neu starten.
+- **„Invalid handler specified":** installierte `manifest.json` prüfen (Version aktuell?
+  `"config_flow": true`?), HA **vollständig** neu starten; danach Protokolle nach
+  `growctrl` filtern — „Error occurred loading flow…" enthält den echten Traceback.
+- **Karten „Entität nicht gefunden":** Entity-IDs in Entwicklertools prüfen; weicht eine
+  ID ab → `overrides:` in der Karte setzen.
 
-## Zelt + Stationen (v2.2)
-
-Die Integration kennt **zwei Entry-Typen**: erst ein **Zelt** anlegen (Klima-Automatik
-VPD- oder RH-geführt, Lux→DLI-Berechnung, zeltweites Informationssystem, Aufgabenliste),
-dann **Stationen**, die das Zelt im Dropdown auswählen. Das Zelt ist Master:
-„Zelt aktiv" AUS stoppt alle Stationen. Geteilte Lichter sind erlaubt — derselbe
-Licht-Switch darf in mehreren Stationen stehen, die Integration verodert die Anforderungen.
-Fehlerfälle (manueller Eingriff, Licht-Failsafe, unvollständige Zeiten) erscheinen als
-`binary_sensor`-Problem-Entitäten je Station und gesammelt im Zelt-Status-Sensor.
-
-## Roadmap
+## 9. Status
 
 | Phase | Inhalt | Status |
 |---|---|---|
-| 0 | Bestandsaufnahme & Issue-Liste | ✅ abgeschlossen (`docs/phase0_bestandsaufnahme.md`) |
-| 1 | Monorepo, Vereinheitlichung, Kopfblöcke | ✅ dieses Repo |
-| 2 | Karten-Cluster (core + 6 Karten, ein Bundle) | ✅ implementiert (`cards/`, Build: `dist/growctrl-cards.js`) |
-| 3 | GROWCTRL-Integration (Zelt+Station, Klima VPD/RH, DLI, Informationssystem) | ✅ v2.3 implementiert, 21 Tests grün — Live-HA-Test ausstehend |
-| 4 | Vollständige Doku, Migration, Release | ✅ Doku fertig (`docs/migration.md`, `docs/informationssystem.md`) — Release-Schritte: siehe Checkliste |
-
-Bekannte Probleme: siehe Issue-Liste in `docs/phase0_bestandsaufnahme.md` (Abschnitt 4).
-
-## HACS-Veröffentlichung (geplant)
-
-Zwei benutzerdefinierte HACS-Repositories (HACS erlaubt eine Kategorie pro Repo):
-`MrDarkvoid/growctrl` (Kategorie *Integration*, dieses Monorepo) und
-`MrDarkvoid/growctrl-cards` (Kategorie *Dashboard*, nur das gebaute Karten-Bundle
-`growctrl-cards.js`). Details: `docs/karten_cluster_konzept.md`, Abschnitt 5.
+| 0–2 | Bestandsaufnahme · Monorepo · Karten-Cluster | ✅ |
+| 3 | Integration (Zelt+Station, Klima, DLI, Informationssystem) | ✅ v2.4, 22 Tests grün — **Live-HA-Test ausstehend** |
+| 4 | Doku, Migration, Release-Vorbereitung | ✅ Doku fertig; Release-Schritte: `docs/migration.md` |
 
 ## Credits & Lizenz
 
-Konzept, Anforderungen und Praxistests: **MrDarkvoid**.
-Architektur & Implementierung in Zusammenarbeit mit **Claude (Anthropic)** – Vibe Coding.
-Lizenz: [MIT](LICENSE).
+MIT — © MrDarkvoid. Entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding.

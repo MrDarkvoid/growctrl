@@ -15,8 +15,11 @@ Die `input_text`-Logs gehören zum **Legacy-Blueprint-System** und werden von de
 Integration NICHT beschrieben — bei Parallelbetrieb laufen beide Welten getrennt.
 
 ## Implementierte Fehlererkennungen
-1. **Manueller Eingriff:** Ist-Zustand des Lichts weicht 2 Regelzyklen in Folge vom Soll ab
-   → Flag + Event; löst sich selbst auf, sobald Ist und Soll wieder übereinstimmen.
+1. **Manueller Eingriff (mit Übernahmezeit):** Weicht das Licht 2 Regelzyklen vom Soll ab,
+   **respektiert** die Automatik die Handschaltung für die konfigurierten
+   „Manuelle Übernahme"-Minuten (Number je Station, Default 60; 0 = sofort zurück) und
+   übernimmt danach wieder den Lichtplan. Geteilte Lichter tragen den manuellen Wunsch
+   über die Votes mit. Endet automatisch früher, sobald der Plan dem Ist-Zustand entspricht.
 2. **Licht-Failsafe („Licht wurde nie ausgeschaltet"):** Einschaltdauer wird mitgezählt;
    über dem Maximum (Default 1440 min) → **Not-Aus** aller Licht-Switches + Critical-Eintrag.
 3. **Lichtzeiten unvollständig:** Automatik pausiert, Warnung statt unkontrolliertem Schalten.
