@@ -2,7 +2,7 @@
 # GROWCTRL Integration – __init__
 # Zweck   : Entry-Setup fuer ZWEI Typen: Zelt (Klima/DLI/ToDo) und Station.
 #           Registriert Runtimes in zentralen Registries (Zelt-Gate, geteilte Lichter).
-# Version : 2.2.0-dev | Lizenz: MIT
+# Version : 2.2.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

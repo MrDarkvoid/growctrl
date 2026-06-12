@@ -4,7 +4,7 @@
 # Zweck   : button-card mit JS-Lambda: Uebersicht Zelt Gross (4 Stationen). Issues #3/#4
 #           (Slugification, Platzhalter-Entitaeten). Wird durch den Karten-Cluster ersetzt.
 # Bezug   : Liest Helper/Logs/Restzeit-Sensoren aus legacy/packages/hydro_zelt_gross.yaml
-# Version : 2.0.0-dev  |  Lizenz: MIT
+# Version : 2.0.0-dev  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

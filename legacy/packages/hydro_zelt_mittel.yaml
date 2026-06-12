@@ -4,7 +4,7 @@
 # Zweck   : Helper-Definitionen Zelt Mittel: 1x Main. Wird durch die GROWCTRL-Integration ersetzt.
 # Bezug   : Wird referenziert von: legacy/blueprints/* (Instanzen),
 #           legacy/dashboard/checkup_gz_mittel.yaml, cards/*
-# Version : 2.0.0-dev  |  Lizenz: MIT
+# Version : 2.0.0-dev  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

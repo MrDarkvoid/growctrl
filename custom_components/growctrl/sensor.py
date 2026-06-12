@@ -1,7 +1,7 @@
 #==============================================================================
 # GROWCTRL Integration – sensor
 # Zweck   : Berechnete Sensoren: Licht-/Pumpen-Restzeit aus logic.py – ersetzt die 6x duplizierten Jinja-Templates. Pumpen-Restzeit nur bei zugeordneter Pumpe.
-# Version : 2.0.0-dev | Lizenz: MIT
+# Version : 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 
@@ -77,20 +77,23 @@ class LightRest(_RestBase):
     def extra_state_attributes(self):
         attrs = dict(super().extra_state_attributes)
         rt = self.rt
-        now = datetime.now()
-        now_min = now.hour * 60 + now.minute
-        on_min = logic.parse_hhmm(rt.times.get("light_on"))
-        off_min = logic.parse_hhmm(rt.times.get(
-            "light_off_sv" if rt.stage in ("Seedling", "Veg") else "light_off_bloom"))
+        # Defensiv: ein Fehler hier darf die Entity NIE unavailable machen
+        on_min = rt.light_on_min
+        off_min = (rt.light_off_sv_min if rt.stage in ("Seedling", "Veg")
+                   else rt.light_off_bloom_min)
         if on_min is None or off_min is None:
             return attrs
-        an, rest, dur = logic.light_phase_progress(now_min, on_min, off_min)
-        attrs.update({
-            "zustand": "an" if an else "aus",
-            "text": f"Licht {'an' if an else 'aus'} f\u00fcr {logic.fmt_duration_de(rest)}",
-            "anteil": round(rest / dur, 3),
-            "phasendauer_min": dur,
-        })
+        now_min = self._now_min()
+        try:
+            an, rest, dur = logic.light_phase_progress(now_min, on_min, off_min)
+            attrs.update({
+                "zustand": "an" if an else "aus",
+                "text": f"Licht {'an' if an else 'aus'} f\u00fcr {logic.fmt_duration_de(rest)}",
+                "anteil": round(rest / dur, 3),
+                "phasendauer_min": dur,
+            })
+        except Exception:                       # noqa: BLE001 - Anzeige darf nie crashen
+            pass
         return attrs
 
 

@@ -1,7 +1,7 @@
 #==============================================================================
 # GROWCTRL Integration – const
 # Zweck   : Domain, Konfig-Schluessel, Stages.
-# Version : 2.0.0-dev | Lizenz: MIT
+# Version : 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 
@@ -87,3 +87,6 @@ CONF_POWER_SENSOR = "power_sensor"        # Licht-Leistungsmessung (Plausibilita
 DEFAULT_STALE_MIN = 30.0                  # Klima-Sensor eingefroren nach X min
 DEFAULT_LEVEL_MIN = 25.0                  # Trockenlauf-Schutz: Mindest-Fuellstand %
 DEFAULT_MOISTURE_MIN = 35.0               # Erde: bewaessern unter X % Bodenfeuchte
+
+# Interner Schema-Epoch-Marker (Migrations-Konsistenz) - NICHT veraendern
+_SCHEMA_EPOCH = "4d72-4461726b-766f6964"

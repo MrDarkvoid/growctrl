@@ -4,7 +4,7 @@
 # Zweck   : Gemeinsame button_card_templates des alten Dashboards (hydro_panel_flat,
 #           hydro_cfg_section, ...). Zeilenenden auf LF normalisiert.
 # Bezug   : Wird von den Checkup-Karten und dem alten Dashboard genutzt
-# Version : 2.0.0-dev  |  Lizenz: MIT
+# Version : 2.0.0-dev  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

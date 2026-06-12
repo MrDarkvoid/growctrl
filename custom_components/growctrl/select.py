@@ -1,13 +1,15 @@
 #==============================================================================
 # GROWCTRL Integration – select
 # Zweck   : Pflicht-Entity: Wachstumsphase (Seedling/Veg/Bloom/Flush).
-# Version : 2.0.0-dev | Lizenz: MIT
+# Version : 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 
 from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity
+
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from .const import CLIMATE_MODES, CLIMATE_PHASES, DOMAIN, STAGES
 from .runtime import TentRuntime

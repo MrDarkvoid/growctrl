@@ -1,7 +1,7 @@
 #==============================================================================
 # GROWCTRL Integration – logic
 # Zweck   : REINE Steuerlogik (kein HA-Import): Lichtfenster inkl. Mitternachtsueberlauf, Pumpenzyklus, Restzeiten. 1:1-Portierung der Blueprint-/Jinja-Logik, abgesichert durch tests/test_logic.py.
-# Version : 2.0.0-dev | Lizenz: MIT
+# Version : 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

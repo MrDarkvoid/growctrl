@@ -2,7 +2,7 @@
 # GROWCTRL Integration – runtime
 # Zweck   : Laufzeit-Zustand: StationRuntime (Steuerung, Fehlerflags, Keimstart)
 #           und TentRuntime (Zelt-Master, Klima VPD/RH, DLI-Akkumulator).
-# Version : 2.2.0-dev | Lizenz: MIT
+# Version : 2.2.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

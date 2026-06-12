@@ -2,7 +2,7 @@
 # GROWCTRL Integration – config_flow
 # Zweck   : Menue: ZELT anlegen (Klima-Aktoren, Sensoren, Lux/DLI) oder STATION
 #           anlegen (Zelt-Auswahl aus vorhandenen Zelten, Switches, Systemtyp).
-# Version : 2.2.0-dev | Lizenz: MIT
+# Version : 2.2.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

@@ -1,7 +1,7 @@
 #==============================================================================
 # GROWCTRL Integration – date
 # Zweck   : Keimstart je Station (RestoreEntity) -> Alter, Phasen-Empfehlung, ToDo.
-# Version : 2.2.0-dev | Lizenz: MIT
+# Version : 2.2.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

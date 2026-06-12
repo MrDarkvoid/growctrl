@@ -2,7 +2,7 @@
 # GROWCTRL Integration – todo
 # Zweck   : Aufgabenliste je Zelt (persistiert via Store). Phasen-Empfehlungen
 #           der Stationen landen automatisch (dedupliziert) als offene Aufgabe.
-# Version : 2.2.0-dev | Lizenz: MIT
+# Version : 2.2.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

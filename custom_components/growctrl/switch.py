@@ -1,13 +1,15 @@
 #==============================================================================
 # GROWCTRL Integration – switch
 # Zweck   : Pflicht-Schalter je Station: Automatik, Wartung, Testmodus (RestoreEntity).
-# Version : 2.0.0-dev | Lizenz: MIT
+# Version : 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 
 from __future__ import annotations
 
 from homeassistant.components.switch import SwitchEntity
+
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from .const import DOMAIN
 from .entity import GrowctrlEntity

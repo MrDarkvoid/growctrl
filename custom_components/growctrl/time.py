@@ -1,7 +1,7 @@
 #==============================================================================
 # GROWCTRL Integration – time
 # Zweck   : Pflicht-Entities: Lichtzeiten (AN, AUS Seedling/Veg, AUS Bloom/Flush) als time-Entities.
-# Version : 2.0.0-dev | Lizenz: MIT
+# Version : 2.0.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

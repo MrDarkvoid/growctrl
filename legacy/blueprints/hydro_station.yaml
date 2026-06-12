@@ -6,7 +6,7 @@
 #           in die Integration.
 # Bezug   : Benoetigt Helper aus legacy/packages/*; schreibt input_text-Logs (Format siehe
 #           docs/log_referenz.md)
-# Version : 2.0.0-dev  |  Lizenz: MIT
+# Version : 2.0.0-dev  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

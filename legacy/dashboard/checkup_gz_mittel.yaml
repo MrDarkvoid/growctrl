@@ -4,7 +4,7 @@
 # Zweck   : button-card mit JS-Lambda: Uebersicht Zelt Mittel. Wird durch den GROWCTRL
 #           Karten-Cluster ersetzt (Phase 2).
 # Bezug   : Liest Helper/Logs/Restzeit-Sensoren aus legacy/packages/hydro_zelt_mittel.yaml
-# Version : 2.0.0-dev  |  Lizenz: MIT
+# Version : 2.0.0-dev  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

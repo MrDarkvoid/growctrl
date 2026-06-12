@@ -2,7 +2,7 @@
 # GROWCTRL Integration – binary_sensor
 # Zweck   : Informationssystem je Station: Manual Override, Licht-Failsafe
 #           ("Licht wurde nie ausgeschaltet"), Lichtzeiten unvollstaendig.
-# Version : 2.2.0-dev | Lizenz: MIT
+# Version : 2.2.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 

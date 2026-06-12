@@ -4,7 +4,7 @@
 #           Lichter per ODER-Votes, Failsafe, Manual-Override-Erkennung, Zelt-Gate.
 #           Zelt: Master-Enable, Klima VPD-/RH-gefuehrt mit Hysterese, DLI-Akkumulation,
 #           Phasen-Empfehlung -> ToDo.
-# Version : 2.2.0-dev | Lizenz: MIT
+# Version : 2.2.0-dev | Lizenz: GC-SAL 1.0 (siehe LICENSE)
 # Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
 #==============================================================================
 
