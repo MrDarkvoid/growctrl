@@ -142,7 +142,7 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
       ${c.show_chart === true && this._hist.length > 1 ? html`
         <div class="seclbl">VPD \u00b7 ${c.hours ?? 24}h</div>
         ${lineChart([{ data: this._hist, color: THEME.ok }],
-          { h: 100, band: targets ? { min: targets.vpd_min, max: targets.vpd_max } : undefined, grid: 3 })}` : nothing}
+          { w: this.chartW(), h: 100, band: targets ? { min: targets.vpd_min, max: targets.vpd_max } : undefined, grid: 3 })}` : nothing}
 
       ${stations.length ? html`<div class="seclbl">Stationen</div>
         ${stations.map(s => html`<div class="logrow" style="margin-top:3px;padding:6px 9px">

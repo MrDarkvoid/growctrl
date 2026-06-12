@@ -16,12 +16,10 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       this.stationSelect(this._config?.tent),
       SEL.text("name", "Anzeigename (optional)"),
       SEL.bool("show_settings", "Einstellungen-Zahnrad anzeigen"),
-      SEL.bool("show_age", "Alter-KPI anzeigen (sonst: Pflanzen-Karte)"),
-      SEL.bool("show_event", "Letztes Ereignis am Kartenfuss anzeigen"),
-      SEL.select("age_format", "Alter anzeigen als", [
-        { value: "auto", label: "Automatisch (ab Woche 2 in Wochen)" },
-        { value: "tage", label: "Immer Tage" },
-        { value: "wochen", label: "Immer Wochen" }]),
+      SEL.bool("show_event", "Ereignisfeld am Kartenfuss (Standard an)"),
+      SEL.entity("tank_entity", "Stations-Tank F\u00fcllstand % (optional)", "sensor"),
+      SEL.num("tank_min", "Tank-Mindeststand %", 0, 100),
+      SEL.num("tank_volume", "Tank-Volumen in Litern (optional)", 1, 10000),
     ];
     const plantRow = [
       SEL.text("name", "Name"),

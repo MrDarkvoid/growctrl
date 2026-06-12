@@ -61,7 +61,7 @@ export class GrowctrlHistoryCard extends GrowctrlBaseCard {
         <div class="title" style="font-size:15px">${c.title ?? "Verlauf"}</div>
         <span class="badge">${c.hours ?? 24}h</span>
       </div>
-      <div style="margin-top:8px">${lineChart(series, { h: c.height ?? 130, grid: 3 })}</div>
+      <div style="margin-top:8px">${lineChart(series, { w: this.chartW(), h: c.height ?? 130, grid: 3 })}</div>
       ${chartLegend(series)}
     </div>`;
   }

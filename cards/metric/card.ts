@@ -74,7 +74,7 @@ export class GrowctrlMetricCard extends GrowctrlBaseCard {
       </div>
       <div style="margin-top:14px">
         ${lineChart([{ data: this._hist, color: bad ? THEME.crit : "#4DFFC3" }],
-          { h: c.height ?? 110, band: { min: c.min, max: c.max }, grid: 3 })}
+          { w: this.chartW(), h: c.height ?? 110, band: { min: c.min, max: c.max }, grid: 3 })}
       </div>
     </div>`;
   }

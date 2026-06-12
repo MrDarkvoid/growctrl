@@ -10,7 +10,30 @@ import { LitElement, html, nothing } from "lit";
 import type { HomeAssistant } from "./types";
 
 export abstract class GrowctrlBaseCard extends LitElement {
-  static properties = { hass: { attribute: false }, _config: { state: true }, _confirm: { state: true } };
+  static properties = { hass: { attribute: false }, _config: { state: true }, _confirm: { state: true }, _cw: { state: true } };
+
+  /** Gemessene Kartenbreite - Charts rendern damit unverzerrt (PC wie Handy). */
+  protected _cw = 0;
+  private _ro?: ResizeObserver;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._ro = new ResizeObserver(es => {
+      const w = Math.round(es[0]?.contentRect?.width ?? 0);
+      if (w && Math.abs(w - this._cw) > 8) this._cw = w;
+    });
+    this._ro.observe(this);
+  }
+
+  disconnectedCallback() {
+    this._ro?.disconnect();
+    super.disconnectedCallback();
+  }
+
+  /** Chart-Breite: Containerbreite minus Karten-Padding, mit sinnvollem Minimum. */
+  protected chartW(pad = 34): number {
+    return Math.max(280, (this._cw || 320) - pad);
+  }
   hass!: HomeAssistant;
   protected _config: any = {};
   protected _confirm: { text: string; action: () => void } | null = null;

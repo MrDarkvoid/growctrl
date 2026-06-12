@@ -13,17 +13,26 @@ import {
   cardVars, type StyleConfig, num,
   stEnt, ST, type GcOverrides,
   gcResolve,
-  fmtDur, fmtAge, daysSince,
+  fmtDur, fmtAge, daysSince, sparkline, zoneBar, fetchHistory,
 } from "../core/index";
+
+/** Pflanzen-Sensor: einfacher Entity-String ODER konfigurierte Anzeige.
+ *  anzeige "zone": pH/EC-Balken schlecht|akzeptiert|IDEAL|akzeptiert|schlecht.
+ *  anzeige "graph": Mini-Verlauf (Sparkline), z.B. Temperatur. */
+type PlantSensor = string | { entity: string; name?: string;
+  anzeige?: "wert" | "zone" | "graph";
+  min?: number; max?: number; ok?: [number, number]; ideal?: [number, number];
+  hours?: number };
 
 const STAGES = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"];
 
 interface StationConfig {
   age_format?: "auto" | "tage" | "wochen";
-  show_age?: boolean;       // Alter-KPI (Standard aus - gehoert eher zur Pflanzen-Karte)
-  show_event?: boolean;     // Ereigniszeile am Kartenfuss (Standard aus)
+  show_event?: boolean;     // Ereignisfeld am Kartenfuss (Standard AN)
+  tank_entity?: string;     // Stations-Tank: Fuellstand % als eigene Zeile
+  tank_min?: number; tank_volume?: number;
   plants?: Array<{ name: string; strain?: string; germination_helper?: string;
-    sensors?: string[]; image?: string;
+    sensors?: PlantSensor[]; image?: string;
     tank_entity?: string; tank_min?: number }>;   // Pflanzen-Tabs inkl. Tank je Pflanze
   type: string; tent: string; station: string; name?: string;
   show_settings?: boolean; overrides?: GcOverrides; style?: StyleConfig;
@@ -31,9 +40,25 @@ interface StationConfig {
 
 export class GrowctrlStationCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
-  static properties = { ...GrowctrlBaseCard.properties, _open: { state: true }, _tab: { state: true } };
+  static properties = { ...GrowctrlBaseCard.properties, _open: { state: true }, _tab: { state: true }, _spark: { state: true } };
   private _open = false;
   private _tab = 0;
+  private _spark: Record<string, number[]> = {};
+
+  updated(changed: Map<string, unknown>) {
+    super.updated?.(changed);
+    if (!changed.has("hass") && !changed.has("_config")) return;
+    const c = this._config as StationConfig;
+    const graphs = (c?.plants ?? []).flatMap(pl => (pl.sensors ?? [])
+      .map(s => (typeof s === "string" ? { entity: s } : s))
+      .filter(s => s.anzeige === "graph"));
+    graphs.forEach(async g => {
+      const data = await fetchHistory(this.hass, g.entity, g.hours ?? 24);
+      if (data.length && this._spark[g.entity]?.length !== data.length) {
+        this._spark = { ...this._spark, [g.entity]: data };
+      }
+    });
+  }
 
   protected validateConfig(c: StationConfig) {
     if (!c.tent || !c.station)
@@ -63,7 +88,6 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const c = this._config as StationConfig;
     if (!this.hass) return nothing;
     const demo = this.isPreview;
-    const showAge = (this._config as StationConfig).show_age === true;
     const stage = this.st(this.e("stage")) ?? "Veg";
     const sc = STAGE_COLORS[stage] ?? STAGE_COLORS.Veg;
     const auto = this.isOn(this.e("auto")) || demo;
@@ -85,11 +109,9 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const dli = num(this.st(this.e("dli"))) ?? (demo ? 18.4 : null);
     const dliFc = num(this.st(this.e("dliFc"))) ?? (demo ? 24.7 : null);
     const dliTarget = this.hass.states[this.e("dli")]?.attributes?.ziel_aktuelle_phase as number | undefined;
-    const age = num(this.st(this.e("age"))) ?? (demo ? 24 : null);
-    const rec = this.st(this.e("rec"));
     const hasPump = !!this.hass.states[this.e("pumpRest")] || demo;
     const hasDli = !!this.hass.states[this.e("dli")] || demo;
-    const kpiCount = (hasPump ? 1 : 0) + (hasDli ? 1 : 0) + (showAge ? 1 : 0);
+    const kpiCount = (hasPump ? 1 : 0) + (hasDli ? 1 : 0);
 
     const kpi = (label: string, value: string, sub?: string, accent?: string) => html`
       <div class="tile" style="min-width:0">
@@ -165,21 +187,29 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
               dli !== null ? dli.toFixed(1) : "\u2013",
               dliTarget ? `Ziel ${dliTarget} \u00b7 Prognose ${dliFc !== null ? dliFc.toFixed(1) : "\u2013"}` : undefined,
               dliTarget && dli !== null && dli >= dliTarget ? THEME.ok : undefined) : nothing}
-        ${showAge ? kpi("Alter", age !== null ? fmtAge(age, c.age_format ?? "auto") : "\u2013",
-              rec && rec !== stage ? `\u2192 ${rec} empfohlen`
-                : (this.hass.states[this.e("rec")]?.attributes?.hinweis ? "Hinweis \u2013 antippen" : "Phase passt"),
-              rec && rec !== stage ? "#FFD166" : undefined) : nothing}
       </div>` : nothing}
+
+      ${this.tankRow()}
 
       ${this.plantTabs()}
 
       ${problems.length ? html`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
         ${problems.map(p => html`<span class="badge warn">\u26A0 ${p.label}</span>`)}</div>` : nothing}
 
-      ${(this._config as StationConfig).show_event === true && evt ? html`<button class="gc logrow" style="width:100%;margin-top:10px;text-align:left"
+      ${(this._config as StationConfig).show_event !== false && evt ? html`
+        <button class="gc" style="width:100%;margin-top:10px;text-align:left;display:flex;
+            align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
+            background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09)"
           @click=${() => this.moreInfo(this.e("event"))}>
-          <span class="dot" style="background:${LOG_TX[(evt.attributes?.schweregrad as string) === "ok" ? "info" : (evt.attributes?.schweregrad as string)] ?? THEME.info};flex-shrink:0"></span>
-          <span class="txt" style="color:rgba(255,255,255,.65)">${evt.state}</span>
+          <ha-icon icon="mdi:history" style="--mdc-icon-size:17px;flex-shrink:0;
+            color:${LOG_TX[(evt.attributes?.schweregrad as string)] ?? "rgba(255,255,255,.45)"}"></ha-icon>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;
+              color:rgba(255,255,255,.45);font-weight:700">Letztes Ereignis</span>
+            <span style="display:block;font-size:12.5px;color:rgba(255,255,255,.82);font-weight:600;
+              overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${evt.state}</span>
+          </span>
+          <ha-icon icon="mdi:chevron-right" style="--mdc-icon-size:16px;color:rgba(255,255,255,.3)"></ha-icon>
         </button>` : nothing}
 
       ${this._open ? html`<div class="settings-grid" style="margin-top:10px">
@@ -265,30 +295,73 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
                 background:rgba(77,255,195,.12);border:1px solid rgba(77,255,195,.3)">${fmtAge(age)}</span>` : nothing}
           </div>
         </div>
-        ${pl.sensors?.length ? html`
-          <div class="kpis cols-${Math.min(3, Math.max(2, pl.sensors.length))}" style="margin-top:12px">
-            ${pl.sensors.map(se => {
-              const v = num(this.st(se));
-              return html`<button class="gc tile" style="background:rgba(0,0,0,.22);text-align:center"
-                  @click=${() => this.moreInfo(se)}>
-                <div class="lbl">${this.friendly(se)}</div>
-                <div style="font-size:22px;font-weight:800;letter-spacing:-.4px;margin-top:2px">
-                  ${v !== null ? v : (this.st(se) ?? "\u2013")}<span class="unit">${this.unit(se)}</span></div>
-              </button>`;
-            })}
-          </div>` : nothing}
-        ${this.plantTank(pl)}
+        ${this.plantSensors(pl.sensors ?? [])}
+        ${pl.tank_entity ? this.tankBar(pl.tank_entity, pl.tank_min ?? 30) : nothing}
       </div>`;
   }
 
-  /** Tank je Pflanze: Fuellstands-Balken (rot unter Mindeststand). */
-  private plantTank(pl: { tank_entity?: string; tank_min?: number }) {
-    if (!pl.tank_entity) return nothing;
-    const pct = Math.min(100, Math.max(0, num(this.st(pl.tank_entity)) ?? 0));
-    const minP = pl.tank_min ?? 30;
+  /** Pflanzen-Sensoren: einfache Kacheln + volle Zeilen fuer Zone (pH/EC) und Graph. */
+  private plantSensors(raw: PlantSensor[]) {
+    if (!raw.length) return nothing;
+    const sens = raw.map(s => (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
+    const tiles = sens.filter(s => !s.anzeige || s.anzeige === "wert");
+    const wide = sens.filter(s => s.anzeige === "zone" || s.anzeige === "graph");
+    const fval = (e: string) => {
+      const v = num(this.st(e));
+      return v !== null ? v : (this.st(e) ?? "\u2013");
+    };
+    return html`
+      ${tiles.length ? html`<div class="kpis cols-${Math.min(3, Math.max(2, tiles.length))}" style="margin-top:12px">
+        ${tiles.map(s => html`<button class="gc tile" style="background:rgba(0,0,0,.22);text-align:center"
+            @click=${() => this.moreInfo(s.entity)}>
+          <div class="lbl">${s.name ?? this.friendly(s.entity)}</div>
+          <div style="font-size:22px;font-weight:800;letter-spacing:-.4px;margin-top:2px">
+            ${fval(s.entity)}<span class="unit">${this.unit(s.entity)}</span></div>
+        </button>`)}
+      </div>` : nothing}
+      ${wide.map(s => {
+        const v = num(this.st(s.entity));
+        const ideal = s.ideal ?? [0, 0]; const ok = s.ok ?? ideal;
+        const inIdeal = v !== null && v >= ideal[0] && v <= ideal[1];
+        const inOk = v !== null && v >= ok[0] && v <= ok[1];
+        const col = s.anzeige === "zone" ? (inIdeal ? "#34D17B" : inOk ? "#FFB35C" : "#FF6B6B") : "#5BC8EF";
+        return html`<button class="gc tile" style="background:rgba(0,0,0,.22);width:100%;margin-top:10px;text-align:left"
+            @click=${() => this.moreInfo(s.entity)}>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px">
+            <span class="lbl">${s.name ?? this.friendly(s.entity)}</span>
+            <span style="font-size:19px;font-weight:800;color:${col}">
+              ${v !== null ? v : "\u2013"}<span class="unit">${this.unit(s.entity)}</span></span>
+          </div>
+          ${s.anzeige === "zone"
+            ? zoneBar(v, { min: s.min ?? 0, max: s.max ?? 14,
+                okMin: ok[0], okMax: ok[1], idealMin: ideal[0], idealMax: ideal[1] })
+            : sparkline(this._spark[s.entity] ?? [], col, this.chartW(74))}
+        </button>`;
+      })}`;
+  }
+
+  /** Stations-Tank als eigene Zeile (Fuellstand + Liter, Mindeststand-Marke). */
+  private tankRow() {
+    const c = this._config as StationConfig;
+    if (!c.tank_entity) return nothing;
+    const pct = Math.min(100, Math.max(0, num(this.st(c.tank_entity)) ?? 0));
+    const vol = c.tank_volume;
+    return html`<div class="tile" style="margin-top:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <ha-icon icon="mdi:water" style="--mdc-icon-size:22px;color:#5BC8EF;flex-shrink:0"></ha-icon>
+        <div style="flex:1;min-width:0">${this.tankBar(c.tank_entity, c.tank_min ?? 30)}</div>
+      </div>
+      ${vol ? html`<div style="font-size:10.5px;color:rgba(255,255,255,.55);margin-top:4px;margin-left:32px">
+        \u2248 ${(pct / 100 * vol).toFixed(1)} l von ${vol} l</div>` : nothing}
+    </div>`;
+  }
+
+  /** Fuellstands-Balken (rot + NACHFUELLEN unter Mindeststand) - Station & Pflanze. */
+  private tankBar(entity: string, minP: number) {
+    const pct = Math.min(100, Math.max(0, num(this.st(entity)) ?? 0));
     const low = pct < minP;
     const col = low ? "#FF6B6B" : "#5BC8EF";
-    return html`<div style="margin-top:12px">
+    return html`<div style="margin-top:2px">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
         <span class="lbl">Tank</span>
         <span style="font-size:14px;font-weight:800;color:${col}">${pct.toFixed(0)} %

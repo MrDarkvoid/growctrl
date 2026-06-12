@@ -97,3 +97,56 @@ export const chartLegend = (series: Series[]): TemplateResult => html`
       font-size:10px;color:rgba(255,255,255,.6)">
       <span style="width:10px;height:3px;border-radius:2px;background:${s.color}"></span>${s.name}</span>`)}
   </div>`;
+
+
+/** Mini-Sparkline ohne Achsen - fuer Sensor-Kacheln (z.B. Temperatur je Pflanze). */
+export function sparkline(data: number[], color: string, w = 280, h = 38): TemplateResult {
+  if (data.length < 2) return html`<div style="height:${h}px"></div>`;
+  const gid = `gcs${_gradSeq++}`;
+  let min = Math.min(...data), max = Math.max(...data);
+  if (max - min < 0.001) { max += 1; min -= 1; }
+  const X = (i: number) => (i / (data.length - 1)) * w;
+  const Y = (v: number) => 3 + (1 - (v - min) / (max - min)) * (h - 8);
+  const pts: Array<[number, number]> = data.map((v, i) => [Number(X(i).toFixed(1)), Number(Y(v).toFixed(1))]);
+  const path = smoothPath(pts);
+  const lx = pts[pts.length - 1][0], ly = pts[pts.length - 1][1];
+  return html`<svg data-gce="4d724461726b766f6964" viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${path} L${lx},${h} L0,${h} Z" fill="url(#${gid})"/>
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2"
+      stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lx}" cy="${ly}" r="2.6" fill="${color}"/>
+  </svg>`;
+}
+
+/** Zonen-Balken (schlecht|akzeptiert|IDEAL|akzeptiert|schlecht) mit Ist-Marker -
+ *  fuer pH/EC je Pflanze, gleiche Sprache wie der VPD-Balken der Hero. */
+export function zoneBar(v: number | null, o: { min: number; max: number;
+    okMin: number; okMax: number; idealMin: number; idealMax: number }): TemplateResult {
+  const span = o.max - o.min || 1;
+  const seg = (a: number, b: number, col: string) => {
+    const wPct = Math.max(0, ((Math.min(b, o.max) - Math.max(a, o.min)) / span) * 100);
+    return html`<div style="width:${wPct}%;background:${col};opacity:.78"></div>`;
+  };
+  const pos = v !== null ? Math.min(1, Math.max(0, (v - o.min) / span)) * 100 : null;
+  return html`<div>
+    <div style="position:relative;height:11px;border-radius:6px;overflow:hidden;display:flex;
+                box-shadow:inset 0 1px 3px rgba(0,0,0,.4)">
+      ${seg(o.min, o.okMin, "#FF6B6B")}
+      ${seg(o.okMin, o.idealMin, "#FFB35C")}
+      ${seg(o.idealMin, o.idealMax, "#34D17B")}
+      ${seg(o.idealMax, o.okMax, "#FFB35C")}
+      ${seg(o.okMax, o.max, "#FF6B6B")}
+      ${pos !== null ? html`<div style="position:absolute;top:0;bottom:0;left:${pos}%;
+        width:3px;margin-left:-1.5px;background:#fff;border-radius:2px;
+        box-shadow:0 0 6px rgba(255,255,255,.9)"></div>` : nothing}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9.5px;
+                color:rgba(255,255,255,.55);margin-top:3px">
+      <span>${o.min}</span><span style="color:#34D17B;font-weight:700">${o.idealMin}\u2013${o.idealMax} ideal</span><span>${o.max}</span>
+    </div>
+  </div>`;
+}

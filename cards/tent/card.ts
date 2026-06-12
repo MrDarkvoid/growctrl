@@ -139,7 +139,7 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
       ${c.show_chart !== false && this._hist.length > 1 ? html`
         <div class="seclbl">VPD \u00b7 ${c.hours ?? 24}h</div>
         ${lineChart([{ data: this._hist, color: vpdOk === false ? "#FFD166" : THEME.ok }],
-          { h: 100, band: targets ? { min: targets.vpd_min, max: targets.vpd_max } : undefined, grid: 3 })}` : nothing}
+          { w: this.chartW(), h: 100, band: targets ? { min: targets.vpd_min, max: targets.vpd_max } : undefined, grid: 3 })}` : nothing}
 
       ${problems.length ? html`<div style="margin-top:9px">
         ${problems.map(p => html`<div class="logrow" style="background:rgba(255,209,102,.08);margin-top:4px">

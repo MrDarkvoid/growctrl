@@ -1,5 +1,27 @@
 # Changelog – GROWCTRL
 
+## [3.0.0-dev]
+
+### BREAKING
+- **`growctrl-plants-card` entfernt.** Migration: Pflanzen als `plants:` in der
+  Stations-Karte konfigurieren (Tabs) - Karteninstanzen vom Dashboard löschen,
+  sonst erscheint „Custom element doesn't exist“
+
+### PC-Chart-Fix („sehen aus wie scheiße“ - berechtigt)
+- Charts rendern jetzt in der **echten Containerbreite** (ResizeObserver) statt
+  einer fixen 300-px-viewBox mit `preserveAspectRatio: none` - auf breiten
+  Monitoren wurden Text und Kurven horizontal verzerrt, mobil passte es zufällig
+
+### Stations-Karte
+- **Sensor-Anzeigemodi je Pflanze:** Kachel, **Zonen-Balken** für pH/EC
+  (ideal/akzeptiert/schlecht, gleiche Sprache wie der Hero-VPD-Balken) und
+  **Mini-Graph** (24h-Sparkline, z.B. Temperatur)
+- **Stations-Tank:** `tank_entity`/`tank_min`/`tank_volume` als Füllstands-Zeile
+  mit Liter-Anzeige; Tank je Pflanze bleibt
+- Alter-KPI samt Option entfernt (lebt als Chip im Pflanzen-Panel)
+- **Ereignisfeld** am Kartenfuß: gestaltetes Textfeld mit Icon/Label/Chevron,
+  jetzt Standard AN (`show_event: false` zum Ausblenden)
+
 ## [2.9.0-dev]
 
 ### Fixes aus dem fünften Live-Test (Screenshot-Markierungen)
