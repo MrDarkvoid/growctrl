@@ -15,7 +15,8 @@ from typing import Callable
 import copy
 
 from .const import (
-    CLIMATE_DEFAULTS, DEFAULT_LEAF_OFFSET, DEFAULT_LUX_FACTOR, DEFAULT_OVERRIDE_MIN,
+    CLIMATE_DEFAULTS, DEFAULT_LEAF_OFFSET, DEFAULT_LEVEL_MIN, DEFAULT_LUX_FACTOR,
+    DEFAULT_MOISTURE_MIN, DEFAULT_OVERRIDE_MIN, DEFAULT_STALE_MIN,
 )
 
 MAX_LOG = 30
@@ -36,6 +37,9 @@ class StationRuntime:
     fan_switches: list[str]
     pump_247: bool = False
     lux_sensor: str | None = None        # Stations-Lichtsensor (darf geteilt sein)
+    level_sensor: str | None = None      # Fuellstand % (DWC) -> Trockenlauf-Schutz
+    moisture_sensor: str | None = None   # Bodenfeuchte % (Erde) -> bedarfsgesteuert
+    power_sensor: str | None = None      # Licht-Leistung W -> Plausibilitaet
     model: str = "Station"
 
     # Von den Integrations-Entitaeten gepflegte Einstellungen
@@ -61,6 +65,14 @@ class StationRuntime:
     override_minutes: float = DEFAULT_OVERRIDE_MIN     # 0 = sofort zurueckschalten
     override_until: datetime | None = None
 
+    # v2.5: Schutzschwellen + Zustandsflags + Watchdog
+    level_min: float = DEFAULT_LEVEL_MIN
+    moisture_min: float = DEFAULT_MOISTURE_MIN
+    pump_blocked: bool = False           # Trockenlauf-Schutz aktiv
+    power_problem: bool = False          # Licht AN ohne Leistung
+    gate_logged: bool = False            # Zelt-Gate nur einmal protokollieren
+    last_tick: datetime | None = None
+
     # DLI je Station (aus eigenem Lux-Sensor, Prognose ueber den Lichtplan)
     lux_factor: float = DEFAULT_LUX_FACTOR
     ppfd_now: float = 0.0
@@ -70,9 +82,13 @@ class StationRuntime:
 
     # Ereignis-Log (Quelle fuer Status-/Checkup-Bewertungen)
     log: list = field(default_factory=list)
+    kick: Callable[[], None] | None = None        # Sofort-Regelung nach Nutzeraktion
+    log_dirty: Callable[[], None] | None = None   # Persistenz-Hook (Store)
 
     def add_log(self, text: str, level: str = "info") -> None:
         _push_log(self.log, text, level)
+        if self.log_dirty:
+            self.log_dirty()
 
     @property
     def last_event(self) -> str | None:
@@ -101,6 +117,10 @@ class StationRuntime:
             out.append(f"{self.station}: Licht-Failsafe ausgeloest (lief zu lange)")
         if self.time_invalid:
             out.append(f"{self.station}: Lichtzeiten unvollstaendig")
+        if self.pump_blocked:
+            out.append(f"{self.station}: Pumpe gesperrt - Fuellstand unter Minimum")
+        if self.power_problem:
+            out.append(f"{self.station}: Licht AN ohne Leistungsaufnahme")
         return out
 
 
@@ -130,12 +150,25 @@ class TentRuntime:
     current_temp: float | None = None
     current_rh: float | None = None
     climate_problem: str | None = None
+    stale_minutes: float = DEFAULT_STALE_MIN
+    sensors_stale: bool = False
+    _last_temp_rh: tuple | None = None
+    _unchanged_min: float = 0.0
+    last_tick: datetime | None = None
+    gate_logged: bool = False
+
+    # VPD-Zeit im Sollband (heute)
+    band_total_s: float = 0.0
+    band_in_s: float = 0.0
+    band_date: str = ""
 
     # Ereignis-Log (Klima)
     log: list = field(default_factory=list)
 
     def add_log(self, text: str, level: str = "info") -> None:
         _push_log(self.log, text, level)
+        if self.log_dirty:
+            self.log_dirty()
 
     @property
     def last_event(self) -> str | None:
@@ -143,6 +176,10 @@ class TentRuntime:
 
     # ToDo-Anbindung (von todo-Entity gesetzt): fuegt Aufgabe hinzu, dedupliziert
     todo_add: Callable[[str], None] | None = None
+
+    # Sofort-Regelung nach Nutzeraktion (von __init__ gesetzt)
+    kick: Callable[[], None] | None = None
+    log_dirty: Callable[[], None] | None = None
 
     @property
     def slug(self) -> str:

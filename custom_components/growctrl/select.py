@@ -41,6 +41,9 @@ class StageSelect(GrowctrlEntity, SelectEntity):
 
     async def async_select_option(self, option: str):
         self.rt.stage = option
+        self.rt.add_log(f"Phase \u2192 {option}")
+        if self.rt.kick:
+            self.rt.kick()
         self.async_write_ha_state()
 
 
@@ -63,6 +66,9 @@ class ClimateModeSelect(GrowctrlEntity, SelectEntity):
 
     async def async_select_option(self, option: str):
         self.rt.climate_mode = option
+        self.rt.add_log(f"Klima-Modus \u2192 {option}")
+        if self.rt.kick:
+            self.rt.kick()
         self.async_write_ha_state()
 
 
@@ -85,4 +91,7 @@ class ClimatePhaseSelect(GrowctrlEntity, SelectEntity):
 
     async def async_select_option(self, option: str):
         self.rt.climate_phase = option
+        self.rt.add_log(f"Klima-Phase \u2192 {option}")
+        if self.rt.kick:
+            self.rt.kick()
         self.async_write_ha_state()

@@ -39,7 +39,8 @@
           "level_sensor": "Füllstand (DWC, optional)",
           "soil_moisture_sensor": "Bodenfeuchte (Erde, optional)",
           "soil_temp_sensor": "Bodentemperatur (Erde, optional)",
-          "lux_sensor": "Lichtsensor in Lux (z.B. TSL2591, für DLI – darf geteilt sein)"
+          "lux_sensor": "Lichtsensor in Lux (z.B. TSL2591, für DLI – darf geteilt sein)",
+          "power_sensor": "Licht-Leistungssensor in W (Plausibilität, optional)"
         }
       }
     },
@@ -53,6 +54,38 @@
         "generic": "Generisch",
         "dwc": "DWC (Wasserkultur)",
         "soil": "Erde"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "GROWCTRL anpassen",
+        "data": {
+          "tent_name": "Zelt-Name (z.B. gross)",
+          "temp_sensor": "Temperatursensor (optional)",
+          "hum_sensor": "Feuchtesensor (optional)",
+          "humidifier_switches": "Befeuchter-Switches",
+          "dehumidifier_switches": "Entfeuchter-Switches",
+          "exhaust_switches": "Abluft-Switches",
+          "heater_switches": "Heizungs-Switches",
+          "tent": "Zelt (auswählen oder neu eintippen)",
+          "station": "Stations-Name (z.B. main1)",
+          "light_switches": "Licht-Switches (Pflicht, dürfen mit anderen Stationen geteilt sein)",
+          "pump_switches": "Pumpen-Switches (optional)",
+          "o2_switches": "O₂-Switches (optional)",
+          "fan_switches": "Umluft-Switches (optional)",
+          "pump_247": "Pumpe 24/7 (NFT/Aeroponik)",
+          "system_type": "Systemtyp",
+          "ec_sensor": "EC-Sensor (optional)",
+          "ph_sensor": "pH-Sensor (optional)",
+          "water_temp_sensor": "Wassertemperatur (DWC, optional)",
+          "level_sensor": "Füllstand (DWC, optional)",
+          "soil_moisture_sensor": "Bodenfeuchte (Erde, optional)",
+          "soil_temp_sensor": "Bodentemperatur (Erde, optional)",
+          "lux_sensor": "Lichtsensor in Lux (z.B. TSL2591, für DLI – darf geteilt sein)",
+          "power_sensor": "Licht-Leistungssensor in W (Plausibilität, optional)"
+        }
       }
     }
   }

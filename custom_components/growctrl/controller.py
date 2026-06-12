@@ -31,6 +31,18 @@ _LOG_TEXT = {
     "override_end": lambda d: ("Automatik uebernimmt wieder den Lichtplan", "info"),
     "light_failsafe": lambda d: (f"FAILSAFE: Licht lief {d.get('on_minutes')} min -> Not-Aus", "critical"),
     "time_invalid": lambda d: ("Lichtzeiten unvollstaendig - Automatik pausiert", "warning"),
+    "gate_off": lambda d: ("Zelt deaktiviert - Station gestoppt", "warning"),
+    "gate_on": lambda d: ("Zelt wieder aktiv - Automatik laeuft", "info"),
+    "pump_blocked": lambda d: (
+        f"Pumpe gesperrt - Fuellstand {d.get('level')}% unter Minimum {d.get('min')}%", "critical"),
+    "pump_unblocked": lambda d: ("Pumpe wieder freigegeben - Fuellstand ok", "info"),
+    "power_problem": lambda d: (
+        f"Licht AN, aber nur {d.get('watt')} W Leistung - Lampe pruefen!", "critical"),
+    "soil_skip": lambda d: (
+        f"Bewaesserung uebersprungen - Bodenfeuchte {d.get('moisture')}% ausreichend", "info"),
+    "sensors_stale": lambda d: (
+        f"Klima-Sensoren eingefroren ({d.get('minuten')} min unveraendert) - sicherer Zustand", "critical"),
+    "sensors_ok": lambda d: ("Klima-Sensoren liefern wieder Werte", "info"),
 }
 
 from . import logic
@@ -104,13 +116,20 @@ class StationController(_Base):
 
     async def async_run(self) -> None:
         rt = self.rt
+        rt.last_tick = datetime.now()
 
         # Zelt-Gate: deaktiviertes Zelt stoppt alle Stationen (Aktoren aus)
         tent = self._tent()
         if tent is not None and not tent.enabled:
+            if not rt.gate_logged:
+                rt.gate_logged = True
+                self._fire("gate_off")
             await self._set_light_with_votes(False)
             await self._set_all(rt.pump_switches, False)
             return
+        if rt.gate_logged:
+            rt.gate_logged = False
+            self._fire("gate_on")
 
         if not rt.auto or rt.maintenance:
             rt.manual_override = False
@@ -192,15 +211,49 @@ class StationController(_Base):
                 rt._override_strikes = 0
                 await self._set_light_with_votes(want_light)   # Votes aktuell halten
 
-        # ── Pumpe (Trocknung: aus) ──
+        # ── Pumpe (Trocknung aus; Trockenlauf-Schutz; Erde nach Bodenfeuchte) ──
         if rt.has_pump:
             key = STAGE_KEYS.get(rt.stage, "veg")
             want_pump = logic.pump_enabled(rt.stage) and logic.pump_desired(
                 now_min, rt.pump[f"on_{key}"], rt.pump[f"off_{key}"], rt.pump_247)
+
+            # Trockenlauf-Schutz (DWC-Fuellstand)
+            level = self._num(rt.level_sensor)
+            level_ok = logic.pump_level_ok(level, rt.level_min if rt.level_sensor else None)
+            if not level_ok and not rt.pump_blocked:
+                rt.pump_blocked = True
+                self._fire("pump_blocked", level=round(level or 0, 1), min=rt.level_min)
+            elif level_ok and rt.pump_blocked:
+                rt.pump_blocked = False
+                self._fire("pump_unblocked")
+            if rt.pump_blocked:
+                want_pump = False
+
+            # Erde: nur bewaessern, wenn die Bodenfeuchte es verlangt
+            if want_pump and rt.moisture_sensor:
+                moisture = self._num(rt.moisture_sensor)
+                if not logic.soil_needs_water(moisture, rt.moisture_min):
+                    want_pump = False
+                    if self._is_on(rt.pump_switches[0]):
+                        self._fire("soil_skip", moisture=round(moisture or 0, 1))
+
             pump_was = self._is_on(rt.pump_switches[0])
             if want_pump != pump_was:
                 await self._set_all(rt.pump_switches, want_pump)
                 self._fire("pump", soll="on" if want_pump else "off")
+
+        # ── Leistungs-Plausibilitaet: Licht AN ohne Watt = Lampe defekt ──
+        if rt.power_sensor and rt.light_switches:
+            on_now = self._is_on(rt.light_switches[0])
+            on_min_dur = ((datetime.now() - rt.light_on_since).total_seconds() / 60.0
+                          if on_now and rt.light_on_since else 0.0)
+            watt = self._num(rt.power_sensor)
+            bad = logic.power_implausible(on_now, on_min_dur, watt)
+            if bad and not rt.power_problem:
+                rt.power_problem = True
+                self._fire("power_problem", watt=round(watt or 0, 1))
+            elif not bad and rt.power_problem:
+                rt.power_problem = False
 
         # ── O2 / Umluft dauerhaft AN (auch bei Trocknung: Umluft wichtig) ──
         for group, name in ((rt.o2_switches, "o2"), (rt.fan_switches, "fan")):
@@ -232,6 +285,7 @@ class TentController(_Base):
 
     async def async_run(self) -> None:
         rt = self.rt
+        rt.last_tick = datetime.now()
 
         # Messwerte einlesen (auch bei Klima AUS, fuer Sensoren/Karten)
         rt.current_temp = self._num(rt.temp_sensor)
@@ -242,12 +296,40 @@ class TentController(_Base):
         if rt.climate_on and rt.current_vpd is None:
             rt.climate_problem = "Klima aktiv, aber Temp/RH-Sensor liefert keine Werte"
 
+        # ── Stale-Erkennung: eingefrorene Klima-Sensoren ──
+        pair = (rt.current_temp, rt.current_rh)
+        if pair == rt._last_temp_rh and rt.current_vpd is not None:
+            rt._unchanged_min += 1.0
+        else:
+            rt._unchanged_min = 0.0
+            if rt.sensors_stale:
+                rt.sensors_stale = False
+                self._fire("sensors_ok")
+        rt._last_temp_rh = pair
+        if logic.sensor_stale(rt._unchanged_min, rt.stale_minutes) and not rt.sensors_stale:
+            rt.sensors_stale = True
+            self._fire("sensors_stale", minuten=int(rt._unchanged_min))
+        if rt.sensors_stale:
+            rt.climate_problem = "Klima-Sensoren eingefroren - sicherer Zustand aktiv"
+
+        # ── VPD-Zeit im Sollband (heute) ──
+        today = date.today().isoformat()
+        if rt.band_date != today:
+            rt.band_date, rt.band_total_s, rt.band_in_s = today, 0.0, 0.0
+
         if not rt.enabled:
             for grp in (rt.humidifier_switches, rt.dehumidifier_switches,
                         rt.exhaust_switches, rt.heater_switches):
                 await self._set_all(grp, False)
             return
         if not rt.climate_on:
+            return
+
+        # Sicherer Zustand bei eingefrorenen Sensoren: Befeuchter/Entfeuchter aus, Abluft an
+        if rt.sensors_stale:
+            await self._set_all(rt.humidifier_switches, False)
+            await self._set_all(rt.dehumidifier_switches, False)
+            await self._set_all(rt.exhaust_switches, True)
             return
 
         # ── Klima-Regelung: Sollwerte folgen der Phase (Auto = fuehrende Station) ──
@@ -258,6 +340,15 @@ class TentController(_Base):
         tg = rt.targets.get(phase, rt.targets["Veg"])
         humid_on = self._is_on(rt.humidifier_switches[0]) if rt.humidifier_switches else False
         dehum_on = self._is_on(rt.dehumidifier_switches[0]) if rt.dehumidifier_switches else False
+        # Sollband-Statistik (VPD- oder RH-gefuehrt)
+        if rt.current_vpd is not None:
+            rt.band_total_s += 60.0
+            metric_ok = (logic.in_band(rt.current_vpd, tg["vpd_min"], tg["vpd_max"])
+                         if rt.climate_mode == "VPD"
+                         else logic.in_band(rt.current_rh, tg["rh_min"], tg["rh_max"]))
+            if metric_ok:
+                rt.band_in_s += 60.0
+
         want_h, want_d = logic.climate_actions(
             rt.climate_mode, rt.current_vpd, rt.current_rh,
             tg["vpd_min"], tg["vpd_max"], tg["rh_min"], tg["rh_max"], humid_on, dehum_on)

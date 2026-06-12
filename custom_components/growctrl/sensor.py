@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from . import logic
@@ -26,6 +26,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
             TentVpd(entry.entry_id, rt),
             TentStatus(hass, entry.entry_id, rt),
             LastEvent(entry.entry_id, rt),
+            Watchdog(entry.entry_id, rt),
+            BandShare(entry.entry_id, rt),
         ])
         return
     ents: list[SensorEntity] = [
@@ -33,6 +35,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         PlantAge(entry.entry_id, rt),
         StageRecommendation(entry.entry_id, rt),
         LastEvent(entry.entry_id, rt),
+        Watchdog(entry.entry_id, rt),
     ]
     if rt.has_pump:
         ents.append(PumpRest(entry.entry_id, rt))
@@ -240,8 +243,48 @@ class TentStatus(_TentBase):
 
     @property
     def native_value(self) -> str:
-        return "problem" if self._all_problems() else "ok"
+        return "Problem" if self._all_problems() else "OK"
 
     @property
     def extra_state_attributes(self):
         return {**super().extra_state_attributes, "probleme": self._all_problems()}
+
+
+class Watchdog(GrowctrlEntity, SensorEntity):
+    """Zeitpunkt der letzten Regelung - Heartbeat fuer Ueberwachungs-Automationen."""
+    _attr_should_poll = False
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(self, entry_id, rt):
+        super().__init__(entry_id, rt, "watchdog", "Letzte Regelung")
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        self.async_on_remove(async_dispatcher_connect(
+            self.hass, SIGNAL_UPDATE.format(self._entry_id), self.async_write_ha_state))
+
+    @property
+    def native_value(self):
+        lt = self.rt.last_tick
+        return lt.astimezone() if lt else None
+
+
+class BandShare(_TentBase):
+    """Anteil der heutigen Klima-Laufzeit im Sollband (VPD- bzw. RH-gefuehrt)."""
+    _attr_native_unit_of_measurement = "%"
+
+    def __init__(self, entry_id, rt):
+        super().__init__(entry_id, rt, "band_share", "Zeit im Sollband heute")
+
+    @property
+    def native_value(self):
+        if self.rt.band_total_s <= 0:
+            return None
+        return round(100.0 * self.rt.band_in_s / self.rt.band_total_s, 1)
+
+    @property
+    def extra_state_attributes(self):
+        return {**super().extra_state_attributes,
+                "im_soll_h": round(self.rt.band_in_s / 3600, 2),
+                "gesamt_h": round(self.rt.band_total_s / 3600, 2),
+                "gefuehrt_nach": self.rt.climate_mode}

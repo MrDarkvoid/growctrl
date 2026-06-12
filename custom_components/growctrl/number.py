@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity, NumberMode
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
 from .entity import GrowctrlEntity
@@ -33,15 +34,15 @@ _PHASE_METRICS = [
     ("rh_min", "RH Min", 20, 95, 1, "%"),
     ("rh_max", "RH Max", 20, 95, 1, "%"),
 ]
-_PHASES = ["Seedling", "Veg", "Bloom", "Trocknung"]
+_PHASES = [(1, "Seedling"), (2, "Veg"), (3, "Bloom"), (4, "Trocknung")]
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     rt = hass.data[DOMAIN][entry.entry_id]
     if isinstance(rt, TentRuntime):
         ents = [TentNumber(entry.entry_id, rt, *d) for d in _TENT_DEFS]
-        ents += [PhaseTargetNumber(entry.entry_id, rt, ph, *m)
-                 for ph in _PHASES for m in _PHASE_METRICS]
+        ents += [PhaseTargetNumber(entry.entry_id, rt, idx, ph, *m)
+                 for idx, ph in _PHASES for m in _PHASE_METRICS]
         async_add_entities(ents)
         return
     ents = []
@@ -55,6 +56,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
     ents.append(TentNumber(entry.entry_id, rt,
                 "override_minutes", "Manuelle \u00dcbernahme", "override_minutes",
                 0, 1440, 5, "min"))
+    if rt.level_sensor:   # Trockenlauf-Schutz
+        ents.append(TentNumber(entry.entry_id, rt,
+                    "level_min", "F\u00fcllstand Minimum (Pumpensperre)", "level_min",
+                    0, 100, 1, "%"))
+    if rt.moisture_sensor:  # Erde: bedarfsgesteuerte Bewaesserung
+        ents.append(TentNumber(entry.entry_id, rt,
+                    "moisture_min", "Bodenfeuchte-Schwelle (bew\u00e4ssern unter)", "moisture_min",
+                    0, 100, 1, "%"))
     if ents:
         async_add_entities(ents)
 
@@ -121,8 +130,11 @@ class PhaseTargetNumber(GrowctrlEntity, NumberEntity):
     """Klima-Sollwert einer Phase (liest/schreibt rt.targets[phase][metric])."""
     _attr_mode = NumberMode.BOX
 
-    def __init__(self, entry_id, rt, phase, metric, label, min_v, max_v, step, unit):
-        super().__init__(entry_id, rt, f"{phase.lower()}_{metric}", f"{phase} {label}")
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, entry_id, rt, idx, phase, metric, label, min_v, max_v, step, unit):
+        # Nummerierung sorgt fuer logische Sortierung statt Alphabet (1 Seedling ... 4 Trocknung)
+        super().__init__(entry_id, rt, f"{phase.lower()}_{metric}", f"{idx} {phase} \u00b7 {label}")
         self._phase, self._metric = phase, metric
         self._attr_native_min_value = min_v
         self._attr_native_max_value = max_v

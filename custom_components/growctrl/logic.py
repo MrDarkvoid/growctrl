@@ -24,18 +24,19 @@ def parse_hhmm(value: str | None) -> int | None:
 
 
 def light_desired(now_min: int, on_min: int, off_min: int) -> bool:
-    """SOLL Licht mit Mitternachtsueberlauf (z.B. AN 22:00, AUS 06:00). on==off -> aus."""
+    """SOLL Licht mit Mitternachtsueberlauf (z.B. AN 22:00, AUS 06:00).
+    AN == AUS bedeutet 24-h-Licht (z.B. 12:00 -> 12:00)."""
     if on_min == off_min:
-        return False
+        return True
     if on_min < off_min:
         return on_min <= now_min < off_min
     return now_min >= on_min or now_min < off_min
 
 
 def light_rest_min(now_min: int, on_min: int, off_min: int) -> int:
-    """Restzeit bis zur naechsten Schaltgrenze (Verhalten identisch zu den Jinja-Sensoren)."""
+    """Restzeit bis zur naechsten Schaltgrenze. 24-h-Licht (AN==AUS) -> volle 1440."""
     if on_min == off_min:
-        return 0
+        return 24 * 60
     if on_min < off_min:
         if now_min < on_min:
             return on_min - now_min
@@ -137,8 +138,9 @@ def dli_increment(lux: float, factor: float, seconds: float) -> float:
 
 def planned_light_seconds(on_min: int, off_min: int) -> int:
     """Geplante Lichtdauer pro Tag in Sekunden aus dem Stations-Lichtplan
-    (inkl. Mitternachtsueberlauf, z.B. 18:00 -> 12:00)."""
-    return ((off_min - on_min) % 1440) * 60
+    (inkl. Mitternachtsueberlauf; AN == AUS = 24 h Dauerlicht)."""
+    diff = (off_min - on_min) % 1440
+    return (diff if diff else 1440) * 60
 
 
 def dli_forecast(dli_today: float, lit_seconds_today: float,
@@ -202,3 +204,40 @@ def effective_climate_phase(selected: str, station_stages: list[str],
         if idx > best_idx:
             best_idx, best = idx, s
     return stage_to_climate.get(best, "Veg")
+
+
+# ════════════════ v2.5: Schutzfunktionen + Auswertung ════════════════
+
+
+def sensor_stale(unchanged_minutes: float | None, max_minutes: float) -> bool:
+    """True, wenn ein Sensorwert sich verdaechtig lange nicht geaendert hat."""
+    return unchanged_minutes is not None and unchanged_minutes >= max_minutes
+
+
+def pump_level_ok(level: float | None, level_min: float | None) -> bool:
+    """Trockenlauf-Schutz: Pumpe nur bei ausreichendem Fuellstand.
+    Ohne Sensor/Schwelle (None) wird nicht blockiert."""
+    if level is None or level_min is None:
+        return True
+    return level >= level_min
+
+
+def soil_needs_water(moisture: float | None, moisture_min: float | None) -> bool:
+    """Erde: bewaessern nur, wenn Bodenfeuchte unter der Schwelle liegt.
+    Ohne Sensor/Schwelle -> reiner Intervallbetrieb (True)."""
+    if moisture is None or moisture_min is None:
+        return True
+    return moisture < moisture_min
+
+
+def power_implausible(is_on: bool, on_minutes: float, power_w: float | None,
+                      min_w: float = 5.0, grace_min: float = 2.0) -> bool:
+    """Licht meldet AN, zieht aber (nach Anlaufzeit) keine Leistung -> defekt/gezogen."""
+    if not is_on or power_w is None:
+        return False
+    return on_minutes >= grace_min and power_w < min_w
+
+
+def in_band(value: float | None, lo: float, hi: float) -> bool:
+    """Wert innerhalb des Sollbands?"""
+    return value is not None and lo <= value <= hi

@@ -59,6 +59,7 @@ def _station_schema(tents: list[str]) -> vol.Schema:
         vol.Optional(CONF_TEMP_SENSOR): _sensor(),
         vol.Optional(CONF_HUM_SENSOR): _sensor(),
         vol.Optional(CONF_LUX_SENSOR): _sensor(),
+        vol.Optional(CONF_POWER_SENSOR): _sensor(),
         vol.Optional(CONF_PUMP_247, default=False): bool,
         vol.Required(CONF_SYSTEM_TYPE, default=SYSTEM_GENERIC): selector.SelectSelector(
             selector.SelectSelectorConfig(
@@ -78,6 +79,10 @@ class GrowctrlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Zelt- und Stations-Entries."""
 
     VERSION = 2
+
+    @staticmethod
+    def async_get_options_flow(config_entry):
+        return GrowctrlOptionsFlow()
 
     async def async_step_user(self, user_input=None):
         return self.async_show_menu(step_id="user", menu_options=["tent", "station"])
@@ -109,3 +114,28 @@ class GrowctrlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                       CONF_ENTRY_TYPE: ENTRY_STATION},
             )
         return self.async_show_form(step_id="station", data_schema=_station_schema(tents))
+
+
+class GrowctrlOptionsFlow(config_entries.OptionsFlow):
+    """Aktoren/Sensoren nachtraeglich aendern - ohne Loeschen/Neuanlegen."""
+
+    async def async_step_init(self, user_input=None):
+        entry = self.config_entry
+        is_tent = entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TENT
+        if user_input is not None:
+            new_data = {**entry.data, **user_input}
+            self.hass.config_entries.async_update_entry(entry, data=new_data)
+            return self.async_create_entry(title="", data={})
+
+        base = _tent_schema() if is_tent else _station_schema([entry.data.get(CONF_TENT, "")])
+        # Vorbelegen mit den aktuellen Werten; Name/Zelt nicht aenderbar
+        skip = {CONF_TENT_NAME} if is_tent else {CONF_TENT, CONF_STATION}
+        schema = {}
+        for key, validator in base.schema.items():
+            k = getattr(key, "schema", key)
+            if k in skip:
+                continue
+            default = entry.data.get(k, key.default() if key.default is not vol.UNDEFINED else None)
+            marker = vol.Optional(k, default=default) if default is not None else vol.Optional(k)
+            schema[marker] = validator
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))
