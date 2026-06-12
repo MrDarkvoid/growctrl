@@ -69,6 +69,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class PumpNumber(GrowctrlEntity, NumberEntity):
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_native_min_value = 1
     _attr_native_step = 1
     _attr_native_unit_of_measurement = "min"
@@ -98,6 +99,7 @@ class PumpNumber(GrowctrlEntity, NumberEntity):
 
 
 class TentNumber(GrowctrlEntity, NumberEntity):
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_mode = NumberMode.BOX
 
     def __init__(self, entry_id, rt, role, name, attr, min_v, max_v, step, unit):

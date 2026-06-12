@@ -84,6 +84,6 @@ DEFAULT_OVERRIDE_MIN = 60.0
 
 # ── v2.5: Schutz & Auswertung ──
 CONF_POWER_SENSOR = "power_sensor"        # Licht-Leistungsmessung (Plausibilitaet)
-DEFAULT_STALE_MIN = 15.0                  # Klima-Sensor eingefroren nach X min
+DEFAULT_STALE_MIN = 30.0                  # Klima-Sensor eingefroren nach X min
 DEFAULT_LEVEL_MIN = 25.0                  # Trockenlauf-Schutz: Mindest-Fuellstand %
 DEFAULT_MOISTURE_MIN = 35.0               # Erde: bewaessern unter X % Bodenfeuchte

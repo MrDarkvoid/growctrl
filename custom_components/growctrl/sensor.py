@@ -11,6 +11,7 @@ from datetime import datetime
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.entity import EntityCategory
 
 from . import logic
 from .const import (DATA_STATIONS, DLI_TARGETS, DOMAIN, SIGNAL_UPDATE,
@@ -72,6 +73,27 @@ class LightRest(_RestBase):
         off = logic.off_min_for_stage(rt.stage, rt.light_off_sv_min, rt.light_off_bloom_min)
         return logic.light_rest_min(self._now_min(), rt.light_on_min, off)
 
+    @property
+    def extra_state_attributes(self):
+        attrs = dict(super().extra_state_attributes)
+        rt = self.rt
+        now = datetime.now()
+        now_min = now.hour * 60 + now.minute
+        on_min = logic.parse_hhmm(rt.times.get("light_on"))
+        off_min = logic.parse_hhmm(rt.times.get(
+            "light_off_sv" if rt.stage in ("Seedling", "Veg") else "light_off_bloom"))
+        if on_min is None or off_min is None:
+            return attrs
+        an, rest, dur = logic.light_phase_progress(now_min, on_min, off_min)
+        attrs.update({
+            "zustand": "an" if an else "aus",
+            "text": f"Licht {'an' if an else 'aus'} f\u00fcr {logic.fmt_duration_de(rest)}",
+            "anteil": round(rest / dur, 3),
+            "phasendauer_min": dur,
+        })
+        return attrs
+
+
 
 class PumpRest(_RestBase):
     def __init__(self, entry_id, rt):
@@ -95,6 +117,18 @@ class PlantAge(_RestBase):
     @property
     def native_value(self) -> int | None:
         return self.rt.age_days
+
+    @property
+    def extra_state_attributes(self):
+        d = self.native_value
+        attrs = dict(super().extra_state_attributes)
+        if d is not None:
+            week, day = divmod(int(d), 7)
+            attrs.update({"woche": week + 1, "tag_in_woche": day + 1,
+                          "text_wochen": f"Woche {week + 1} \u00b7 Tag {day + 1}",
+                          "text_tage": f"{int(d)} Tage"})
+        return attrs
+
 
 
 class StageRecommendation(_RestBase):
@@ -251,9 +285,10 @@ class TentStatus(_TentBase):
 
 
 class Watchdog(GrowctrlEntity, SensorEntity):
-    """Zeitpunkt der letzten Regelung - Heartbeat fuer Ueberwachungs-Automationen."""
+    """Zeitpunkt der letzten Regelung - Heartbeat f\u00fcr \u00dcberwachungs-Automationen."""
     _attr_should_poll = False
     _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, entry_id, rt):
         super().__init__(entry_id, rt, "watchdog", "Letzte Regelung")

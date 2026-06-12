@@ -37,7 +37,7 @@ class StationRuntime:
     fan_switches: list[str]
     pump_247: bool = False
     lux_sensor: str | None = None        # Stations-Lichtsensor (darf geteilt sein)
-    level_sensor: str | None = None      # Fuellstand % (DWC) -> Trockenlauf-Schutz
+    level_sensor: str | None = None      # Füllstand % (DWC) -> Trockenlauf-Schutz
     moisture_sensor: str | None = None   # Bodenfeuchte % (Erde) -> bedarfsgesteuert
     power_sensor: str | None = None      # Licht-Leistung W -> Plausibilitaet
     model: str = "Station"
@@ -114,11 +114,11 @@ class StationRuntime:
         if self.manual_override:
             out.append(f"{self.station}: Manueller Eingriff aktiv (Automatik pausiert)")
         if self.light_failsafe:
-            out.append(f"{self.station}: Licht-Failsafe ausgeloest (lief zu lange)")
+            out.append(f"{self.station}: Licht-Failsafe ausgel\u00f6st (lief zu lange)")
         if self.time_invalid:
-            out.append(f"{self.station}: Lichtzeiten unvollstaendig")
+            out.append(f"{self.station}: Lichtzeiten unvollständig")
         if self.pump_blocked:
-            out.append(f"{self.station}: Pumpe gesperrt - Fuellstand unter Minimum")
+            out.append(f"{self.station}: Pumpe gesperrt - Füllstand unter Minimum")
         if self.power_problem:
             out.append(f"{self.station}: Licht AN ohne Leistungsaufnahme")
         return out
@@ -179,6 +179,7 @@ class TentRuntime:
 
     # Sofort-Regelung nach Nutzeraktion (von __init__ gesetzt)
     kick: Callable[[], None] | None = None
+    kick_stations: Callable[[], None] | None = None   # stoesst alle Stationen des Zelts an
     log_dirty: Callable[[], None] | None = None
 
     @property

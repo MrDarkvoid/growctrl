@@ -10,6 +10,7 @@ from __future__ import annotations
 from datetime import time as dt_time
 
 from homeassistant.components.time import TimeEntity
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
 from .entity import GrowctrlEntity
@@ -28,6 +29,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class LightTime(GrowctrlEntity, TimeEntity):
+    _attr_entity_category = EntityCategory.CONFIG
     def __init__(self, entry_id, rt, role, name, attr):
         super().__init__(entry_id, rt, role, name)
         self._rt_attr = attr

@@ -10,6 +10,7 @@ from __future__ import annotations
 from datetime import date
 
 from homeassistant.components.date import DateEntity
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
 from .entity import GrowctrlEntity
@@ -24,6 +25,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class GerminationDate(GrowctrlEntity, DateEntity):
+    _attr_entity_category = EntityCategory.CONFIG
     def __init__(self, entry_id, rt):
         super().__init__(entry_id, rt, "germination", "Keimstart")
 

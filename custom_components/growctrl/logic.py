@@ -180,8 +180,14 @@ def stage_recommendation(age_days: int | None, stage: str,
             rec = s
             break
     if order.index(rec) > order.index(stage):
-        return rec, (f"Tag {age_days}: Wechsel zu '{rec}' pruefen "
-                     f"(Richtwert, sortenabhaengig)")
+        return rec, (f"Tag {age_days}: Wechsel zu '{rec}' pr\u00fcfen "
+                     f"(Richtwert, sortenabh\u00e4ngig)")
+    if order.index(rec) < order.index(stage):
+        # Kein Rueckwechsel erzwingen - aber ehrlich darauf hinweisen
+        limit = max_days.get(rec)
+        bis = f" (bis Tag {limit})" if limit else ""
+        return stage, (f"Tag {age_days}: laut Richtwert noch '{rec}'{bis} - "
+                       f"Phase wurde manuell vorgezogen")
     return stage, None
 
 
@@ -241,3 +247,26 @@ def power_implausible(is_on: bool, on_minutes: float, power_w: float | None,
 def in_band(value: float | None, lo: float, hi: float) -> bool:
     """Wert innerhalb des Sollbands?"""
     return value is not None and lo <= value <= hi
+
+
+def fmt_duration_de(minutes: float | None) -> str:
+    """Minuten -> '5 h 40 min' / '45 min' (deutsch, lesbar)."""
+    if minutes is None:
+        return "-"
+    m = max(0, int(round(minutes)))
+    h, rest = divmod(m, 60)
+    if h and rest:
+        return f"{h} h {rest} min"
+    return f"{h} h" if h else f"{rest} min"
+
+
+def light_phase_progress(now_min: int, on_min: int, off_min: int) -> tuple[bool, int, int]:
+    """(licht_an, rest_minuten, phasendauer_minuten) der AKTUELLEN Phase (AN- oder AUS-Fenster).
+    24-h-Licht (AN==AUS): immer an, Rest = Restminuten des Tages."""
+    if on_min == off_min:
+        return True, 1440 - now_min, 1440
+    on = light_desired(now_min, on_min, off_min)
+    rest = light_rest_min(now_min, on_min, off_min)
+    light_dur = (off_min - on_min) % 1440
+    dur = light_dur if on else 1440 - light_dur
+    return on, rest, max(dur, 1)

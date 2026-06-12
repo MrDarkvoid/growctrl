@@ -28,20 +28,20 @@ _LOG_TEXT = {
     "exhaust": lambda d: ("Abluft-Boost AN" if d.get("soll") == "on" else "Abluft-Boost AUS", "info"),
     "manual_override": lambda d: (
         f"Manueller Eingriff erkannt - Automatik pausiert {d.get('minuten')} min", "warning"),
-    "override_end": lambda d: ("Automatik uebernimmt wieder den Lichtplan", "info"),
+    "override_end": lambda d: ("Automatik \u00fcbernimmt wieder den Lichtplan", "info"),
     "light_failsafe": lambda d: (f"FAILSAFE: Licht lief {d.get('on_minutes')} min -> Not-Aus", "critical"),
-    "time_invalid": lambda d: ("Lichtzeiten unvollstaendig - Automatik pausiert", "warning"),
+    "time_invalid": lambda d: ("Lichtzeiten unvollst\u00e4ndig - Automatik pausiert", "warning"),
     "gate_off": lambda d: ("Zelt deaktiviert - Station gestoppt", "warning"),
-    "gate_on": lambda d: ("Zelt wieder aktiv - Automatik laeuft", "info"),
+    "gate_on": lambda d: ("Zelt wieder aktiv - Automatik l\u00e4uft", "info"),
     "pump_blocked": lambda d: (
-        f"Pumpe gesperrt - Fuellstand {d.get('level')}% unter Minimum {d.get('min')}%", "critical"),
-    "pump_unblocked": lambda d: ("Pumpe wieder freigegeben - Fuellstand ok", "info"),
+        f"Pumpe gesperrt - F\u00fcllstand {d.get('level')}% unter Minimum {d.get('min')}%", "critical"),
+    "pump_unblocked": lambda d: ("Pumpe wieder freigegeben - F\u00fcllstand OK", "info"),
     "power_problem": lambda d: (
-        f"Licht AN, aber nur {d.get('watt')} W Leistung - Lampe pruefen!", "critical"),
+        f"Licht AN, aber nur {d.get('watt')} W Leistung - Lampe pr\u00fcfen!", "critical"),
     "soil_skip": lambda d: (
-        f"Bewaesserung uebersprungen - Bodenfeuchte {d.get('moisture')}% ausreichend", "info"),
+        f"Bew\u00e4sserung \u00fcbersprungen - Bodenfeuchte {d.get('moisture')}% ausreichend", "info"),
     "sensors_stale": lambda d: (
-        f"Klima-Sensoren eingefroren ({d.get('minuten')} min unveraendert) - sicherer Zustand", "critical"),
+        f"Klima-Sensoren eingefroren ({d.get('minuten')} min unverändert) - sicherer Zustand", "critical"),
     "sensors_ok": lambda d: ("Klima-Sensoren liefern wieder Werte", "info"),
 }
 
@@ -126,6 +126,8 @@ class StationController(_Base):
                 self._fire("gate_off")
             await self._set_light_with_votes(False)
             await self._set_all(rt.pump_switches, False)
+            await self._set_all(rt.o2_switches, False)
+            await self._set_all(rt.fan_switches, False)
             return
         if rt.gate_logged:
             rt.gate_logged = False
@@ -187,7 +189,7 @@ class StationController(_Base):
                 # damit geteilte Lichter den manuellen Wunsch mittragen.
                 await self._set_light_with_votes(light_was)
                 if rt.has_pump:
-                    pass  # Pumpe laeuft regulaer weiter (unten)
+                    pass  # Pumpe läuft regulaer weiter (unten)
                 # Licht-Regelung in diesem Zyklus aussetzen:
                 want_light = light_was
 
@@ -217,7 +219,7 @@ class StationController(_Base):
             want_pump = logic.pump_enabled(rt.stage) and logic.pump_desired(
                 now_min, rt.pump[f"on_{key}"], rt.pump[f"off_{key}"], rt.pump_247)
 
-            # Trockenlauf-Schutz (DWC-Fuellstand)
+            # Trockenlauf-Schutz (DWC-Füllstand)
             level = self._num(rt.level_sensor)
             level_ok = logic.pump_level_ok(level, rt.level_min if rt.level_sensor else None)
             if not level_ok and not rt.pump_blocked:

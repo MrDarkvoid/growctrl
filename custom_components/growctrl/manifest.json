@@ -1,7 +1,7 @@
 {
   "domain": "growctrl",
   "name": "GROWCTRL",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "documentation": "https://github.com/MrDarkvoid/growctrl",
   "issue_tracker": "https://github.com/MrDarkvoid/growctrl/issues",
   "codeowners": [

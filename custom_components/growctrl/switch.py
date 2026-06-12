@@ -48,6 +48,8 @@ class _RtSwitch(GrowctrlEntity, SwitchEntity):
         self.rt.add_log(f"{self.name} AN")
         if self.rt.kick:
             self.rt.kick()
+        if getattr(self.rt, "kick_stations", None):
+            self.rt.kick_stations()
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
@@ -55,4 +57,6 @@ class _RtSwitch(GrowctrlEntity, SwitchEntity):
         self.rt.add_log(f"{self.name} AUS", "warning" if self._rt_attr == "enabled" else "info")
         if self.rt.kick:
             self.rt.kick()
+        if getattr(self.rt, "kick_stations", None):
+            self.rt.kick_stations()
         self.async_write_ha_state()

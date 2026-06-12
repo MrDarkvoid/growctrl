@@ -88,6 +88,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Sofort-Regelung nach Nutzeraktionen (Automatik AN, Phase gewechselt, ...)
     rt.kick = lambda: hass.async_create_task(_tick(None))
+    if entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TENT:
+        # Zelt-Schaltungen sollen die Stationen SOFORT mitziehen (nicht erst im Minutentakt)
+        def _kick_stations() -> None:
+            for srt in root.get(DATA_STATIONS, {}).get(rt.tent, {}).values():
+                if srt.kick:
+                    srt.kick()
+        rt.kick_stations = _kick_stations
 
     entry.async_on_unload(async_track_time_interval(hass, _tick, timedelta(minutes=1)))
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
