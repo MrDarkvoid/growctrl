@@ -25,7 +25,8 @@ interface HeroConfig {
 
 export class GrowctrlHeroCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
-  static properties = { ...GrowctrlBaseCard.properties, _hist: { state: true } };
+  static properties = { ...GrowctrlBaseCard.properties, _hist: { state: true }, _logoErr: { state: true } };
+  private _logoErr = false;
   private _hist: number[] = [];
   private _timer?: number;
 
@@ -104,8 +105,15 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
         style="${cardVars(c.style)};position:relative">
       <div class="hdr">
         <div style="display:flex;align-items:center;gap:11px">
-          ${c.logo ? html`<img src=${c.logo} alt="Logo"
-            style="width:42px;height:42px;border-radius:11px;object-fit:contain;background:rgba(255,255,255,.92);padding:3px" />` : nothing}
+          ${c.logo && !this._logoErr ? html`<img src=${c.logo} alt="Logo"
+            @error=${() => { this._logoErr = true; }}
+            style="width:42px;height:42px;border-radius:11px;object-fit:contain;background:rgba(255,255,255,.92);padding:3px" />`
+          : html`<div style="width:42px;height:42px;border-radius:11px;flex-shrink:0;
+              display:flex;align-items:center;justify-content:center;
+              background:linear-gradient(135deg, rgba(77,255,195,.25), rgba(52,209,123,.12));
+              border:1px solid rgba(77,255,195,.35)">
+              <ha-icon icon="mdi:sprout" style="--mdc-icon-size:24px;color:#4DFFC3"></ha-icon>
+            </div>`}
           <div>
             <div class="title">${c.title ?? `GROWCTRL \u00b7 ${c.tent}`}</div>
             ${phaseEff ? html`<div class="subtitle">Klima-Phase ${phaseEff}</div>` : nothing}

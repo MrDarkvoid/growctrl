@@ -55,7 +55,7 @@ export class GrowctrlMetricCard extends GrowctrlBaseCard {
         style=${cardVars(c.style)}>
       <div class="hdr">
         <div>
-          <div class="lbl" style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);font-weight:700">
+          <div class="lbl" style="font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:rgba(255,255,255,.62);font-weight:700">
             ${c.name ?? this.friendly(c.entity)}</div>
           <button class="gc" @click=${() => this.moreInfo(c.entity)}>
             <span class="val" style="font-size:36px;font-weight:800;letter-spacing:-1px;color:${color}">
@@ -72,7 +72,7 @@ export class GrowctrlMetricCard extends GrowctrlBaseCard {
               ${v! < (c.min ?? -Infinity) ? "\u25BC ZU NIEDRIG" : "\u25B2 ZU HOCH"}</div>` : nothing}
           </div>` : nothing}
       </div>
-      <div style="margin-top:6px">
+      <div style="margin-top:14px">
         ${lineChart([{ data: this._hist, color: bad ? THEME.crit : "#4DFFC3" }],
           { h: c.height ?? 110, band: { min: c.min, max: c.max }, grid: 3 })}
       </div>

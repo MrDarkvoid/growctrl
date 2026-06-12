@@ -65,7 +65,9 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
               <span style="font-size:13px;font-weight:800">\u{1F331} ${p.name}</span>
               ${p.strain ? html`<span style="font-size:10px;color:rgba(255,255,255,.55)">${p.strain}</span>` : nothing}
             </div>
-            ${age !== null ? html`<div class="lbl" style="margin-top:4px;color:rgba(255,255,255,.7)">${fmtAge(age)} \u00b7 Tag ${age + 1}</div>` : nothing}
+            ${age !== null ? html`<span style="display:inline-block;margin-top:5px;padding:2px 9px;
+              border-radius:7px;font-size:11.5px;font-weight:800;color:#4DFFC3;
+              background:rgba(77,255,195,.12);border:1px solid rgba(77,255,195,.3)">${fmtAge(age)}</span>` : nothing}
             ${(p.sensors ?? []).map(raw => { const s = typeof raw === "string" ? { entity: raw } : raw; return html`
               <button class="gc" style="display:flex;justify-content:space-between;width:100%;font-size:11px;margin-top:4px;color:rgba(255,255,255,.75)"
                 @click=${() => this.moreInfo(s.entity)}>

@@ -23,7 +23,8 @@ interface StationConfig {
   show_age?: boolean;       // Alter-KPI (Standard aus - gehoert eher zur Pflanzen-Karte)
   show_event?: boolean;     // Ereigniszeile am Kartenfuss (Standard aus)
   plants?: Array<{ name: string; strain?: string; germination_helper?: string;
-    sensors?: string[]; image?: string }>;   // Pflanzen-Tabs direkt in der Station
+    sensors?: string[]; image?: string;
+    tank_entity?: string; tank_min?: number }>;   // Pflanzen-Tabs inkl. Tank je Pflanze
   type: string; tent: string; station: string; name?: string;
   show_settings?: boolean; overrides?: GcOverrides; style?: StyleConfig;
 }
@@ -246,28 +247,59 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
             color:${pi === i ? THEME.ok : "rgba(255,255,255,.55)"}"
           @click=${() => { this._tab = pi; }}>\ud83c\udf31 ${pp.name}</button>`)}
       </div>
-      <div class="tile" style="margin-top:8px">
-        <div style="display:flex;align-items:center;gap:12px">
-          ${pl.image ? html`<img src="${pl.image}" style="width:52px;height:52px;border-radius:12px;
-              object-fit:cover;border:1px solid rgba(255,255,255,.15)"/>` : nothing}
+      <div class="tile" style="margin-top:8px;padding:14px;
+          background:linear-gradient(145deg, rgba(77,255,195,.07), rgba(0,0,0,.22))">
+        <div style="display:flex;align-items:center;gap:14px">
+          ${pl.image ? html`<img src="${pl.image}" style="width:64px;height:64px;border-radius:16px;
+              object-fit:cover;border:1.5px solid rgba(77,255,195,.35);flex-shrink:0"/>`
+          : html`<div style="width:64px;height:64px;border-radius:16px;flex-shrink:0;
+              display:flex;align-items:center;justify-content:center;
+              background:linear-gradient(135deg, rgba(77,255,195,.22), rgba(52,209,123,.08));
+              border:1.5px solid rgba(77,255,195,.3)">
+              <ha-icon icon="mdi:sprout" style="--mdc-icon-size:32px;color:#4DFFC3"></ha-icon></div>`}
           <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:800">${pl.name}</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.6)">
-              ${pl.strain ?? ""}${pl.strain && age !== null ? " \u00b7 " : ""}${age !== null ? `${fmtAge(age)} \u00b7 Tag ${age + 1}` : ""}</div>
+            <div style="font-size:16.5px;font-weight:800;letter-spacing:-.2px">${pl.name}</div>
+            ${pl.strain ? html`<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:1px">${pl.strain}</div>` : nothing}
+            ${age !== null ? html`<span style="display:inline-block;margin-top:5px;padding:3px 10px;
+                border-radius:8px;font-size:11.5px;font-weight:800;color:#4DFFC3;
+                background:rgba(77,255,195,.12);border:1px solid rgba(77,255,195,.3)">${fmtAge(age)}</span>` : nothing}
           </div>
         </div>
         ${pl.sensors?.length ? html`
-          <div class="kpis cols-${Math.min(3, Math.max(2, pl.sensors.length))}" style="margin-top:10px">
+          <div class="kpis cols-${Math.min(3, Math.max(2, pl.sensors.length))}" style="margin-top:12px">
             ${pl.sensors.map(se => {
               const v = num(this.st(se));
-              return html`<div class="tile" style="background:rgba(0,0,0,.18)">
+              return html`<button class="gc tile" style="background:rgba(0,0,0,.22);text-align:center"
+                  @click=${() => this.moreInfo(se)}>
                 <div class="lbl">${this.friendly(se)}</div>
-                <div style="font-size:18px;font-weight:800">${v !== null ? v : (this.st(se) ?? "\u2013")}
-                  <span class="unit">${this.unit(se)}</span></div>
-              </div>`;
+                <div style="font-size:22px;font-weight:800;letter-spacing:-.4px;margin-top:2px">
+                  ${v !== null ? v : (this.st(se) ?? "\u2013")}<span class="unit">${this.unit(se)}</span></div>
+              </button>`;
             })}
           </div>` : nothing}
+        ${this.plantTank(pl)}
       </div>`;
+  }
+
+  /** Tank je Pflanze: Fuellstands-Balken (rot unter Mindeststand). */
+  private plantTank(pl: { tank_entity?: string; tank_min?: number }) {
+    if (!pl.tank_entity) return nothing;
+    const pct = Math.min(100, Math.max(0, num(this.st(pl.tank_entity)) ?? 0));
+    const minP = pl.tank_min ?? 30;
+    const low = pct < minP;
+    const col = low ? "#FF6B6B" : "#5BC8EF";
+    return html`<div style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="lbl">Tank</span>
+        <span style="font-size:14px;font-weight:800;color:${col}">${pct.toFixed(0)} %
+          ${low ? html`<span style="font-size:10.5px;font-weight:800;color:#FF6B6B"> \u00b7 NACHF\u00dcLLEN</span>` : nothing}</span>
+      </div>
+      <div style="height:9px;border-radius:5px;background:rgba(255,255,255,.08);margin-top:5px;overflow:hidden;position:relative">
+        <div style="height:100%;width:${pct}%;border-radius:5px;transition:width .6s;
+          background:linear-gradient(90deg, ${col}, ${col}cc);box-shadow:0 0 8px ${col}55"></div>
+        <div style="position:absolute;top:-1px;bottom:-1px;left:${minP}%;width:2px;background:rgba(255,255,255,.45)"></div>
+      </div>
+    </div>`;
   }
 }
 customElements.define("growctrl-station-card", GrowctrlStationCard);

@@ -1,5 +1,26 @@
 # Changelog – GROWCTRL
 
+## [2.9.0-dev]
+
+### Fixes aus dem fünften Live-Test (Screenshot-Markierungen)
+- **„Warum wird alles als Warnung angezeigt?“ gelöst:** `schweregrad` am
+  „Letztes Ereignis“-Sensor war der SCHLECHTESTE Level des ganzen Verlaufs -
+  dadurch erbte „Umluft AN“ die Warnfarbe einer älteren Meldung. Jetzt:
+  `schweregrad` = letzter Eintrag, `schweregrad_verlauf` = Historie-Ampel
+- **Hero-Logo:** Fallback-Sprout-Badge statt kaputtem Bild (auch bei Ladefehler);
+  Anleitung für `/local/growctrl/logo.png` im Karten-README
+- **Charts entwaschen:** dezentere Verlaufsfüllung, kräftigere Linie, hellere
+  und größere Achsen, sichtbareres Grid; Metric-Karte: Wert kollidiert nicht
+  mehr mit der Y-Achse
+
+### Pflanzen im Mittelpunkt
+- **Pflanzen-Panel gross & hübsch:** 64-px-Bild/Sprout-Badge, Alters-Chip
+  (Doppelanzeige „4 Tage · Tag 5“ entfernt), antippbare 22-px-Sensor-Kacheln
+- **Tank je Pflanze:** `tank_entity`/`tank_min` mit Füllstands-Balken und
+  Mindeststand-Markierung (rot + NACHFÜLLEN unter der Schwelle)
+- Karten-Reduktion dokumentiert: empfohlenes Set Hero + Station(+Tabs) + Status;
+  Plants-Karte als Legacy markiert, EC/PH-Einzelkarten entfallen
+
 ## [2.8.0-dev]
 
 ### Fixes aus dem vierten Live-Test

@@ -29,6 +29,8 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       SEL.entity("germination_helper", "Keimstart-Entity (date, optional)", "date"),
       SEL.entities("sensors", "Sensoren dieser Pflanze (optional)", "sensor"),
       SEL.text("image", "Bild-URL (optional)"),
+      SEL.entity("tank_entity", "Tank-F\u00fcllstand in % (optional)", "sensor"),
+      SEL.num("tank_min", "Tank-Mindeststand % (Standard 30)", 0, 100),
     ];
     return html`${this.form(main)}
       ${this.list({ key: "plants", rowSchema: plantRow, title: "Pflanzen (Tabs in der Karte)",

@@ -59,9 +59,9 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
       const v = min + ((max - min) * gi) / grid;
       return svg`
         <line x1="${PADL}" y1="${Y(v)}" x2="${w - PADR}" y2="${Y(v)}"
-          stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+          stroke="rgba(255,255,255,.10)" stroke-width="1"/>
         <text x="${PADL - 4}" y="${Y(v) + 3}" text-anchor="end"
-          font-size="9" fill="rgba(255,255,255,.55)">${fmt(v)}</text>`;
+          font-size="9.5" fill="rgba(255,255,255,.68)">${fmt(v)}</text>`;
     })}
     ${series.map((s, si) => {
       if (s.data.length < 2) return nothing;
@@ -72,14 +72,14 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
       return svg`
         <defs>
           <linearGradient id="${gid}-${si}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="${s.color}" stop-opacity=".32"/>
+            <stop offset="0%" stop-color="${s.color}" stop-opacity=".18"/>
             <stop offset="100%" stop-color="${s.color}" stop-opacity="0"/>
           </linearGradient>
         </defs>
         ${s.fill !== false ? svg`<path
           d="${path} L${lx},${h - PADB} L${PADL},${h - PADB} Z"
           fill="url(#${gid}-${si})"/>` : nothing}
-        <path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.2"
+        <path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.4"
           stroke-linejoin="round" stroke-linecap="round"/>
         <circle cx="${lx}" cy="${ly}" r="6" fill="${s.color}" opacity=".18"/>
         <circle cx="${lx}" cy="${ly}" r="3" fill="${s.color}"/>
