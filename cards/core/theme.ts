@@ -122,8 +122,8 @@ export const sharedStyles = css`
     box-shadow: 0 0 0 1px rgba(255,157,157,.24), 0 12px 32px -14px rgba(255,157,157,.34);
   }
 
-  .clickable, button.gc { cursor: pointer; }
-  button.gc { all: unset; cursor: pointer; touch-action: manipulation; }
+  .clickable, .gc { cursor: pointer; }
+  .gc { all: unset; cursor: pointer; touch-action: manipulation; box-sizing: border-box; }
   :focus-visible { outline: 2.5px solid var(--gc-accent); outline-offset: 2px; border-radius: 8px; }
   button { transition: transform .16s cubic-bezier(.2,.9,.3,1.2), border-color .16s, background .16s, color .16s; }
   button:active { transform: scale(.975); }

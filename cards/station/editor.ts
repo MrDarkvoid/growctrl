@@ -4,7 +4,7 @@
  * Zweck   : GUI-Editor: Zelt + Station, Anzeigename, Stations-Tank, Aktoren und
  *           Pflanzen-Tabs mit DEDIZIERTEN Feldern fuer Temperatur, Feuchtigkeit,
  *           pH und EC (jede Domain waehlbar -> number/input_number = setzbar).
- * Version : 3.2.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
+ * Version : 3.3.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -45,6 +45,7 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       SEL.entity("humidity_entity", "\ud83d\udca7 Feuchtigkeit (Sensor / input_number)"),
       SEL.entity("ph_entity", "\u2697\ufe0f pH (Sensor / input_number)"),
       SEL.entity("ec_entity", "\u26a1 EC (Sensor / input_number)"),
+      SEL.entities("sensors", "\u2795 Weitere Sensoren (werden als Felder gezeigt)"),
       SEL.entity("tank_entity", "Tank-F\u00fcllstand % (optional)", "sensor"),
       SEL.num("tank_min", "Tank-Mindeststand % (Standard 30)", 0, 100),
     ];

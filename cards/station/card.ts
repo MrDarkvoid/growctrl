@@ -6,7 +6,7 @@
  *           (einheitlicher Stil, voller Breite), optionales Aktor-Raster (4 nebenei-
  *           nander), Pflanzen-Tabs mit Sensor-Anzeige wert|zone|graph, Ereigniszeile,
  *           Diagnose-Badges, Einstellungen. Entity-IDs aus tent+station (overrides ok).
- * Version : 3.0.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
+ * Version : 3.3.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
