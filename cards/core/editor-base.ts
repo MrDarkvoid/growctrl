@@ -9,12 +9,20 @@
 import { LitElement, html, css, nothing, type TemplateResult } from "lit";
 import type { HomeAssistant } from "./types";
 
+export interface ChildListOpts {
+  key: string;                 // Config-Schluessel des Unter-Arrays auf der Zeile
+  rowSchema: any[];
+  addLabel: string;
+  newItem: () => any;
+  title?: string;
+}
 export interface ListOpts {
   key: string;                 // Config-Schluessel des Arrays
   rowSchema: any[];            // ha-form-Schema einer Zeile
   addLabel: string;
   newItem: () => any;
   title?: string;
+  child?: ChildListOpts;       // optionale verschachtelte Liste je Zeile (z.B. Sensoren je Pflanze)
 }
 
 export abstract class GrowctrlEditorBase extends LitElement {
@@ -28,6 +36,12 @@ export abstract class GrowctrlEditorBase extends LitElement {
     .row { display: flex; align-items: flex-start; gap: 4px;
            border: 1px solid var(--divider-color); border-radius: 8px; padding: 8px; margin-bottom: 8px; }
     .row ha-form { flex: 1; min-width: 0; }
+    .row.col { flex-direction: column; align-items: stretch; gap: 8px; }
+    .rowmain { display: flex; align-items: flex-start; gap: 4px; flex: 1; min-width: 0; }
+    .rowmain ha-form { flex: 1; min-width: 0; }
+    .subwrap { border-top: 1px dashed var(--divider-color); padding-top: 8px; }
+    .row.sub { background: var(--secondary-background-color, rgba(127,127,127,.08)); margin-bottom: 6px; }
+    .lt.sub { margin: 2px 0 6px; font-size: 11px; opacity: .85; }
     button.del { all: unset; cursor: pointer; color: var(--secondary-text-color);
                  font-size: 16px; padding: 4px 8px; line-height: 1; }
     button.del:hover { color: var(--error-color, #db4437); }
@@ -53,20 +67,42 @@ export abstract class GrowctrlEditorBase extends LitElement {
       @value-changed=${(e: CustomEvent) => this._fire({ ...this._config, ...e.detail.value })}></ha-form>`;
   }
 
-  /** Generischer Listen-Editor: je Zeile ein ha-form + Loeschen, darunter Hinzufuegen. */
+  /** Generischer Listen-Editor: je Zeile ein ha-form + Loeschen, optional eine verschachtelte Unterliste. */
   protected list(o: ListOpts): TemplateResult {
     const items: any[] = this._config[o.key] ?? [];
     const set = (arr: any[]) => this._fire({ ...this._config, [o.key]: arr });
     return html`
       ${o.title ? html`<div class="lt">${o.title}</div>` : nothing}
-      ${items.map((it, i) => html`<div class="row">
-        <ha-form .hass=${this.hass} .data=${it} .schema=${o.rowSchema}
-          .computeLabel=${this._label}
-          @value-changed=${(e: CustomEvent) => { const a = [...items]; a[i] = { ...e.detail.value }; set(a); }}></ha-form>
-        <button class="del" title="Entfernen"
-          @click=${() => set(items.filter((_, j) => j !== i))}>\u2715</button>
-      </div>`)}
+      ${items.map((it, i) => {
+        const onItem = (nv: any) => { const a = [...items]; a[i] = nv; set(a); };
+        return html`<div class="row ${o.child ? "col" : ""}">
+          <div class="rowmain">
+            <ha-form .hass=${this.hass} .data=${it} .schema=${o.rowSchema}
+              .computeLabel=${this._label}
+              @value-changed=${(e: CustomEvent) => onItem({ ...it, ...e.detail.value })}></ha-form>
+            <button class="del" title="Entfernen"
+              @click=${() => set(items.filter((_, j) => j !== i))}>\u2715</button>
+          </div>
+          ${o.child ? html`<div class="subwrap">${this._subList(it, o.child, onItem)}</div>` : nothing}
+        </div>`;
+      })}
       <button class="add" @click=${() => set([...items, o.newItem()])}>+ ${o.addLabel}</button>`;
+  }
+
+  /** Verschachtelte Unterliste innerhalb einer Zeile (z.B. Sensoren je Pflanze, jeder mit Namen). */
+  private _subList(item: any, child: ChildListOpts, onItem: (nv: any) => void): TemplateResult {
+    const sub: any[] = (item[child.key] ?? []).map((s: any) => (typeof s === "string" ? { entity: s } : s));
+    const setSub = (arr: any[]) => onItem({ ...item, [child.key]: arr });
+    return html`
+      ${child.title ? html`<div class="lt sub">${child.title}</div>` : nothing}
+      ${sub.map((s, i) => html`<div class="row sub">
+        <ha-form .hass=${this.hass} .data=${s} .schema=${child.rowSchema}
+          .computeLabel=${this._label}
+          @value-changed=${(e: CustomEvent) => { const a = [...sub]; a[i] = { ...s, ...e.detail.value }; setSub(a); }}></ha-form>
+        <button class="del" title="Entfernen"
+          @click=${() => setSub(sub.filter((_, j) => j !== i))}>\u2715</button>
+      </div>`)}
+      <button class="add" @click=${() => setSub([...sub, child.newItem()])}>+ ${child.addLabel}</button>`;
   }
 
   /** Zelt-Auswahl als echtes Dropdown (Quelle: Integrations-Attribute). */

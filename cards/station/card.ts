@@ -1,10 +1,10 @@
 /*==============================================================================
  * GROWCTRL – growctrl-station-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
- * Zweck   : Stations-Karte "Soft Garden" (integrations-nativ): Auto/Wartung,
- *           Phasen-DROPDOWN (volle Breite), Versorgungszeilen Licht/Pumpe/DLI/Tank
- *           (einheitlicher Stil, voller Breite), optionales Aktor-Raster (4 nebenei-
- *           nander), Pflanzen-Tabs mit Sensor-Anzeige wert|zone|graph, Ereigniszeile,
+ * Zweck   : Stations-Karte "Soft Garden" v6 (integrations-nativ): Kopf mit
+ *           Wartung/Einstellungen/AUTO, Phasen-Dropdown (volle Breite), Versorgungs-
+ *           zeilen Licht/Pumpe/DLI/Tank (.supply + .bar), optionale Aktoren (.acts),
+ *           Pflanzen-Tabs mit Werten (Spark / v6-Zonen / setzbare Stepper), Ereignis,
  *           Diagnose-Badges, Einstellungen. Entity-IDs aus tent+station (overrides ok).
  * Version : 3.3.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
@@ -13,22 +13,17 @@
 import { html, nothing } from "lit";
 import "./editor";
 import {
-  GrowctrlBaseCard, sharedStyles, THEME, STAGE_COLORS, STATUS_PILL, LOG_TX,
+  GrowctrlBaseCard, sharedStyles, THEME, STAGE_COLORS, pillClass,
   cardVars, type StyleConfig, num,
-  stEnt, ST, type GcOverrides,
-  gcResolve,
-  fmtDur, fmtAge, daysSince, sparkline, zoneBar, fetchHistory,
+  stEnt, ST, type GcOverrides, gcResolve,
+  fmtDur, fmtAge, daysSince, sparkline, fetchHistory,
 } from "../core/index";
 
-/** Pflanzen-Sensor: einfacher Entity-String ODER konfigurierte Anzeige.
- *  anzeige "wert": nur Zahl + Label.  "zone": pH/EC-Balken mit Idealbereich.
- *  "graph": Mini-Verlauf (Sparkline), z.B. Temperatur/Feuchtigkeit. */
 type PlantSensor = string | { entity: string; name?: string;
   anzeige?: "wert" | "zone" | "graph"; icon?: string; color?: string;
   min?: number; max?: number; ok?: [number, number]; ideal?: [number, number];
-  hours?: number; step?: number };   // step: Schrittweite fuer number/input_number (setzbar)
+  hours?: number; step?: number };
 
-/** Optionaler Aktor in der Station (Schalter direkt in der Karte). */
 interface StationActuator { entity: string; name?: string; icon?: string;
   confirm?: boolean; kind?: "light" | "heat" | "water" }
 
@@ -36,28 +31,27 @@ const STAGES = ["Seedling", "Veg", "Bloom", "Flush", "Trocknung"];
 const STAGE_HINT: Record<string, string> = {
   Seedling: "Anzucht", Veg: "Wachstum", Bloom: "Bl\u00fcte", Flush: "Sp\u00fclen", Trocknung: "Ernte",
 };
+const STAGE_PD: Record<string, string> = {
+  Seedling: "pd-seed", Veg: "pd-veg", Bloom: "pd-bloom", Flush: "pd-flush", Trocknung: "pd-dry",
+};
 const ACT_ICON: Record<string, string> = {
   light: "mdi:lightbulb", heat: "mdi:radiator", water: "mdi:air-humidifier",
   pump: "mdi:water-pump", fan: "mdi:fan", o2: "mdi:scuba-tank",
 };
 
-/** Eine Pflanze (Tab) – mit dedizierten Feldern fuer die vier wichtigen Messwerte. */
 interface PlantCfg {
   name: string; strain?: string; germination_helper?: string;
-  image?: string; sensors?: PlantSensor[];      // sensors[] = erweiterte Liste (YAML)
-  temp_entity?: string;                          // Temperatur  -> Verlauf
-  humidity_entity?: string;                      // Feuchtigkeit -> Verlauf
-  ph_entity?: string; ph_ok?: [number, number]; ph_ideal?: [number, number];   // pH -> Zone
-  ec_entity?: string; ec_ok?: [number, number]; ec_ideal?: [number, number];   // EC -> Zone
+  image?: string; sensors?: PlantSensor[];
+  temp_entity?: string; humidity_entity?: string;
+  ph_entity?: string; ph_ok?: [number, number]; ph_ideal?: [number, number];
+  ec_entity?: string; ec_ok?: [number, number]; ec_ideal?: [number, number];
   tank_entity?: string; tank_min?: number;
 }
 
 interface StationConfig {
-  age_format?: "auto" | "tage" | "wochen";
-  show_event?: boolean;
+  age_format?: "auto" | "tage" | "wochen"; show_event?: boolean;
   tank_entity?: string; tank_min?: number; tank_volume?: number;
-  actuators?: StationActuator[];     // optionale Schalter-Kacheln in der Station
-  plants?: PlantCfg[];
+  actuators?: StationActuator[]; plants?: PlantCfg[];
   type: string; tent: string; station: string; name?: string;
   show_settings?: boolean; overrides?: GcOverrides; style?: StyleConfig;
 }
@@ -78,9 +72,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const graphs = (c?.plants ?? []).flatMap(pl => this.sensorsFor(pl).filter(s => s.anzeige === "graph"));
     graphs.forEach(async g => {
       const data = await fetchHistory(this.hass, g.entity, g.hours ?? 24);
-      if (data.length && this._spark[g.entity]?.length !== data.length) {
-        this._spark = { ...this._spark, [g.entity]: data };
-      }
+      if (data.length && this._spark[g.entity]?.length !== data.length) this._spark = { ...this._spark, [g.entity]: data };
     });
   }
 
@@ -96,13 +88,9 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
   private e(key: keyof typeof ST): string {
     const [domain, suffix, role] = ST[key];
     const c = this._config as StationConfig;
-    return c.overrides?.[suffix]
-      ?? gcResolve(this.hass, c.tent, c.station, role)
-      ?? stEnt(domain, c.tent, c.station, suffix, c.overrides);
+    return c.overrides?.[suffix] ?? gcResolve(this.hass, c.tent, c.station, role) ?? stEnt(domain, c.tent, c.station, suffix, c.overrides);
   }
-  private _select(entity: string, option: string) {
-    this.hass.callService("select", "select_option", { entity_id: entity, option });
-  }
+  private _select(entity: string, option: string) { this.hass.callService("select", "select_option", { entity_id: entity, option }); }
 
   render() {
     const c = this._config as StationConfig;
@@ -123,44 +111,30 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const evt = this.hass.states[this.e("event")];
     const sev = problems.length ? (problems.some(p => p.crit) ? "critical" : "warning")
       : ((evt?.attributes?.schweregrad as string) === "critical" ? "warning" : "ok");
-    const pill = STATUS_PILL[sev] ?? STATUS_PILL.ok;
+    const statusLabel = wart ? "Wartung aktiv" : sev === "critical" ? "Kritisch" : sev === "warning" ? "Warnung" : "Alles OK";
 
-    return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${sev}
-        style="${cardVars(c.style)};position:relative">
+    return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${sev} style="${cardVars(c.style)};position:relative">
 
-      <div class="hdr">
-        <div style="min-width:0">
-          <div class="title">${c.name ?? `${c.tent} \u00b7 ${c.station}`}</div>
-          <div class="subtitle" style="display:flex;align-items:center;gap:6px">
-            <span class="dot" style="width:7px;height:7px;border-radius:50%;background:${pill.color};box-shadow:0 0 8px ${pill.color}"></span>${pill.label}
-            ${wart ? html`<span style="color:${THEME.warn};font-weight:800">\u00b7 Wartung</span>` : nothing}
+      <div class="hd">
+        <div class="grow" style="min-width:0">
+          <div class="ttl">${c.name ?? `${c.tent} \u00b7 ${c.station}`}</div>
+          <div class="sub" style="display:flex;align-items:center;gap:7px">
+            <span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;
+              background:${sev === "critical" ? THEME.crit : sev === "warning" ? THEME.warn : THEME.ok};
+              box-shadow:0 0 8px currentColor;color:${sev === "critical" ? THEME.crit : sev === "warning" ? THEME.warn : THEME.ok}"></span>
+            ${statusLabel}
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button class="gc" title="Wartung (System greift nicht ein)"
-            style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-              background:${wart ? "rgba(255,206,122,.14)" : "var(--card-2,#222F28)"};
-              border:1px solid ${wart ? "rgba(255,206,122,.5)" : "var(--gc-line)"};
-              color:${wart ? THEME.warn : "rgba(242,247,243,.55)"}"
-            @click=${() => this.toggle(this.e("wartung"))}>
-            <ha-icon icon="mdi:wrench-outline" style="--mdc-icon-size:16px"></ha-icon></button>
-          ${c.show_settings !== false ? html`<button class="gc" title="Einstellungen"
-            style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-              background:var(--card-2,#222F28);border:1px solid var(--gc-line);color:rgba(242,247,243,.55)"
-            @click=${() => { this._open = !this._open; }}>
-            <ha-icon icon="mdi:tune-variant" style="--mdc-icon-size:16px"></ha-icon></button>` : nothing}
-          <button class="gc" style="min-height:40px;padding:0 16px;border-radius:999px;font-size:11.5px;font-weight:900;
-              letter-spacing:.5px;
-              background:${auto ? "var(--gc-accent)" : "var(--card-2,#222F28)"};
-              border:${auto ? "none" : "1px solid var(--gc-line)"};
-              color:${auto ? "#0D1812" : "rgba(242,247,243,.5)"};
-              box-shadow:${auto ? "0 4px 16px -6px var(--gc-accent)" : "none"}"
-            @click=${() => this.confirmToggle(this.e("auto"), "Automatik")}>
-            AUTO ${auto ? "AN" : "AUS"}</button>
-        </div>
+        <button class="gc icbtn ${wart ? "on" : ""}" title="Wartung (System greift nicht ein)"
+          @click=${() => this.toggle(this.e("wartung"))}>
+          <ha-icon icon="mdi:wrench-outline" style="--mdc-icon-size:16px"></ha-icon></button>
+        ${c.show_settings !== false ? html`<button class="gc icbtn" title="Einstellungen" @click=${() => { this._open = !this._open; }}>
+          <ha-icon icon="mdi:tune-variant" style="--mdc-icon-size:16px"></ha-icon></button>` : nothing}
+        <button class="gc chip-auto ${auto ? "" : "off"}" @click=${() => this.confirmToggle(this.e("auto"), "Automatik")}>
+          AUTO ${auto ? "AN" : "AUS"}</button>
       </div>
 
-      ${this.phaseDropdown(stage, sc)}
+      <div style="margin-bottom:10px">${this.phaseDropdown(stage, sc)}</div>
       ${this.lightRow()}
       ${this.pumpRow(demo)}
       ${this.dliRow(demo)}
@@ -173,17 +147,13 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
           <ha-icon icon="mdi:alert" style="--mdc-icon-size:12px"></ha-icon>${p.label}</span>`)}</div>` : nothing}
 
       ${(c.show_event !== false && evt) ? html`
-        <button class="gc event" @click=${() => this.moreInfo(this.e("event"))}>
-          <span class="edot" style="background:${LOG_TX[(evt.attributes?.schweregrad as string)] ?? "rgba(242,247,243,.4)"}"></span>
-          <span class="ebody">
-            <span class="elbl">Letztes Ereignis</span>
-            <span class="etx">${evt.state}</span>
-          </span>
-          <span style="font:700 10.5px var(--f-num);color:rgba(242,247,243,.4)">
-            ${evt.last_changed ? new Date(evt.last_changed).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : ""}</span>
+        <button class="gc event" style="margin-top:14px" @click=${() => this.moreInfo(this.e("event"))}>
+          <span class="edot" style="background:${evt.attributes?.schweregrad === "critical" ? THEME.crit : evt.attributes?.schweregrad === "warning" ? THEME.warn : THEME.info}"></span>
+          <span class="etx">${evt.state}</span>
+          <span class="etm">${evt.last_changed ? new Date(evt.last_changed).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : ""}</span>
         </button>` : nothing}
 
-      ${this._open ? html`<div class="settings-grid" style="margin-top:10px">
+      ${this._open ? html`<div class="settings-grid" style="margin-top:12px">
         ${this.setting(this.e("lightOn"), "Licht AN")}
         ${this.setting(this.e("lightOffSv"), "AUS Seed/Veg")}
         ${this.setting(this.e("lightOffBloom"), "AUS Bloom")}
@@ -195,40 +165,33 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
   }
 
   private setting(entity: string, label: string) {
-    return html`<button class="gc tile" style="text-align:left;min-width:0" @click=${() => this.moreInfo(entity)}>
-      <div class="lbl">${label}</div>
-      <div style="font-size:14px;font-weight:800;color:rgba(242,247,243,.85);margin-top:3px">
-        ${this.st(entity) ?? "\u2013"}</div></button>`;
+    return html`<button class="gc skv" @click=${() => this.moreInfo(entity)}>
+      <div class="k">${label}</div><div class="vv">${this.st(entity) ?? "\u2013"}</div></button>`;
   }
 
-  /** Phasen-Dropdown ueber die volle Breite. */
+  /** Phasen-Dropdown volle Breite. */
   private phaseDropdown(stage: string, sc: { bg: string; color: string }) {
     const event = this.hass.states[this.e("rec")];
     const recHint = event?.state && event.state !== stage ? event.state : null;
-    return html`<div class="dd">
-      <button class="gc dd-btn" aria-haspopup="listbox" aria-expanded=${this._phase}
-        @click=${() => { this._phase = !this._phase; }}>
-        <span class="pdot" style="background:${sc.color};color:${sc.color}"></span>
-        ${stage}
+    return html`<div class="dd ${this._phase ? "open" : ""}">
+      <button class="gc dd-btn" aria-haspopup="listbox" aria-expanded=${this._phase} @click=${() => { this._phase = !this._phase; }}>
+        <span class="pdot" style="background:${sc.color};color:${sc.color}"></span>${stage}
         <span class="hint">${STAGE_HINT[stage] ?? ""}${recHint ? " \u00b7 Richtwert " + recHint : ""}</span>
-        <ha-icon icon="mdi:chevron-down" style="--mdc-icon-size:16px;color:rgba(242,247,243,.5);
-          transition:transform .2s;${this._phase ? "transform:rotate(180deg)" : ""}"></ha-icon>
+        <ha-icon icon="mdi:chevron-down" style="--mdc-icon-size:16px;color:var(--tx-3);transition:transform .2s;${this._phase ? "transform:rotate(180deg)" : ""}"></ha-icon>
       </button>
       ${this._phase ? html`<div class="dd-menu" role="listbox">
-        ${STAGES.map(s => { const col = STAGE_COLORS[s];
-          return html`<button class="gc dd-it" role="option" aria-selected=${s === stage}
-            @click=${() => { this._select(this.e("stage"), s); this._phase = false; }}>
-            <span class="pdot" style="background:${col.color}"></span>${s}
-            <span class="hint">${STAGE_HINT[s] ?? ""}</span></button>`; })}
+        ${STAGES.map(s => html`<button class="gc dd-it" role="option" aria-selected=${s === stage}
+          @click=${() => { this._select(this.e("stage"), s); this._phase = false; }}>
+          <span class="pdot ${STAGE_PD[s]}"></span>${s}<span class="hint">${STAGE_HINT[s] ?? ""}</span></button>`)}
       </div>` : nothing}
     </div>`;
   }
 
-  /** Generische Versorgungszeile (Licht/Pumpe/DLI/Tank). */
+  /** Versorgungszeile (.supply + .bar). */
   private supplyRow(o: { icon: string; iconColor: string; glow?: boolean; title: string;
     value: string; valueColor: string; fillPct?: number | null; fillColor?: string;
-    footL?: string; footR?: string; minPct?: number; onClick?: () => void }) {
-    return html`<button class="gc supply" @click=${o.onClick ?? (() => {})}>
+    footL?: string; footR?: string; minPct?: number; topMargin?: boolean; onClick?: () => void }) {
+    return html`<button class="gc supply" style="${o.topMargin ? "margin-top:8px" : ""}" @click=${o.onClick ?? (() => {})}>
       <span class="shd">
         <span class="sic" style="color:${o.iconColor};${o.glow ? `filter:drop-shadow(0 0 7px ${o.iconColor})` : ""}">
           <ha-icon icon="${o.icon}" style="--mdc-icon-size:20px"></ha-icon></span>
@@ -236,9 +199,8 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
         <span class="stm" style="color:${o.valueColor}">${o.value}</span>
       </span>
       ${o.fillPct !== null && o.fillPct !== undefined ? html`
-        <span class="sbar"><i style="width:${Math.min(100, Math.max(0, o.fillPct))}%;
-          background:linear-gradient(90deg, ${o.fillColor}, ${o.fillColor}cc);
-          box-shadow:0 0 9px ${o.fillColor}55"></i>
+        <span class="bar"><i style="width:${Math.min(100, Math.max(0, o.fillPct))}%;
+          background:linear-gradient(90deg, ${o.fillColor}, ${o.fillColor}cc);box-shadow:0 0 9px ${o.fillColor}55"></i>
           ${o.minPct !== undefined ? html`<span class="min" style="left:${o.minPct}%"></span>` : nothing}</span>` : nothing}
       ${o.footL || o.footR ? html`<span class="sft"><span>${o.footL ?? ""}</span><span>${o.footR ?? ""}</span></span>` : nothing}
     </button>`;
@@ -254,16 +216,16 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const a = st.attributes ?? {};
     const an = a.zustand ? a.zustand === "an" : undefined;
     const rest = Number(st.state);
-    const text = (a.text as string) ?? (isNaN(rest) ? "\u2013" : fmtDur(rest));
+    const dur = isNaN(rest) ? "\u2013" : fmtDur(rest);
     const anteil = typeof a.anteil === "number" ? Math.min(1, Math.max(0, a.anteil)) : null;
     const col = an === false ? "#7E9488" : THEME.light;
     return this.supplyRow({
-      icon: an === false ? "mdi:lightbulb-outline" : "mdi:lightbulb-on",
-      iconColor: col, glow: an !== false,
-      title: an === false ? "Licht aus" : "Licht an", value: text, valueColor: col,
-      fillPct: anteil !== null ? anteil * 100 : null, fillColor: col,
-      footL: an === false ? "Dunkelphase" : "Leuchtphase",
-      footR: anteil !== null ? `${(anteil * 100).toFixed(0)} % verbleibend` : "",
+      icon: an === false ? "mdi:lightbulb-outline" : "mdi:lightbulb-on", iconColor: col, glow: an !== false,
+      title: an === false ? "Licht aus" : "Licht an",
+      value: an === false ? "\u2013" : dur, valueColor: col,
+      fillPct: an === false ? null : (anteil !== null ? anteil * 100 : null), fillColor: col,
+      footL: an === false ? "Licht ausgeschaltet" : "Leuchtphase",
+      footR: an === false ? "" : (anteil !== null ? `${(anteil * 100).toFixed(0)} % verbleibend` : ""),
       onClick: () => this.moreInfo(this.e("lightRest")),
     });
   }
@@ -272,14 +234,14 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const st = this.hass.states[this.e("pumpRest")];
     if (!st && !demo) return nothing;
     if (demo)
-      return this.supplyRow({ icon: "mdi:water-pump", iconColor: THEME.water,
+      return this.supplyRow({ icon: "mdi:water-pump", iconColor: THEME.water, topMargin: true,
         title: "Pumpe aus", value: "in 12 min", valueColor: THEME.water,
         fillPct: 80, fillColor: THEME.water, footL: "N\u00e4chster Zyklus", footR: "80 % der Pause" });
     const rest = Number(st!.state);
     const a = st!.attributes ?? {};
     const anteil = typeof a.anteil === "number" ? Math.min(1, Math.max(0, a.anteil)) : null;
     const an = a.zustand ? a.zustand === "an" : undefined;
-    return this.supplyRow({ icon: "mdi:water-pump", iconColor: THEME.water,
+    return this.supplyRow({ icon: "mdi:water-pump", iconColor: THEME.water, topMargin: true,
       title: an ? "Pumpe l\u00e4uft" : "Pumpe aus", value: isNaN(rest) ? "\u2013" : fmtDur(rest), valueColor: THEME.water,
       fillPct: anteil !== null ? anteil * 100 : null, fillColor: THEME.water,
       footL: (a.text as string) ?? "Zyklus", footR: anteil !== null ? `${(anteil * 100).toFixed(0)} %` : "",
@@ -294,7 +256,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const target = (st?.attributes?.ziel_aktuelle_phase as number | undefined) ?? (demo ? 25 : undefined);
     const pct = target && dli !== null ? (dli / target) * 100 : null;
     const fcPct = target && fc !== null ? Math.min(100, (fc / target) * 100) : undefined;
-    return this.supplyRow({ icon: "mdi:white-balance-sunny", iconColor: THEME.light,
+    return this.supplyRow({ icon: "mdi:white-balance-sunny", iconColor: THEME.light, topMargin: true,
       title: "DLI heute",
       value: dli !== null ? `${dli.toFixed(1)}${target ? ` / ${target}` : ""}` : "\u2013", valueColor: THEME.light,
       fillPct: pct, fillColor: THEME.light, minPct: fcPct,
@@ -303,7 +265,6 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       onClick: () => this.moreInfo(this.e("dli")) });
   }
 
-  /** Optionale Aktor-Kacheln (4 nebeneinander) – nur wenn konfiguriert. */
   private actuators() {
     const acts = (this._config as StationConfig).actuators ?? [];
     if (!acts.length) return nothing;
@@ -317,7 +278,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
           const name = a.name ?? this.friendly(a.entity);
           return html`<button class="gc act ${on ? "on" : ""} ${on && kind ? kind : ""}"
             @click=${() => a.confirm ? this.confirmToggle(a.entity, name) : this.toggle(a.entity)}>
-            <span class="aic"><ha-icon icon="${icon}" style="--mdc-icon-size:18px"></ha-icon></span>
+            <ha-icon class="aic" icon="${icon}" style="--mdc-icon-size:18px"></ha-icon>
             <span class="anm">${name}</span>
             <span class="ast">${on ? "AN" : "AUS"}</span></button>`;
         })}
@@ -332,7 +293,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const low = pct < minP;
     const col = low ? THEME.crit : THEME.water;
     const vol = c.tank_volume;
-    return this.supplyRow({ icon: "mdi:car-coolant-level", iconColor: THEME.water,
+    return this.supplyRow({ icon: "mdi:car-coolant-level", iconColor: THEME.water, topMargin: true,
       title: "Tank", value: `${pct.toFixed(0)} %`, valueColor: col,
       fillPct: pct, fillColor: col, minPct: minP,
       footL: vol ? `\u2248 ${(pct / 100 * vol).toFixed(0)} l von ${vol} l` : (low ? "Unter Mindeststand" : ""),
@@ -348,19 +309,16 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const germ = pl.germination_helper ? this.st(pl.germination_helper) : null;
     const age = germ ? daysSince(germ) : null;
     return html`
-      <div class="ptabs">
-        ${plants.map((pp, pi) => html`<button class="gc ptab" role="tab" aria-selected=${pi === i}
-          @click=${() => { this._tab = pi; }}>
+      <div class="ptabs" style="margin-top:14px">
+        ${plants.map((pp, pi) => html`<button class="gc ptab" role="tab" aria-selected=${pi === i} @click=${() => { this._tab = pi; }}>
           <ha-icon icon="mdi:sprout" style="--mdc-icon-size:15px"></ha-icon>${pp.name}</button>`)}
       </div>
       <div class="plant">
         <div class="phd">
-          ${pl.image
-            ? html`<img class="pimg" src="${pl.image}"/>`
-            : html`<div class="pimg"><ha-icon icon="mdi:sprout" style="--mdc-icon-size:30px"></ha-icon></div>`}
+          ${pl.image ? html`<img class="pimg" src="${pl.image}"/>`
+            : html`<div class="pimg"><ha-icon icon="mdi:sprout" style="--mdc-icon-size:28px"></ha-icon></div>`}
           <div style="flex:1;min-width:0">
-            <div class="pname">${pl.name}</div>
-            ${pl.strain ? html`<div class="pstrain">${pl.strain}</div>` : nothing}
+            <div class="pname">${pl.name}${pl.strain ? html`<span class="pstrain" style="display:inline;margin:0 0 0 7px">\u00b7 ${pl.strain}</span>` : nothing}</div>
             ${age !== null ? html`<span class="agechip">${fmtAge(age)}</span>` : nothing}
           </div>
         </div>
@@ -369,30 +327,41 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       </div>`;
   }
 
-  /** Dedizierte Messwerte (Temp/Feuchte/pH/EC) + erweiterte sensors[] als eine Liste. */
   private sensorsFor(pl: PlantCfg): Exclude<PlantSensor, string>[] {
     const d: Exclude<PlantSensor, string>[] = [];
-    if (pl.temp_entity)
-      d.push({ entity: pl.temp_entity, name: "Temperatur", anzeige: "graph",
-        color: THEME.temp, icon: "mdi:thermometer", hours: 24 });
-    if (pl.humidity_entity)
-      d.push({ entity: pl.humidity_entity, name: "Feuchtigkeit", anzeige: "graph",
-        color: THEME.water, icon: "mdi:water-percent", hours: 24 });
-    if (pl.ph_entity)
-      d.push({ entity: pl.ph_entity, name: "pH", anzeige: "zone", icon: "mdi:ph",
-        min: 4, max: 8, ok: pl.ph_ok ?? [5.5, 6.5], ideal: pl.ph_ideal ?? [5.8, 6.3] });
-    if (pl.ec_entity)
-      d.push({ entity: pl.ec_entity, name: "EC", anzeige: "zone", icon: "mdi:flash",
-        min: 0, max: 3, ok: pl.ec_ok ?? [1.0, 2.4], ideal: pl.ec_ideal ?? [1.2, 2.2] });
-    const extra = (pl.sensors ?? []).map(s =>
-      (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
+    if (pl.temp_entity) d.push({ entity: pl.temp_entity, name: "Temperatur", anzeige: "graph", color: THEME.temp, icon: "mdi:thermometer", hours: 24 });
+    if (pl.humidity_entity) d.push({ entity: pl.humidity_entity, name: "Feuchtigkeit", anzeige: "graph", color: THEME.water, icon: "mdi:water-percent", hours: 24 });
+    if (pl.ph_entity) d.push({ entity: pl.ph_entity, name: "pH", anzeige: "zone", min: 4, max: 8, ok: pl.ph_ok ?? [5.5, 6.5], ideal: pl.ph_ideal ?? [5.8, 6.3] });
+    if (pl.ec_entity) d.push({ entity: pl.ec_entity, name: "EC", anzeige: "zone", min: 0, max: 3, ok: pl.ec_ok ?? [1.0, 2.4], ideal: pl.ec_ideal ?? [1.2, 2.2] });
+    const extra = (pl.sensors ?? []).map(s => (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
     return [...d, ...extra];
   }
 
-  /** Pflanzen-Sensoren als einheitliche .ind-Bloecke (Liste bereits normalisiert). */
   private plantSensors(sens: Exclude<PlantSensor, string>[]) {
     if (!sens.length) return nothing;
     return html`${sens.map(s => this.sensorInd(s))}`;
+  }
+
+  /** v6-Zonenbalken (pH/EC) als .zones + .zlbl. */
+  private zoneV6(v: number | null, min: number, max: number, ok: [number, number], ideal: [number, number], unit: string) {
+    const span = max - min || 1;
+    const pc = (a: number, b: number) => Math.max(0, ((Math.min(b, max) - Math.max(a, min)) / span) * 100);
+    const segs = [
+      { cls: "z-bad", w: pc(min, ok[0]) }, { cls: "z-low", w: pc(ok[0], ideal[0]) },
+      { cls: "z-ok", w: pc(ideal[0], ideal[1]) }, { cls: "z-high", w: pc(ideal[1], ok[1]) },
+      { cls: "z-bad", w: pc(ok[1], max) },
+    ];
+    const markPct = v !== null ? Math.min(100, Math.max(0, ((v - min) / span) * 100)) : null;
+    return html`
+      <span class="zones">
+        ${segs.map(s => html`<i class="${s.cls}" style="width:${s.w}%"></i>`)}
+        ${markPct !== null ? html`<span class="zmark" style="left:${markPct}%"></span>` : nothing}
+      </span>
+      <span class="zlbl">
+        <span style="width:30%;text-align:left">${min}</span>
+        <span style="width:40%;color:#4CB87E;font-weight:800">${ideal[0]}\u2013${ideal[1]} ideal</span>
+        <span style="width:30%;text-align:right">${max}</span>
+      </span>`;
   }
 
   private sensorInd(s: Exclude<PlantSensor, string>) {
@@ -411,7 +380,6 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       this.hass.callService(dom, "set_value", { entity_id: s.entity, value: Number(x.toFixed(dec)) });
     };
 
-    // Akzent je Modus
     let col: string;
     const ideal = s.ideal ?? [0, 0]; const ok = s.ok ?? ideal;
     if (mode === "zone") {
@@ -422,27 +390,23 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     else { col = s.color ?? "rgba(242,247,243,.95)"; }
 
     const head = html`<div class="ihd">
-      <span class="ilbl" style="color:${mode === "wert" ? "rgba(242,247,243,.62)" : col};cursor:pointer"
-        @click=${() => this.moreInfo(s.entity)}>
+      <span class="ilbl" style="color:${mode === "wert" ? "var(--tx-2)" : col};cursor:pointer" @click=${() => this.moreInfo(s.entity)}>
         ${s.icon ? html`<ha-icon icon="${s.icon}" style="--mdc-icon-size:14px"></ha-icon>` : nothing}${label}
         ${settable ? html`<ha-icon icon="mdi:pencil" style="--mdc-icon-size:11px;opacity:.45;margin-left:3px"></ha-icon>` : nothing}
       </span>
       ${settable
         ? html`<span class="setrow">
-            <button class="gc stepbtn" title="weniger" @click=${() => v !== null && setV(v - step)}>
-              <ha-icon icon="mdi:minus" style="--mdc-icon-size:16px"></ha-icon></button>
+            <button class="gc stepbtn" title="weniger" @click=${() => v !== null && setV(v - step)}><ha-icon icon="mdi:minus" style="--mdc-icon-size:16px"></ha-icon></button>
             <span class="setval" style="color:${col}">${v !== null ? v : "\u2013"}<span class="u">${unit}</span></span>
-            <button class="gc stepbtn" title="mehr" @click=${() => setV((v ?? lo ?? 0) + step)}>
-              <ha-icon icon="mdi:plus" style="--mdc-icon-size:16px"></ha-icon></button></span>`
+            <button class="gc stepbtn" title="mehr" @click=${() => setV((v ?? lo ?? 0) + step)}><ha-icon icon="mdi:plus" style="--mdc-icon-size:16px"></ha-icon></button></span>`
         : html`<span class="ival" style="color:${col};cursor:pointer" @click=${() => this.moreInfo(s.entity)}>
             ${v !== null ? v : (this.st(s.entity) ?? "\u2013")}<span class="u">${unit}</span></span>`}
     </div>`;
 
     const body = mode === "zone"
-      ? html`<div style="margin-top:8px">${zoneBar(v, { min: s.min ?? 0, max: s.max ?? 14,
-          okMin: ok[0], okMax: ok[1], idealMin: ideal[0], idealMax: ideal[1] })}</div>`
+      ? this.zoneV6(v, s.min ?? 0, s.max ?? 14, ok, ideal, unit)
       : mode === "graph"
-        ? html`<div style="margin-top:6px">${sparkline(this._spark[s.entity] ?? [], col, this.chartW(74), 38)}</div>`
+        ? html`<div class="spark">${sparkline(this._spark[s.entity] ?? [], col, this.chartW(74), 38)}</div>`
         : nothing;
 
     return html`<div class="ind">${head}${body}</div>`;
@@ -456,10 +420,8 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       <div class="ihd"><span class="ilbl" style="color:${THEME.water}">
         <ha-icon icon="mdi:car-coolant-level" style="--mdc-icon-size:14px"></ha-icon>Tank</span>
         <span class="ival" style="color:${col}">${pct.toFixed(0)}<span class="u"> %</span></span></div>
-      <div class="sbar" style="margin-top:8px;height:10px;border-radius:6px;background:#0D1410;overflow:hidden;position:relative">
-        <i style="display:block;height:100%;width:${pct}%;border-radius:6px;
-          background:linear-gradient(90deg, ${col}, ${col}cc);box-shadow:0 0 8px ${col}55"></i>
-        <span style="position:absolute;top:-1px;bottom:-1px;left:${minP}%;width:2.5px;background:rgba(255,255,255,.45)"></span></div>
+      <span class="bar" style="margin-top:8px"><i style="width:${pct}%;background:linear-gradient(90deg, ${col}, ${col}cc);box-shadow:0 0 9px ${col}55"></i>
+        <span class="min" style="left:${minP}%"></span></span>
     </button>`;
   }
 }

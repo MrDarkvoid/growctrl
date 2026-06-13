@@ -1,16 +1,17 @@
 /*==============================================================================
  * GROWCTRL – growctrl-status-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
- * Zweck   : Ereignisprotokoll (integrations-nativ): liest das 'verlauf'-Attribut der Letztes-Ereignis-Sensoren mehrerer Quellen, faerbt nach Schweregrad, neueste zuerst.
- * Version : 2.4.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
+ * Zweck   : Ereignisprotokoll (v6): liest das 'verlauf'-Attribut der Letztes-
+ *           Ereignis-Sensoren mehrerer Quellen, faerbt nach Schweregrad, neueste
+ *           zuerst – als v6-Log-Zeilen (Zeit · Quelle · Klartext).
+ * Version : 3.3.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
 import { html, nothing } from "lit";
 import "./editor";
 import {
-  GrowctrlBaseCard, sharedStyles, THEME, LOG_BG, LOG_TX, STATUS_PILL,
-  cardVars, worstLevel, type StyleConfig,
+  GrowctrlBaseCard, sharedStyles, cardVars, worstLevel, pillClass, type StyleConfig,
 } from "../core/index";
 
 interface StatusSource { entity: string; name?: string; }
@@ -18,7 +19,7 @@ interface StatusConfig {
   type: string; title?: string; sources: StatusSource[];
   limit?: number; min_level?: "alle" | "warnung"; style?: StyleConfig;
 }
-interface Row { ts: string; text: string; level: string; src?: string; }
+interface Row { ts: string; text: string; level: string; src?: string; entity?: string; }
 
 export class GrowctrlStatusCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
@@ -40,31 +41,29 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
       const st = this.hass.states[s.entity];
       const verlauf = (st?.attributes?.verlauf as Row[]) ?? [];
       levels.push((st?.attributes?.schweregrad as string) ?? "ok");
-      verlauf.forEach(r => rows.push({ ...r, src: s.name ?? this.friendly(s.entity) }));
+      verlauf.forEach(r => rows.push({ ...r, src: s.name ?? this.friendly(s.entity), entity: s.entity }));
     }
-    rows.reverse();                                  // neueste zuerst
+    rows.reverse();
     const filtered = c.min_level === "warnung"
       ? rows.filter(r => r.level === "warning" || r.level === "critical") : rows;
     const shown = filtered.slice(0, c.limit ?? 12);
-    const level = worstLevel(levels.map(l => l === "ok" ? "ok" : l));
-    const pill = STATUS_PILL[level] ?? STATUS_PILL.ok;
+    const level = worstLevel(levels);
+    const multi = c.sources.length > 1;
+    const rowCls = (lv: string) => lv === "critical" ? "c" : lv === "warning" ? "w" : lv === "info" ? "i" : "";
 
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${level} style=${cardVars(c.style)}>
-      <div class="hdr">
-        <div class="title" style="font-size:15px">${c.title ?? "Ereignisprotokoll"}</div>
-        <span class="status-pill" style="background:${pill.bg};color:${pill.color}">
-          <span class="dot" style="background:${pill.color}"></span>${pill.label}</span>
+      <div class="hd">
+        <div class="ttl grow">${c.title ?? "Ereignisprotokoll"}</div>
+        <span class="pill ${pillClass(level)}">${level === "ok" ? "Info" : level === "warning" ? "Warnung" : level === "critical" ? "Kritisch" : "Info"}</span>
       </div>
-      <div style="margin-top:9px">
+      <div class="log">
         ${shown.length ? shown.map(r => html`
-          <div class="logrow" style="background:${r.level === "info" ? "transparent" : LOG_BG[r.level] ?? "transparent"};
-              margin-top:3px;padding:6px 9px">
-            <span class="ts" style="min-width:36px;flex-shrink:0">${r.ts}</span>
-            ${c.sources.length > 1 ? html`<span style="font-size:10.5px;font-weight:800;min-width:62px;
-              flex-shrink:0;color:rgba(255,255,255,.55)">${r.src}</span>` : nothing}
-            <span class="txt" style="color:${r.level === "info" ? "rgba(255,255,255,.6)" : LOG_TX[r.level] ?? "rgba(255,255,255,.6)"}">${r.text}</span>
-          </div>`) : html`<div class="logrow"><span class="txt" style="color:${THEME.ok}">
-            \u2713 Noch keine Ereignisse</span></div>`}
+          <button class="gc lrow ${rowCls(r.level)}" @click=${() => r.entity && this.moreInfo(r.entity)}>
+            <span class="tm">${r.ts}</span>
+            ${multi ? html`<span class="who">${r.src}</span>` : nothing}
+            <span class="what">${r.text}</span>
+          </button>`)
+        : html`<div class="lrow"><span class="what" style="color:var(--acc)">✓ Noch keine Ereignisse</span></div>`}
       </div>
     </div>`;
   }

@@ -17,15 +17,19 @@ const ROW = [
   SEL.text("name", "Pflanzenname"),
   SEL.text("strain", "Sorte (optional)"),
   SEL.entity("germination_helper", "Keimdatum-Helper (optional)", ["input_datetime", "date", "datetime"]),
-  SEL.entities("sensors", "Sensoren der Pflanze (optional)", "sensor"),
   SEL.entity("camera", "Kamera (Live-Bild, optional)", "camera"),
   SEL.text("image", "Bild-URL (optional, statt Kamera)"),
 ];
+const SENSOR_CHILD = {
+  key: "sensors", title: "Sensoren der Pflanze",
+  rowSchema: [SEL.entity("entity", "Sensor", "sensor"), SEL.text("name", "Anzeigename (optional)")],
+  addLabel: "Sensor hinzuf\u00fcgen", newItem: () => ({ entity: "" }),
+};
 
 export class GrowctrlPlantsEditor extends GrowctrlEditorBase {
   render() {
     return html`${this.form(MAIN)}
-      ${this.list({ key: "plants", rowSchema: ROW, title: "Pflanzen",
+      ${this.list({ key: "plants", rowSchema: ROW, title: "Pflanzen", child: SENSOR_CHILD,
         addLabel: "Pflanze hinzuf\u00fcgen", newItem: () => ({ name: "Pflanze" }) })}
       ${this.styleSection()}`;
   }

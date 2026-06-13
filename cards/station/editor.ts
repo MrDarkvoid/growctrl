@@ -45,14 +45,18 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       SEL.entity("humidity_entity", "\ud83d\udca7 Feuchtigkeit (Sensor / input_number)"),
       SEL.entity("ph_entity", "\u2697\ufe0f pH (Sensor / input_number)"),
       SEL.entity("ec_entity", "\u26a1 EC (Sensor / input_number)"),
-      SEL.entities("sensors", "\u2795 Weitere Sensoren (werden als Felder gezeigt)"),
       SEL.entity("tank_entity", "Tank-F\u00fcllstand % (optional)", "sensor"),
       SEL.num("tank_min", "Tank-Mindeststand % (Standard 30)", 0, 100),
     ];
+    const plantSensorChild = {
+      key: "sensors", title: "\u2795 Weitere Sensoren (als Felder, jeder mit Namen)",
+      rowSchema: [SEL.entity("entity", "Sensor / input_number"), SEL.text("name", "Anzeigename (optional)")],
+      addLabel: "Sensor hinzuf\u00fcgen", newItem: () => ({ entity: "" }),
+    };
     return html`${this.form(main)}
       ${this.list({ key: "actuators", rowSchema: actuatorRow, title: "Aktoren (Kacheln, 4 nebeneinander)",
         addLabel: "Aktor hinzuf\u00fcgen", newItem: () => ({ entity: "" }) })}
-      ${this.list({ key: "plants", rowSchema: plantRow, title: "Pflanzen (Tabs in der Karte)",
+      ${this.list({ key: "plants", rowSchema: plantRow, title: "Pflanzen (Tabs in der Karte)", child: plantSensorChild,
         addLabel: "Pflanze hinzuf\u00fcgen", newItem: () => ({ name: "" }) })}
       ${this.styleSection()}
       <div class="hint">
@@ -60,9 +64,8 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
         Zonen-Balken (Ideal/akzeptiert/schlecht). W\u00e4hlst du dort ein <code>input_number</code>
         (oder <code>number</code>), erscheint ein <b>\u2212/\uff0b-Stepper</b> zum Setzen \u2013 ideal f\u00fcr
         Handmessungen ohne Sonde.<br>
-        Eigene pH/EC-Idealbereiche oder weitere Sensoren per YAML:
-        <code>ph_ideal: [5.8, 6.3]</code>, <code>ec_ideal: [1.2, 2.2]</code>,
-        <code>sensors: [...]</code>.<br>
+        Eigene pH/EC-Idealbereiche per YAML:
+        <code>ph_ideal: [5.8, 6.3]</code>, <code>ec_ideal: [1.2, 2.2]</code>.<br>
         Entity-IDs werden automatisch abgeleitet
         (z.B. <code>switch.growctrl_gross_main1_automatik</code>); Abweichungen per YAML
         <code>overrides: { automatik: switch.mein_schalter }</code>.

@@ -1,8 +1,9 @@
 /*==============================================================================
  * GROWCTRL – growctrl-plants-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
- * Zweck   : Pflanzen-Ebene: Sorte, Alter (Keimdatum), eigene Sensoren je Pflanze (z.B. eigene O2-/Zirkulationspumpe als Aktor in Controls), Kalender-Ereignisse.
- * Version : 2.1.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
+ * Zweck   : Pflanzen-Ebene (v6): je Pflanze ein Panel (Bild/Sorte/Alter), eigene
+ *           Sensoren als Werte-Felder, optionale Kalender-Ereignisse als Log.
+ * Version : 3.3.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -46,43 +47,42 @@ export class GrowctrlPlantsCard extends GrowctrlBaseCard {
   render() {
     const c = this._config as PlantsConfig;
     if (!this.hass) return nothing;
+    const cols = c.columns ?? 2;
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" style=${cardVars(c.style)}>
-      ${c.title ? html`<div class="title" style="font-size:15px">${c.title}</div>` : nothing}
-      <div class="grid" style="grid-template-columns:repeat(${c.columns ?? 2},1fr)">
+      ${c.title ? html`<div class="hd"><div class="ttl">${c.title}</div></div>` : nothing}
+      <div style="display:grid; gap:10px; grid-template-columns:repeat(${cols},minmax(0,1fr))">
         ${c.plants.map(p => {
           const germ = p.germination_helper ? this.st(p.germination_helper) : undefined;
           const age = germ ? daysSince(germ) : null;
           const pic = p.camera
-            ? (this.hass.states[p.camera]?.attributes?.entity_picture
-                ? `${this.hass.states[p.camera].attributes.entity_picture}&t=${this._tick}` : undefined)
+            ? (this.hass.states[p.camera]?.attributes?.entity_picture ? `${this.hass.states[p.camera].attributes.entity_picture}&t=${this._tick}` : undefined)
             : p.image;
-          return html`<div class="tile" style="overflow:hidden">
-            ${pic ? html`<button class="gc" style="display:block;width:calc(100% + 26px);margin:-11px -13px 9px"
-                @click=${() => p.camera && this.moreInfo(p.camera)}>
-                <img src=${pic} style="width:100%;height:120px;object-fit:cover;display:block" loading="lazy"
-                  alt=${p.name} /></button>` : nothing}
-            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap">
-              <span style="font-size:13px;font-weight:800">\u{1F331} ${p.name}</span>
-              ${p.strain ? html`<span style="font-size:10px;color:rgba(255,255,255,.55)">${p.strain}</span>` : nothing}
+          return html`<div class="plant" style="margin-top:0">
+            <div class="phd">
+              ${pic
+                ? html`<button class="gc" style="flex-shrink:0" @click=${() => p.camera && this.moreInfo(p.camera)}>
+                    <img src=${pic} class="pimg" style="object-fit:cover" loading="lazy" alt=${p.name} /></button>`
+                : html`<div class="pimg"><ha-icon icon="mdi:sprout" style="--mdc-icon-size:27px"></ha-icon></div>`}
+              <div style="flex:1; min-width:0">
+                <div class="pname">${p.name}</div>
+                ${p.strain ? html`<div class="pstrain">${p.strain}</div>` : nothing}
+                ${age !== null ? html`<span class="agechip">${fmtAge(age)}</span>` : nothing}
+              </div>
             </div>
-            ${age !== null ? html`<span style="display:inline-block;margin-top:5px;padding:2px 9px;
-              border-radius:7px;font-size:11.5px;font-weight:800;color:#4DFFC3;
-              background:rgba(77,255,195,.12);border:1px solid rgba(77,255,195,.3)">${fmtAge(age)}</span>` : nothing}
             ${(p.sensors ?? []).map(raw => { const s = typeof raw === "string" ? { entity: raw } : raw; return html`
-              <button class="gc" style="display:flex;justify-content:space-between;width:100%;font-size:11px;margin-top:4px;color:rgba(255,255,255,.75)"
-                @click=${() => this.moreInfo(s.entity)}>
-                <span>${s.name ?? this.friendly(s.entity)}</span>
-                <span style="font-weight:700">${num(this.st(s.entity)) ?? "--"} ${this.unit(s.entity)}</span>
+              <button class="gc ind" style="margin-top:8px" @click=${() => this.moreInfo(s.entity)}>
+                <div class="ihd"><span class="ilbl" style="color:var(--tx-2)">${s.name ?? this.friendly(s.entity)}</span>
+                  <span class="ival">${num(this.st(s.entity)) ?? "--"}<span class="u"> ${this.unit(s.entity)}</span></span></div>
               </button>`; })}
           </div>`;
         })}
       </div>
       ${c.calendar ? html`<div class="seclbl">Anstehend</div>
-        ${this._events.length ? this._events.map(e => html`
-          <div class="logrow" style="background:rgba(0,0,0,.18);margin-top:4px">
-            <span class="txt">${e.summary}</span>
-            <span class="ts">${(e.start?.date ?? e.start?.dateTime ?? "").substring(0,10)}</span>
-          </div>`) : html`<div class="logrow" style="background:rgba(0,0,0,.12)"><span class="txt" style="color:rgba(255,255,255,.35)">Keine Ereignisse</span></div>`}` : nothing}
+        <div class="log">
+          ${this._events.length ? this._events.map(e => html`
+            <div class="lrow"><span class="tm">${(e.start?.date ?? e.start?.dateTime ?? "").substring(5, 10)}</span><span class="what">${e.summary}</span></div>`)
+          : html`<div class="lrow"><span class="what" style="color:var(--tx-3)">Keine Ereignisse</span></div>`}
+        </div>` : nothing}
     </div>`;
   }
 }

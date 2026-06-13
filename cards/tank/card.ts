@@ -1,8 +1,9 @@
 /*==============================================================================
  * GROWCTRL – growctrl-tank-card
  * Projekt : GROWCTRL – Home-Assistant-Gesamtsystem fuer Growzelte
- * Zweck   : DWC-Fuellstandsanzeige: animierter Tank mit Fuellung, Prozent gross, optional Liter; Warnfarbe + Karten-Ampel unter Mindeststand.
- * Version : 2.2.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
+ * Zweck   : DWC-Fuellstand (v6): vertikaler Tank mit Fuellung + Mindestlinie,
+ *           Prozent gross, optional Liter; Warnfarbe + Karten-Ampel unter Minimum.
+ * Version : 3.3.0  |  Lizenz: GC-SAL 1.0 (siehe LICENSE)
  * Autor   : MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding
  *============================================================================*/
 
@@ -12,9 +13,7 @@ import { GrowctrlBaseCard, sharedStyles, THEME, cardVars, type StyleConfig, num 
 
 interface TankConfig {
   type: string; title?: string; entity: string;
-  min?: number;              // Warnung unter X %
-  volume_l?: number;         // Tankvolumen -> Liter-Anzeige
-  style?: StyleConfig;
+  min?: number; volume_l?: number; style?: StyleConfig;
 }
 
 export class GrowctrlTankCard extends GrowctrlBaseCard {
@@ -23,43 +22,34 @@ export class GrowctrlTankCard extends GrowctrlBaseCard {
     if (!c.entity) throw new Error("growctrl-tank-card: 'entity' (Fuellstand-Sensor in %) ist Pflicht.");
   }
   static getConfigElement() { return document.createElement("growctrl-tank-editor"); }
-  static getStubConfig() { return { entity: "sensor.gc_slot1_level1", title: "Tank" }; }
+  static getStubConfig() { return { entity: "sensor.gc_slot1_level1", title: "Tank", min: 30, volume_l: 200 }; }
 
   render() {
     const c = this._config as TankConfig;
     if (!this.hass) return nothing;
     const demo = !this.hass.states[c.entity];
-    const pct = Math.min(100, Math.max(0, num(this.st(c.entity)) ?? (demo ? 62 : 0)));
+    const pct = Math.min(100, Math.max(0, num(this.st(c.entity)) ?? (demo ? 49 : 0)));
     const low = c.min !== undefined && pct < c.min;
-    const color = low ? THEME.crit : pct < (c.min ?? 0) + 15 ? THEME.warn : "#4FC3F7";
+    const col = low ? THEME.crit : THEME.water;
     const liters = c.volume_l ? (pct / 100) * c.volume_l : null;
 
-    return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${low ? "critical" : "ok"}
-        style=${cardVars(c.style)}>
-      <div class="hdr">
-        <div class="title" style="font-size:15px">${c.title ?? "F\u00fcllstand"}</div>
-        ${low ? html`<span class="badge warn">\u26A0 Nachf\u00fcllen</span>` : nothing}
+    return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${low ? "critical" : "ok"} style=${cardVars(c.style)}>
+      <div class="hd">
+        <div class="ttl grow">${c.title ?? "Tank"}</div>
+        ${low ? html`<span class="pill crit">Nachfüllen</span>` : nothing}
       </div>
-      <div style="display:flex;align-items:center;gap:18px;margin-top:12px">
-        <button class="gc" style="position:relative;width:74px;height:108px;flex-shrink:0;border-radius:12px 12px 16px 16px;
-            border:2px solid rgba(255,255,255,.15);overflow:hidden;background:rgba(0,0,0,.3)"
-          @click=${() => this.moreInfo(c.entity)}>
-          <div style="position:absolute;left:0;right:0;bottom:0;height:${pct}%;transition:height .8s;
-              background:linear-gradient(180deg, ${color}cc, ${color}88)">
-            <div style="position:absolute;top:-5px;left:-10%;width:120%;height:10px;border-radius:50%;
-              background:${color};opacity:.9"></div>
-          </div>
-          ${c.min !== undefined ? html`<div style="position:absolute;left:0;right:0;bottom:${c.min}%;
-            border-top:1.5px dashed rgba(255,107,107,.7)"></div>` : nothing}
+      <div style="display:flex; gap:18px; align-items:center">
+        <button class="gc tankv" @click=${() => this.moreInfo(c.entity)}>
+          ${c.min !== undefined ? html`<span class="minl" style="bottom:${c.min}%"></span>` : nothing}
+          <span class="fill" style="height:${pct}%; background:linear-gradient(180deg, ${col}d9, ${col}80)"></span>
         </button>
-        <div style="flex:1;min-width:0">
-          <div class="lbl">Aktueller F\u00fcllstand</div>
-          <div class="val" style="font-size:34px;color:${color}">${Math.round(pct)}<span class="unit">%</span></div>
-          ${liters !== null ? html`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.55);margin-top:2px">
-            \u2248 ${liters.toFixed(1)} l von ${c.volume_l} l</div>` : nothing}
-          ${c.min !== undefined ? html`<div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:6px">
-            Mindeststand ${c.min}%</div>` : nothing}
-        </div>
+        <button class="gc" style="flex:1; min-width:0; text-align:left" @click=${() => this.moreInfo(c.entity)}>
+          <span class="mlbl">Aktueller Füllstand</span>
+          <div style="font:700 38px/1 var(--f-num); letter-spacing:-1.5px; color:${col}; margin-top:5px; font-variant-numeric:tabular-nums">
+            ${Math.round(pct)}<span style="font:600 14px var(--f-num); color:var(--tx-2); margin-left:2px">%</span></div>
+          ${liters !== null ? html`<div style="margin-top:6px; font:700 12.5px var(--f-ui); color:var(--tx-2)">≈ ${liters.toFixed(1)} l von ${c.volume_l} l</div>` : nothing}
+          ${c.min !== undefined ? html`<div style="font:700 10.5px var(--f-ui); color:var(--tx-3); margin-top:2px">Mindeststand ${c.min} %</div>` : nothing}
+        </button>
       </div>
     </div>`;
   }
