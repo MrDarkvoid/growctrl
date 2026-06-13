@@ -242,6 +242,14 @@ export const sharedStyles = css`
   .ind .ilbl { font:800 11px var(--f-ui); letter-spacing:1.1px; text-transform:uppercase; display:inline-flex; align-items:center; gap:7px; }
   .ind .ival { font:700 19px var(--f-num); font-variant-numeric:tabular-nums; }
   .ind .ival .u { font-size:11px; color:rgba(242,247,243,.6); }
+  /* setzbare Werte (number / input_number): −/＋-Stepper */
+  .setrow { display:inline-flex; align-items:center; gap:9px; }
+  .stepbtn { width:32px; height:32px; border-radius:10px; display:grid; place-items:center; cursor:pointer;
+    color:var(--gc-accent); background:color-mix(in srgb, var(--gc-accent) 14%, transparent);
+    border:1px solid color-mix(in srgb, var(--gc-accent) 35%, transparent); }
+  .stepbtn:hover { background:color-mix(in srgb, var(--gc-accent) 24%, transparent); }
+  .setval { font:700 19px var(--f-num); font-variant-numeric:tabular-nums; min-width:58px; text-align:center; }
+  .setval .u { font-size:11px; color:rgba(242,247,243,.6); margin-left:1px; }
 
   /* Ereignisfeld */
   .event { display:flex; align-items:center; gap:11px; border-radius:15px; cursor:pointer; width:100%; text-align:left; color:inherit;

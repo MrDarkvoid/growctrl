@@ -26,7 +26,7 @@ import {
 type PlantSensor = string | { entity: string; name?: string;
   anzeige?: "wert" | "zone" | "graph"; icon?: string; color?: string;
   min?: number; max?: number; ok?: [number, number]; ideal?: [number, number];
-  hours?: number };
+  hours?: number; step?: number };   // step: Schrittweite fuer number/input_number (setzbar)
 
 /** Optionaler Aktor in der Station (Schalter direkt in der Karte). */
 interface StationActuator { entity: string; name?: string; icon?: string;
@@ -362,45 +362,65 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       </div>`;
   }
 
-  /** Pflanzen-Sensoren als einheitliche .ind-Bloecke: wert | zone | graph. */
+  /** Pflanzen-Sensoren als einheitliche .ind-Bloecke: wert | zone | graph.
+   *  number / input_number sind SETZBAR (−/＋-Stepper direkt im Block). */
   private plantSensors(raw: PlantSensor[]) {
     if (!raw.length) return nothing;
     const sens = raw.map(s => (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
-    return html`${sens.map(s => {
-      const v = num(this.st(s.entity));
-      const label = s.name ?? this.friendly(s.entity);
-      const unit = this.unit(s.entity);
-      const mode = s.anzeige ?? "wert";
-      if (mode === "zone") {
-        const ideal = s.ideal ?? [0, 0]; const ok = s.ok ?? ideal;
-        const inIdeal = v !== null && v >= ideal[0] && v <= ideal[1];
-        const inOk = v !== null && v >= ok[0] && v <= ok[1];
-        const col = s.color ?? (inIdeal ? THEME.ok : inOk ? THEME.warn : THEME.crit);
-        return html`<button class="gc ind" @click=${() => this.moreInfo(s.entity)}>
-          <div class="ihd"><span class="ilbl" style="color:${col}">
-            ${s.icon ? html`<ha-icon icon="${s.icon}" style="--mdc-icon-size:14px"></ha-icon>` : nothing}${label}</span>
-            <span class="ival" style="color:${col}">${v !== null ? v : "\u2013"}<span class="u">${unit}</span></span></div>
-          <div style="margin-top:8px">${zoneBar(v, { min: s.min ?? 0, max: s.max ?? 14,
-            okMin: ok[0], okMax: ok[1], idealMin: ideal[0], idealMax: ideal[1] })}</div>
-        </button>`;
-      }
-      if (mode === "graph") {
-        const col = s.color ?? THEME.water;
-        return html`<button class="gc ind" @click=${() => this.moreInfo(s.entity)}>
-          <div class="ihd"><span class="ilbl" style="color:${col}">
-            ${s.icon ? html`<ha-icon icon="${s.icon}" style="--mdc-icon-size:14px"></ha-icon>` : nothing}${label}</span>
-            <span class="ival" style="color:${col}">${v !== null ? v : "\u2013"}<span class="u">${unit}</span></span></div>
-          <div style="margin-top:6px">${sparkline(this._spark[s.entity] ?? [], col, this.chartW(74), 38)}</div>
-        </button>`;
-      }
-      // wert
-      const fval = v !== null ? v : (this.st(s.entity) ?? "\u2013");
-      return html`<button class="gc ind" @click=${() => this.moreInfo(s.entity)}>
-        <div class="ihd"><span class="ilbl" style="color:rgba(242,247,243,.6)">
-          ${s.icon ? html`<ha-icon icon="${s.icon}" style="--mdc-icon-size:14px"></ha-icon>` : nothing}${label}</span>
-          <span class="ival" style="color:${s.color ?? "rgba(242,247,243,.95)"}">${fval}<span class="u">${unit}</span></span></div>
-      </button>`;
-    })}`;
+    return html`${sens.map(s => this.sensorInd(s))}`;
+  }
+
+  private sensorInd(s: Exclude<PlantSensor, string>) {
+    const v = num(this.st(s.entity));
+    const label = s.name ?? this.friendly(s.entity);
+    const unit = this.unit(s.entity);
+    const mode = s.anzeige ?? "wert";
+    const dom = s.entity.split(".")[0];
+    const settable = dom === "number" || dom === "input_number";
+    const att = this.hass.states[s.entity]?.attributes ?? {};
+    const step = s.step ?? (Number(att.step) || 0.1);
+    const lo = att.min as number | undefined, hi = att.max as number | undefined;
+    const dec = (String(step).split(".")[1] ?? "").length || 1;
+    const setV = (nv: number) => {
+      let x = nv; if (lo !== undefined) x = Math.max(lo, x); if (hi !== undefined) x = Math.min(hi, x);
+      this.hass.callService(dom, "set_value", { entity_id: s.entity, value: Number(x.toFixed(dec)) });
+    };
+
+    // Akzent je Modus
+    let col: string;
+    const ideal = s.ideal ?? [0, 0]; const ok = s.ok ?? ideal;
+    if (mode === "zone") {
+      const inIdeal = v !== null && v >= ideal[0] && v <= ideal[1];
+      const inOk = v !== null && v >= ok[0] && v <= ok[1];
+      col = s.color ?? (inIdeal ? THEME.ok : inOk ? THEME.warn : THEME.crit);
+    } else if (mode === "graph") { col = s.color ?? THEME.water; }
+    else { col = s.color ?? "rgba(242,247,243,.95)"; }
+
+    const head = html`<div class="ihd">
+      <span class="ilbl" style="color:${mode === "wert" ? "rgba(242,247,243,.62)" : col};cursor:pointer"
+        @click=${() => this.moreInfo(s.entity)}>
+        ${s.icon ? html`<ha-icon icon="${s.icon}" style="--mdc-icon-size:14px"></ha-icon>` : nothing}${label}
+        ${settable ? html`<ha-icon icon="mdi:pencil" style="--mdc-icon-size:11px;opacity:.45;margin-left:3px"></ha-icon>` : nothing}
+      </span>
+      ${settable
+        ? html`<span class="setrow">
+            <button class="gc stepbtn" title="weniger" @click=${() => v !== null && setV(v - step)}>
+              <ha-icon icon="mdi:minus" style="--mdc-icon-size:16px"></ha-icon></button>
+            <span class="setval" style="color:${col}">${v !== null ? v : "\u2013"}<span class="u">${unit}</span></span>
+            <button class="gc stepbtn" title="mehr" @click=${() => setV((v ?? lo ?? 0) + step)}>
+              <ha-icon icon="mdi:plus" style="--mdc-icon-size:16px"></ha-icon></button></span>`
+        : html`<span class="ival" style="color:${col};cursor:pointer" @click=${() => this.moreInfo(s.entity)}>
+            ${v !== null ? v : (this.st(s.entity) ?? "\u2013")}<span class="u">${unit}</span></span>`}
+    </div>`;
+
+    const body = mode === "zone"
+      ? html`<div style="margin-top:8px">${zoneBar(v, { min: s.min ?? 0, max: s.max ?? 14,
+          okMin: ok[0], okMax: ok[1], idealMin: ideal[0], idealMax: ideal[1] })}</div>`
+      : mode === "graph"
+        ? html`<div style="margin-top:6px">${sparkline(this._spark[s.entity] ?? [], col, this.chartW(74), 38)}</div>`
+        : nothing;
+
+    return html`<div class="ind">${head}${body}</div>`;
   }
 
   private plantTankInd(entity: string, minP: number) {
