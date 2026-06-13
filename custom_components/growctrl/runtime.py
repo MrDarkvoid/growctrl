@@ -23,7 +23,8 @@ MAX_LOG = 30
 
 
 def _push_log(log: list, text: str, level: str) -> None:
-    log.append({"ts": datetime.now().strftime("%H:%M"), "text": text, "level": level})
+    now = datetime.now()
+    log.append({"ts": now.strftime("%H:%M"), "t": now.timestamp(), "text": text, "level": level})
     del log[:-MAX_LOG]
 
 

@@ -45,6 +45,52 @@ _LOG_TEXT = {
     "sensors_ok": lambda d: ("Klima-Sensoren liefern wieder Werte", "info"),
 }
 
+# Englische Entsprechung (additiv). Fehlt ein Eintrag, wird automatisch der
+# deutsche Text genutzt -> Deutsch ist die Quelle und bleibt garantiert vollstaendig.
+_LOG_TEXT_EN = {
+    "light": lambda d: ("Light ON" if d.get("soll") == "on" else "Light OFF", "info"),
+    "pump": lambda d: ("Pump ON" if d.get("soll") == "on" else "Pump OFF", "info"),
+    "o2": lambda d: ("O2 ON", "info"),
+    "fan": lambda d: ("Circulation ON", "info"),
+    "humidifier": lambda d: ("Humidifier ON" if d.get("soll") == "on" else "Humidifier OFF", "info"),
+    "dehumidifier": lambda d: ("Dehumidifier ON" if d.get("soll") == "on" else "Dehumidifier OFF", "info"),
+    "exhaust": lambda d: ("Exhaust boost ON" if d.get("soll") == "on" else "Exhaust boost OFF", "info"),
+    "manual_override": lambda d: (
+        f"Manual override detected - automation paused {d.get('minuten')} min", "warning"),
+    "override_end": lambda d: ("Automation resumes the light schedule", "info"),
+    "light_failsafe": lambda d: (f"FAILSAFE: light ran {d.get('on_minutes')} min -> emergency off", "critical"),
+    "time_invalid": lambda d: ("Light times incomplete - automation paused", "warning"),
+    "gate_off": lambda d: ("Tent disabled - station stopped", "warning"),
+    "gate_on": lambda d: ("Tent active again - automation running", "info"),
+    "pump_blocked": lambda d: (
+        f"Pump blocked - level {d.get('level')}% below minimum {d.get('min')}%", "critical"),
+    "pump_unblocked": lambda d: ("Pump released - level OK", "info"),
+    "power_problem": lambda d: (
+        f"Light ON but only {d.get('watt')} W - check the lamp!", "critical"),
+    "soil_skip": lambda d: (
+        f"Irrigation skipped - soil moisture {d.get('moisture')}% sufficient", "info"),
+    "sensors_stale": lambda d: (
+        f"Climate sensors frozen ({d.get('minuten')} min unchanged) - safe state", "critical"),
+    "sensors_ok": lambda d: ("Climate sensors reporting values again", "info"),
+}
+
+
+def _hass_is_en(hass) -> bool:
+    try:
+        return str(getattr(hass.config, "language", "de") or "de").lower().startswith("en")
+    except Exception:
+        return False
+
+
+def _log_text(kind: str, data: dict, hass) -> tuple[str, str]:
+    """Event-Klartext + Level gemaess HA-Sprache (Deutsch ist Standard/Fallback)."""
+    if _hass_is_en(hass):
+        fn = _LOG_TEXT_EN.get(kind)
+        if fn:
+            return fn(data)
+    fn = _LOG_TEXT.get(kind)
+    return fn(data) if fn else (kind, "info")
+
 from . import logic
 from datetime import timedelta
 
@@ -97,7 +143,7 @@ class StationController(_Base):
         self.hass.bus.async_fire(EVENT_GROWCTRL, {
             "tent": self.rt.tent, "station": self.rt.station, "kind": kind, **data,
         })
-        text, level = _LOG_TEXT.get(kind, (lambda d: (kind, "info")))(data)
+        text, level = _log_text(kind, data, self.hass)
         self.rt.add_log(text, level)
         getattr(_LOGGER, "warning" if level != "info" else "info")(
             "[%s/%s] %s", self.rt.tent, self.rt.station, text)
@@ -163,8 +209,11 @@ class StationController(_Base):
             now_min, rt.light_on_min, off_min)
 
         # ── Failsafe: Licht lief laenger als erlaubt -> Not-Aus + Flag ──
+        # 24-h-Dauerlicht (AN==AUS, z.B. 12:00->12:00) ist gewollt -> KEIN Failsafe:
+        # das Licht ist nie aus, der Zaehler wuerde sonst nach 24 h faelschlich ausloesen.
+        photoperiod_24h = logic.is_24h(rt.light_on_min, off_min)
         light_was = self._is_on(rt.light_switches[0]) if rt.light_switches else False
-        if light_was:
+        if light_was and not photoperiod_24h:
             if rt.light_on_since is None:
                 rt.light_on_since = now
             on_minutes = (now - rt.light_on_since).total_seconds() / 60.0
@@ -280,7 +329,7 @@ class TentController(_Base):
         self.hass.bus.async_fire(EVENT_GROWCTRL, {
             "tent": self.rt.tent, "station": "zelt", "kind": kind, **data,
         })
-        text, level = _LOG_TEXT.get(kind, (lambda d: (kind, "info")))(data)
+        text, level = _log_text(kind, data, self.hass)
         self.rt.add_log(text, level)
         getattr(_LOGGER, "warning" if level != "info" else "info")(
             "[Zelt %s] %s", self.rt.tent, text)

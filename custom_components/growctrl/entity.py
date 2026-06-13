@@ -15,6 +15,35 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from .const import DOMAIN, SIGNAL_UPDATE
 from .runtime import StationRuntime, TentRuntime
 
+# Deutsch -> Englisch fuer Entity-Anzeigenamen. Fehlt ein Eintrag, bleibt Deutsch
+# (Deutsch ist die Quelle und kann nie "fehlen"). Auswahl nach HA-Sprache.
+_NAMES_EN = {
+    "Alter seit Keimung": "Age since germination", "Aufgaben": "Tasks",
+    "DLI Prognose": "DLI forecast", "DLI heute": "DLI today",
+    "Keimstart": "Germination date", "Klima-Modus": "Climate mode",
+    "Klima-Phase": "Climate phase", "Letzte Regelung": "Last control",
+    "Letztes Ereignis": "Last event", "Licht Restzeit": "Light remaining",
+    "Phasen-Empfehlung": "Phase recommendation", "Pumpe Restzeit": "Pump remaining",
+    "Status": "Status", "VPD": "VPD", "Wachstumsphase": "Growth phase",
+    "Zeit im Sollband heute": "Time in target band today",
+    "Automatik": "Automatic", "Blatt-Offset": "Leaf offset",
+    "Klima-Automatik": "Climate automatic", "Klima-Sensoren eingefroren": "Climate sensors frozen",
+    "Licht ohne Leistung": "Light without power", "Licht-Failsafe": "Light failsafe",
+    "Lichtzeiten unvollst\u00e4ndig": "Light times incomplete", "Manueller Eingriff": "Manual override",
+    "Pumpe gesperrt (F\u00fcllstand)": "Pump blocked (level)",
+    "RH Max": "RH max", "RH Min": "RH min",
+    "Sensor-Timeout (eingefroren nach)": "Sensor timeout (frozen after)",
+    "VPD Max": "VPD max", "VPD Min": "VPD min", "Wartung": "Maintenance",
+    "Zelt aktiv": "Tent active",
+}
+
+
+def _is_english(hass) -> bool:
+    try:
+        return str(getattr(hass.config, "language", "de") or "de").lower().startswith("en")
+    except Exception:
+        return False
+
 
 class GrowctrlEntity(RestoreEntity, Entity):
     _attr_has_entity_name = True
@@ -31,6 +60,15 @@ class GrowctrlEntity(RestoreEntity, Entity):
             name=dev_name,
             manufacturer="GROWCTRL", model=rt.model,
         )
+
+    @property
+    def name(self):
+        """Anzeigename, automatisch Englisch bei englischer HA-Sprache (Deutsch = Standard)."""
+        base = self._attr_name
+        hass = getattr(self, "hass", None)
+        if base and hass is not None and _is_english(hass):
+            return _NAMES_EN.get(base, base)
+        return base
 
     async def async_added_to_hass(self) -> None:
         """Jede Entity folgt dem Regelzyklus: setzt der Controller z.B. die

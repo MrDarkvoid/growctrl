@@ -23,6 +23,12 @@ def parse_hhmm(value: str | None) -> int | None:
     return h_i * 60 + m_i
 
 
+def is_24h(on_min: int, off_min: int) -> bool:
+    """AN == AUS bedeutet 24-h-Dauerlicht (z.B. 12:00 -> 12:00).
+    In dem Fall darf der Licht-Failsafe NICHT greifen (Licht ist nie aus)."""
+    return on_min == off_min
+
+
 def light_desired(now_min: int, on_min: int, off_min: int) -> bool:
     """SOLL Licht mit Mitternachtsueberlauf (z.B. AN 22:00, AUS 06:00).
     AN == AUS bedeutet 24-h-Licht (z.B. 12:00 -> 12:00)."""
