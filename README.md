@@ -11,7 +11,7 @@ ein durchgestyltes Dashboard im Design **„Soft Garden“**.
 ![Lizenz](https://img.shields.io/badge/Lizenz-GC--SAL%201.0-7BE8A8)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-41BDF5)
 ![HACS](https://img.shields.io/badge/HACS-Custom-orange)
-![Status](https://img.shields.io/badge/Version-3.3.0-7BE8A8)
+![Status](https://img.shields.io/badge/Version-3.1.0-7BE8A8)
 
 *MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding*
 

@@ -1,22 +1,58 @@
 # Changelog – GROWCTRL
 
-## [3.3.0] — Layout-Regression behoben (Karten sehen jetzt wie der v6-Entwurf aus)
+## [3.3.1] — Live-Test-Feinschliff (v6) + Integration: Lichtplan-Gate
 
-### Fix (Ursache gefunden)
-- **Alle Button-Komponenten verloren ihr Layout.** Der globale Reset
-  `button.gc { all: unset }` hatte hoehere CSS-Spezifitaet (0-1-1) als die
-  Komponenten-Klassen `.supply`, `.dd-btn`, `.act`, `.event`, `.stepbtn`,
-  `.ptab`, `.ind` (je 0-1-0) und ueberschrieb damit `display:block`/`width:100%`
-  und die Hintergruende. Folge: Licht/Pumpe/DLI/Tank flossen auf breiten Karten
-  **nebeneinander** statt als volle Zeilen, das Phasen-Dropdown, das Aktor-Raster,
-  das Ereignisfeld und der Pflanzen-Tank waren ungestylt/gequetscht.
-- Reset auf `.gc { all: unset }` (0-1-0) gesenkt -> die Komponenten-Klassen gewinnen
-  wieder per Reihenfolge. Damit rendert die Stations-Karte wie der Design-Preview:
-  **volle Zeilen, Dropdown als Box, 4er-Aktor-Raster, sauberer Pflanzen-Tank.**
+### Karten
+- Hero/Tent: VPD-Zonenbalken jetzt **Blau · Hellgrün · Dunkelgrün · Gelb-orange · Rot**
+  (zu feucht / Seedling / Veg / Bloom / zu trocken).
+- Hero: KPI-Label "LUFTFEUCHTE" läuft nicht mehr aus der Kachel (Laufweite + Umbruchschutz).
+- Tent: **Phase ist jetzt ein Dropdown** (Modus VPD/RH bleibt als Chips, Zelt/Klima als Schalter).
+- Station: Licht-Zeile zeigt nur noch die **Dauer** ("1 h 2 min") statt eines doppelten Satzes;
+  bei ausgeschaltetem Licht erscheint **"Licht ausgeschaltet"**.
+- Station: Pflanzen-Kopf zeigt Name und Genetik in **einer Zeile** ("Pflanze 1 · Northern Lights").
+- Station: **pH/EC** ohne Icon-Doppelung (nur Textlabel).
+- Station: **+/−-Stepper** liegen nicht mehr im darunterliegenden Diagramm (Ausrichtung + Abstand).
 
-### GUI-Editor
-- Pflanzen-Editor: zusaetzlich zu Temp/Feuchte/pH/EC lassen sich nun **weitere
-  Sensoren** hinzufuegen (Mehrfachauswahl) – sie erscheinen als Werte-Felder.
+### Editoren
+- **Sensoren je Pflanze** (Station- und Plants-Karte) sind jetzt eine echte Unterliste mit
+  **eigenem Anzeigenamen pro Sensor** statt namenloser Mehrfachauswahl.
+
+### Integration
+- **Licht-Restzeit** wird auf 0 gesetzt und als "Licht ausgeschaltet" gemeldet, sobald das
+  Zelt-Gate (zelt_aktiv) **aus** ist ODER die Stations-Automatik **aus** ist – vorher lief die
+  Berechnung dauerhaft weiter.
+
+## [3.3.0] — Komplettes v6-Redesign aller Karten ("Soft Garden")
+
+Alle Karten wurden 1:1 auf den v6-Entwurf gebracht. Fundament + jede Karte neu.
+
+### Fundament (theme.ts = exakter v6-CSS-Port)
+- Komplettes v6-Komponenten-CSS portiert (Tokens, Radien, Schatten, Typo).
+- **`* { box-sizing: border-box }`** global -> behebt Out-of-Bounds-Ueberlaeufe
+  (Inhalte rechnen Padding in die Breite ein statt darueber hinaus).
+- CSS-Reset-Spezifitaet gesenkt (`.gc { all: unset }`), damit alle Button-
+  Komponenten (.supply/.dd/.act/.event/.lrow/.kpi/.tgl/.stepbtn) ihr Layout behalten.
+- Status-Ampel (ok/warn/crit) ist **zelt-unabhaengig**; nur der Akzent (--gc-accent)
+  traegt die Zelt-Identitaet (Klein gruen / Mittel weinrot / Gross violett).
+
+### Karten auf v6-Markup umgestellt
+- **Checkup**: jetzt echte **Matrix** (Stationen x Licht/Pumpe/Klima/Status mit
+  Ampelpunkten) statt Zeilenliste. Neues Schema: `tent` + `stations[]` + `show_tent_row`.
+- **Station**: Kopf mit `.icbtn`/`.chip-auto`, Versorgungszeilen mit `.bar`, pH/EC als
+  echte v6-Zonenbalken (`.zones` + Ideal-Label), Ereignis/Einstellungen im v6-Stil.
+- **Hero**: Badge-Icon, `.tgl`-Schalter, Klima-KPIs, VPD-Zonenbalken, Stationszeilen,
+  Informationssystem als Ereignis-Liste.
+- **Tent/Klima**: v6-Kopf, KPIs, VPD-Zonenbalken, Modus-/Phasen-Chips, Chart, Ereignis.
+- **Status**: v6-Log-Zeilen (Zeit · Quelle · Klartext, farbcodiert).
+- **Tank**: vertikaler v6-Tank mit Mindestlinie + grossem Wert.
+- **Metric**: grosser Wert + Sollbereich rechts + Verlauf mit Sollband.
+- **Sensors**: v6-KPI-Raster; neues Feld **Akzentfarbe** je Sensor.
+- **Controls**: v6-Aktor-Raster; neues Feld **Art** (Licht/Heizung/Wasser/O2/Luefter/Pumpe).
+- **History**: v6-Kopf + Chart + v6-Legende. **Plants**: v6-Panels.
+
+### GUI-Editoren
+- Checkup-, Sensors- und Controls-Editor an die neuen Schemata angepasst.
+- Pflanzen-Editor: zusaetzliche **weitere Sensoren** je Pflanze (als Felder).
 
 ### Diagnose
 - Konsolen-Banner: `GROWCTRL Cards v3.3.0`.
