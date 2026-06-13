@@ -41,14 +41,23 @@ const ACT_ICON: Record<string, string> = {
   pump: "mdi:water-pump", fan: "mdi:fan", o2: "mdi:scuba-tank",
 };
 
+/** Eine Pflanze (Tab) – mit dedizierten Feldern fuer die vier wichtigen Messwerte. */
+interface PlantCfg {
+  name: string; strain?: string; germination_helper?: string;
+  image?: string; sensors?: PlantSensor[];      // sensors[] = erweiterte Liste (YAML)
+  temp_entity?: string;                          // Temperatur  -> Verlauf
+  humidity_entity?: string;                      // Feuchtigkeit -> Verlauf
+  ph_entity?: string; ph_ok?: [number, number]; ph_ideal?: [number, number];   // pH -> Zone
+  ec_entity?: string; ec_ok?: [number, number]; ec_ideal?: [number, number];   // EC -> Zone
+  tank_entity?: string; tank_min?: number;
+}
+
 interface StationConfig {
   age_format?: "auto" | "tage" | "wochen";
   show_event?: boolean;
   tank_entity?: string; tank_min?: number; tank_volume?: number;
   actuators?: StationActuator[];     // optionale Schalter-Kacheln in der Station
-  plants?: Array<{ name: string; strain?: string; germination_helper?: string;
-    sensors?: PlantSensor[]; image?: string;
-    tank_entity?: string; tank_min?: number }>;
+  plants?: PlantCfg[];
   type: string; tent: string; station: string; name?: string;
   show_settings?: boolean; overrides?: GcOverrides; style?: StyleConfig;
 }
@@ -66,9 +75,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     super.updated?.(changed);
     if (!changed.has("hass") && !changed.has("_config")) return;
     const c = this._config as StationConfig;
-    const graphs = (c?.plants ?? []).flatMap(pl => (pl.sensors ?? [])
-      .map(s => (typeof s === "string" ? { entity: s } : s))
-      .filter(s => s.anzeige === "graph"));
+    const graphs = (c?.plants ?? []).flatMap(pl => this.sensorsFor(pl).filter(s => s.anzeige === "graph"));
     graphs.forEach(async g => {
       const data = await fetchHistory(this.hass, g.entity, g.hours ?? 24);
       if (data.length && this._spark[g.entity]?.length !== data.length) {
@@ -357,16 +364,34 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
             ${age !== null ? html`<span class="agechip">${fmtAge(age)}</span>` : nothing}
           </div>
         </div>
-        ${this.plantSensors(pl.sensors ?? [])}
+        ${this.plantSensors(this.sensorsFor(pl))}
         ${pl.tank_entity ? this.plantTankInd(pl.tank_entity, pl.tank_min ?? 30) : nothing}
       </div>`;
   }
 
-  /** Pflanzen-Sensoren als einheitliche .ind-Bloecke: wert | zone | graph.
-   *  number / input_number sind SETZBAR (−/＋-Stepper direkt im Block). */
-  private plantSensors(raw: PlantSensor[]) {
-    if (!raw.length) return nothing;
-    const sens = raw.map(s => (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
+  /** Dedizierte Messwerte (Temp/Feuchte/pH/EC) + erweiterte sensors[] als eine Liste. */
+  private sensorsFor(pl: PlantCfg): Exclude<PlantSensor, string>[] {
+    const d: Exclude<PlantSensor, string>[] = [];
+    if (pl.temp_entity)
+      d.push({ entity: pl.temp_entity, name: "Temperatur", anzeige: "graph",
+        color: THEME.temp, icon: "mdi:thermometer", hours: 24 });
+    if (pl.humidity_entity)
+      d.push({ entity: pl.humidity_entity, name: "Feuchtigkeit", anzeige: "graph",
+        color: THEME.water, icon: "mdi:water-percent", hours: 24 });
+    if (pl.ph_entity)
+      d.push({ entity: pl.ph_entity, name: "pH", anzeige: "zone", icon: "mdi:ph",
+        min: 4, max: 8, ok: pl.ph_ok ?? [5.5, 6.5], ideal: pl.ph_ideal ?? [5.8, 6.3] });
+    if (pl.ec_entity)
+      d.push({ entity: pl.ec_entity, name: "EC", anzeige: "zone", icon: "mdi:flash",
+        min: 0, max: 3, ok: pl.ec_ok ?? [1.0, 2.4], ideal: pl.ec_ideal ?? [1.2, 2.2] });
+    const extra = (pl.sensors ?? []).map(s =>
+      (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
+    return [...d, ...extra];
+  }
+
+  /** Pflanzen-Sensoren als einheitliche .ind-Bloecke (Liste bereits normalisiert). */
+  private plantSensors(sens: Exclude<PlantSensor, string>[]) {
+    if (!sens.length) return nothing;
     return html`${sens.map(s => this.sensorInd(s))}`;
   }
 
