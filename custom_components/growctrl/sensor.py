@@ -214,6 +214,7 @@ class TentVpd(_TentBase):
             STAGE_TO_CLIMATE, STAGE_ORDER)
         return {**super().extra_state_attributes,
                 "temp": self.rt.current_temp, "rh": self.rt.current_rh,
+                "temp_entity": self.rt.temp_sensor, "rh_entity": self.rt.hum_sensor,
                 "leaf_offset": self.rt.leaf_offset, "modus": self.rt.climate_mode,
                 "phase_effektiv": phase, "sollwerte": self.rt.targets.get(phase)}
 
