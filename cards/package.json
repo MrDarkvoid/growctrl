@@ -1,6 +1,6 @@
 {
   "name": "growctrl-cards",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "private": true,
   "description": "GROWCTRL Karten-Cluster fuer Home Assistant (ein HACS-Bundle)",
   "license": "MIT",

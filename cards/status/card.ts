@@ -47,7 +47,7 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
       ? rows.filter(r => r.level === "warning" || r.level === "critical") : rows;
     const shown = filtered.slice(0, c.limit ?? 12);
     const level = worstLevel(levels.map(l => l === "ok" ? "ok" : l));
-    const pill = STATUS_PILL[level];
+    const pill = STATUS_PILL[level] ?? STATUS_PILL.ok;
 
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${level} style=${cardVars(c.style)}>
       <div class="hdr">

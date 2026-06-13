@@ -45,7 +45,7 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
       return { row, level: r.level === "none" ? "ok" : r.level, label: r.label, ts: r.ts ?? "" };
     });
     const level = worstLevel(rows.map(x => x.level));
-    const pill = STATUS_PILL[level];
+    const pill = STATUS_PILL[level] ?? STATUS_PILL.ok;
     const dot = (lv: string) =>
       lv === "critical" ? THEME.crit : lv === "warning" ? THEME.warn : lv === "info" ? THEME.info : THEME.ok;
 

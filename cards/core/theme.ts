@@ -271,4 +271,5 @@ export const STATUS_PILL: Record<string, { bg: string; color: string; label: str
   info:     { bg: "rgba(154,200,255,.14)", color: THEME.info, label: "Info" },
   warning:  { bg: "rgba(255,206,122,.14)", color: THEME.warn, label: "Warnung" },
   critical: { bg: "rgba(255,157,157,.16)", color: THEME.crit, label: "Kritisch" },
+  none:     { bg: "rgba(133,153,140,.14)", color: "#85998C", label: "Inaktiv" },
 };

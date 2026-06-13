@@ -84,7 +84,7 @@ export class GrowctrlHeroCard extends GrowctrlBaseCard {
       (statusSt?.state ?? "").toLowerCase() === "problem" ? "warning" : "ok",
       ...stations.map(s => (isWarn(s.level) ? s.level : "ok")),
     ]);
-    const pill = STATUS_PILL[level];
+    const pill = STATUS_PILL[level] ?? STATUS_PILL.ok;
     const problems = [
       ...tentProblems.map(p => ({ label: p, level: "warning" })),
       ...stations.filter(s => isWarn(s.level)).map(s => ({ label: `${s.name}: ${s.text}`, level: s.level })),
