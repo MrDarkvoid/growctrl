@@ -1,5 +1,30 @@
 # Changelog – GROWCTRL
 
+## [3.3.2] — Lesbarkeit (PC-Skalierung + Einheiten), Pumpen-Gate, Checkup Zelt/Stationen, Editoren
+
+### Karten
+- **Einheiten-Abstand**: größerer Abstand zwischen Wert und Einheit (°C, %, kPa, mS/cm, PH, W)
+  in KPI-Kacheln, Indikatoren und Stepper-Werten – deutlich angenehmer lesbar.
+- **Dynamische Schriftgröße**: Container-Queries vergrößern Schrift/Elemente automatisch, sobald
+  eine Karte breit ist (PC/Tablet ab 460px bzw. 680px Kartenbreite). Am Handy bleibt alles unverändert.
+- **Station · Pumpe**: gleiches Prinzip wie beim Licht – ist das Zelt aus oder die Automatik aus,
+  zeigt die Pumpenzeile **„Pumpe ausgeschaltet“** (Icon grau, kein Balken) statt eines weiterlaufenden
+  Countdowns (gilt auch für Zirkulationspumpen).
+
+### Checkup-Karte
+- **Aufgeteilt in „Stationen“ und „Zelt“** – keine sinnlos grauen Punkte mehr (das Zelt hat kein Licht).
+- **Mehr Datenpunkte**: Stationen = Licht / Pumpe / Auto / Eingriff / Status;
+  Zelt = Aktiv / Klima / VPD / Status. Licht-Punkt berücksichtigt jetzt Failsafe, fehlende Leistung
+  und unvollständige Lichtzeiten; Pumpe berücksichtigt Füllstand-Sperre.
+
+### Editoren
+- **Alle Karten-Editoren** mit **Icons**, **Hilfetexten** und **individuellen Anzeigenamen** – einheitlich
+  wie die Station-Karte (Sensoren-, Aktor-, Pflanzen- und Quellen-Listen je mit eigenem Namen).
+
+### Integration
+- Gemeinsames Plan-Gate für Licht **und** Pumpe: Restzeit 0 + „ausgeschaltet“, wenn das Zelt-Gate
+  (zelt_aktiv) aus ist ODER die Stations-Automatik aus ist.
+
 ## [3.3.1] — Live-Test-Feinschliff (v6) + Integration: Lichtplan-Gate
 
 ### Karten
