@@ -99,6 +99,8 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
     const evt = this.hass.states[this.e("event")];
     const vpdOk = v !== null && targets && v >= targets.vpd_min && v <= targets.vpd_max;
     const markPct = v !== null ? Math.min(100, Math.max(0, (v / VPD_MAX) * 100)) : null;
+    const tempE = (vpdSt?.attributes?.temp_entity as string) || this.e("vpd");
+    const rhE = (vpdSt?.attributes?.rh_entity as string) || this.e("vpd");
 
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${level === "none" ? "ok" : level} style="${cardVars(c.style)};position:relative">
       <div class="hd">
@@ -115,8 +117,8 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
       </div>
 
       <div class="kpis">
-        <button class="gc kpi c-temp" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">${this.t("Temperatur")}</span><span class="v">${t != null ? Number(t).toFixed(1) : "–"}<span class="u">°C</span></span></button>
-        <button class="gc kpi c-hum" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">${this.t("Luftfeuchte")}</span><span class="v">${h != null ? Math.round(Number(h)) : "–"}<span class="u">%</span></span></button>
+        <button class="gc kpi c-temp" @click=${() => this.moreInfo(tempE)}><span class="mlbl">${this.t("Temperatur")}</span><span class="v">${t != null ? Number(t).toFixed(1) : "–"}<span class="u">°C</span></span></button>
+        <button class="gc kpi c-hum" @click=${() => this.moreInfo(rhE)}><span class="mlbl">${this.t("Luftfeuchte")}</span><span class="v">${h != null ? Math.round(Number(h)) : "–"}<span class="u">%</span></span></button>
         <button class="gc kpi c-vpd" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">VPD</span><span class="v" style="${v !== null && !vpdOk ? `color:${THEME.warn}` : ""}">${v !== null ? v.toFixed(2) : "–"}<span class="u">kPa</span></span></button>
       </div>
 

@@ -44,7 +44,15 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       SEL.entity("temp_entity", "\ud83c\udf21\ufe0f Temperatur (Sensor / input_number)"),
       SEL.entity("humidity_entity", "\ud83d\udca7 Feuchtigkeit (Sensor / input_number)"),
       SEL.entity("ph_entity", "\u2697\ufe0f pH (Sensor / input_number)"),
+      SEL.num("ph_ideal_min", "\ud83d\udfe2 pH Idealbereich (gr\u00fcn) – von", 0, 14, 0.1),
+      SEL.num("ph_ideal_max", "\ud83d\udfe2 pH Idealbereich (gr\u00fcn) – bis", 0, 14, 0.1),
+      SEL.num("ph_ok_min", "\ud83d\udfe1 pH akzeptabel – von (optional)", 0, 14, 0.1),
+      SEL.num("ph_ok_max", "\ud83d\udfe1 pH akzeptabel – bis (optional)", 0, 14, 0.1),
       SEL.entity("ec_entity", "\u26a1 EC (Sensor / input_number)"),
+      SEL.num("ec_ideal_min", "\ud83d\udfe2 EC Idealbereich (gr\u00fcn) – von", 0, 10, 0.1),
+      SEL.num("ec_ideal_max", "\ud83d\udfe2 EC Idealbereich (gr\u00fcn) – bis", 0, 10, 0.1),
+      SEL.num("ec_ok_min", "\ud83d\udfe1 EC akzeptabel – von (optional)", 0, 10, 0.1),
+      SEL.num("ec_ok_max", "\ud83d\udfe1 EC akzeptabel – bis (optional)", 0, 10, 0.1),
       SEL.entity("tank_entity", "\ud83e\udea3 Tank-F\u00fcllstand % (optional)", "sensor"),
       SEL.num("tank_min", "\u26a0\ufe0f Tank-Mindeststand % (Standard 30)", 0, 100),
     ];
@@ -61,11 +69,11 @@ export class GrowctrlStationEditor extends GrowctrlEditorBase {
       ${this.styleSection()}
       <div class="hint">
         <b>Temperatur &amp; Feuchtigkeit</b> werden als Mini-Verlauf gezeigt, <b>pH &amp; EC</b> als
-        Zonen-Balken (Ideal/akzeptiert/schlecht). W\u00e4hlst du dort ein <code>input_number</code>
-        (oder <code>number</code>), erscheint ein <b>\u2212/\uff0b-Stepper</b> zum Setzen \u2013 ideal f\u00fcr
-        Handmessungen ohne Sonde.<br>
-        Eigene pH/EC-Idealbereiche per YAML:
-        <code>ph_ideal: [5.8, 6.3]</code>, <code>ec_ideal: [1.2, 2.2]</code>.<br>
+        Zonen-Balken. W\u00e4hlst du dort ein <code>input_number</code> (oder <code>number</code>),
+        erscheint ein <b>\u2212/\uff0b-Stepper</b> zum Setzen \u2013 ideal f\u00fcr Handmessungen ohne Sonde.<br>
+        <b>Gr\u00fcner Bereich</b> = Idealbereich. Den akzeptablen (gelben) Bereich kannst du optional
+        zus\u00e4tzlich setzen \u2013 l\u00e4sst du ihn leer, gilt der gr\u00fcne Bereich (alles au\u00dferhalb = rot).
+        pH-Skala 4\u20138, EC-Skala 0\u20133.<br>
         Entity-IDs werden automatisch abgeleitet
         (z.B. <code>switch.growctrl_gross_main1_automatik</code>); Abweichungen per YAML
         <code>overrides: { automatik: switch.mein_schalter }</code>.

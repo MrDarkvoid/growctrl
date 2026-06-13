@@ -61,8 +61,6 @@ reserved to the author.
 2. ATTRIBUTION: Any permitted use must credit the author "MrDarkvoid" and,
    where technically reasonable, link back to the original repository.
    Existing copyright and license notices must not be removed or altered.
-   This includes the in-code authorship markers and the embedded
-   traceability identifier (see "Traceability" below).
 
 3. NOT PERMITTED without the author's prior written consent:
    a) any COMMERCIAL use of any kind (sale, rental, paid services,
@@ -93,17 +91,3 @@ reserved to the author.
 7. PERMISSIONS: Requests for commercial use, redistribution or publication
    of modified versions can be directed to the author via the original
    GitHub repository (issue or profile contact).
-
---------------------------------------------------------------------------------
-TRACEABILITY / VERFOLGBARKEIT
---------------------------------------------------------------------------------
-The source and the built artifacts carry a stable authorship fingerprint
-derived from the author's name (hex encoding of "MrDarkvoid"). It appears,
-among other places, as the constant value "4d72-4461726b-766f6964" in the
-integration and the cards, and as the attribute data-gce="4d724461726b766f6964"
-on every chart/sparkline SVG the cards render. Removing or altering this
-fingerprint constitutes a breach of Section 2.
-
-In English: this fingerprint exists solely to make the origin of copies and
-forks verifiable. It contains no personal data and no telemetry; nothing is
-transmitted anywhere.

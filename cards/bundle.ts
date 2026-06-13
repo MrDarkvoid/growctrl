@@ -18,7 +18,7 @@ import "./history/card";
 import "./metric/card";
 import { gcEpoch } from "./core/index";
 
-const VERSION = "3.4.0";
+const VERSION = "3.4.1";
 const CARDS = [
   { type: "growctrl-tent-card",     name: "GROWCTRL Tent",     description: "Zelt-Hero: Klima-KPIs, VPD-Skala, Status-Ampel" },
   { type: "growctrl-station-card",  name: "GROWCTRL Station",  description: "Station: Licht-/Pumpenbalken, Stage, Auto, Konfiguration" },

@@ -1,5 +1,24 @@
 # Changelog – GROWCTRL
 
+## [3.4.1] — pH/EC-Bereiche im Editor, Hero/Tent Temp-/RH-Klick, README/LICENSE bereinigt
+
+### Karten
+- **Station: pH/EC-Bereiche frei einstellbar** – im Karten-Editor gibt es jetzt Felder für den
+  **grünen (Ideal-)Bereich** und optional den **gelben (akzeptablen) Bereich** von pH und EC
+  (z. B. grün 5,5–6,8). Lässt du den gelben Bereich leer, gilt der grüne; alles außerhalb ist rot.
+  Bestehende YAML-Form (`ph_ideal: [..]`) funktioniert weiter.
+- **Hero & Tent: Klick auf Temperatur/Luftfeuchte** öffnet jetzt den jeweiligen **Quell-Sensor**
+  statt immer VPD. (Die Integration legt dafür die Quell-Entitäten als Attribute am VPD-Sensor offen.)
+
+### Integration
+- VPD-Sensor: zusätzliche Attribute `temp_entity` / `rh_entity` (für die Karten-Verlinkung oben).
+
+### Dokumentation / Lizenz
+- README auf den aktuellen Stand gebracht; das feste Zelt-Schema (Klein/Mittel/Groß + Farben)
+  durch „beliebig viele, frei benennbare Zelte mit eigener Farbe" ersetzt.
+- Verfolgbarkeits-/Fingerprint-Hinweise aus LICENSE, README und Doku entfernt (die internen
+  Code-Marker bleiben unverändert erhalten).
+
 ## [3.4.0] — Failsafe-24h-Fix, Ereignisprotokoll chronologisch + Info-Filter, Checkup-Icon-Header, PC-Skalierung (Viewport + Chart), automatische DE/EN-Sprache
 
 ### Integration

@@ -44,7 +44,9 @@ interface PlantCfg {
   image?: string; sensors?: PlantSensor[];
   temp_entity?: string; humidity_entity?: string;
   ph_entity?: string; ph_ok?: [number, number]; ph_ideal?: [number, number];
+  ph_ideal_min?: number; ph_ideal_max?: number; ph_ok_min?: number; ph_ok_max?: number;
   ec_entity?: string; ec_ok?: [number, number]; ec_ideal?: [number, number];
+  ec_ideal_min?: number; ec_ideal_max?: number; ec_ok_min?: number; ec_ok_max?: number;
   tank_entity?: string; tank_min?: number;
 }
 
@@ -333,10 +335,24 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
 
   private sensorsFor(pl: PlantCfg): Exclude<PlantSensor, string>[] {
     const d: Exclude<PlantSensor, string>[] = [];
+    // Bereich aus flachen Editor-Feldern (von/bis) ableiten; sonst Array-Form; sonst Default.
+    const rng = (mn: number | undefined, mx: number | undefined,
+      arr: [number, number] | undefined, def: [number, number]): [number, number] => [
+      typeof mn === "number" ? mn : (arr?.[0] ?? def[0]),
+      typeof mx === "number" ? mx : (arr?.[1] ?? def[1]),
+    ];
     if (pl.temp_entity) d.push({ entity: pl.temp_entity, name: this.t("Temperatur"), anzeige: "graph", color: THEME.temp, icon: "mdi:thermometer", hours: 24 });
     if (pl.humidity_entity) d.push({ entity: pl.humidity_entity, name: this.t("Feuchtigkeit"), anzeige: "graph", color: THEME.water, icon: "mdi:water-percent", hours: 24 });
-    if (pl.ph_entity) d.push({ entity: pl.ph_entity, name: "pH", anzeige: "zone", min: 4, max: 8, ok: pl.ph_ok ?? [5.5, 6.5], ideal: pl.ph_ideal ?? [5.8, 6.3] });
-    if (pl.ec_entity) d.push({ entity: pl.ec_entity, name: "EC", anzeige: "zone", min: 0, max: 3, ok: pl.ec_ok ?? [1.0, 2.4], ideal: pl.ec_ideal ?? [1.2, 2.2] });
+    if (pl.ph_entity) {
+      const ideal = rng(pl.ph_ideal_min, pl.ph_ideal_max, pl.ph_ideal, [5.8, 6.3]);
+      const ok = rng(pl.ph_ok_min, pl.ph_ok_max, pl.ph_ok, ideal);
+      d.push({ entity: pl.ph_entity, name: "pH", anzeige: "zone", min: 4, max: 8, ok, ideal });
+    }
+    if (pl.ec_entity) {
+      const ideal = rng(pl.ec_ideal_min, pl.ec_ideal_max, pl.ec_ideal, [1.2, 2.2]);
+      const ok = rng(pl.ec_ok_min, pl.ec_ok_max, pl.ec_ok, ideal);
+      d.push({ entity: pl.ec_entity, name: "EC", anzeige: "zone", min: 0, max: 3, ok, ideal });
+    }
     const extra = (pl.sensors ?? []).map(s => (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
     return [...d, ...extra];
   }

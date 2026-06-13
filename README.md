@@ -11,7 +11,7 @@ ein durchgestyltes Dashboard im Design **„Soft Garden“**.
 ![Lizenz](https://img.shields.io/badge/Lizenz-GC--SAL%201.0-7BE8A8)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-41BDF5)
 ![HACS](https://img.shields.io/badge/HACS-Custom-orange)
-![Status](https://img.shields.io/badge/Version-3.1.0-7BE8A8)
+![Status](https://img.shields.io/badge/Version-3.4.1-7BE8A8)
 
 *MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding*
 
@@ -26,16 +26,9 @@ loser Automationen, Helfer und Template-Sensoren installierst du **eine Integrat
 deine Zelte und Stationen über den Konfigurations-Dialog an – und bekommst eine konsistente
 Menge an Entitäten, eine robuste Regel-Logik und ein dazu passendes Dashboard.
 
-Das System ist um drei Zelte herum gedacht, lässt sich aber frei erweitern:
-
-| Zelt | Rolle | Theme |
-|------|-------|-------|
-| **Klein** | Anzucht / Sämlinge / Propagation | Grün |
-| **Mittel** | spezielle Pflanzen | Weinrot / Burgunder |
-| **Groß** | Hauptanbau | Violett |
-
-Jedes Zelt enthält eine oder mehrere **Stationen** (z. B. ein DWC-Becken oder ein Beet), und
-jede Station steuert ihre eigenen Aktoren und kennt ihre eigene Wachstumsphase.
+Du kannst beliebig viele **Zelte** anlegen, jedes mit eigenem Namen und eigener Farbe. Jedes
+Zelt enthält eine oder mehrere **Stationen** (z. B. ein DWC-Becken oder ein Beet), und jede
+Station steuert ihre eigenen Aktoren und kennt ihre eigene Wachstumsphase.
 
 ---
 
@@ -161,9 +154,9 @@ nicht von Hand eintragen (`overrides:` als Notausgang bleibt).
 | # | Karte | Aufgabe |
 |---|-------|---------|
 | 1 | **Hero** | Zelt-Übersicht: Schalter, Klima-KPIs, VPD-Zone, Stationsliste, Infosystem |
-| 2 | **Station** | Herzstück: Phasen-Dropdown, Versorgungszeilen Licht/Pumpe/DLI/Tank, Aktoren, Pflanzen-Tabs |
-| 3 | **Checkup** | Ampel-Matrix über alle Zelte & Stationen (Licht/Pumpe/Klima/Status) |
-| 4 | **Status / Protokoll** | Ereignisprotokoll mit Schweregrad-Filter |
+| 2 | **Station** | Herzstück: Phasen-Dropdown, Versorgungszeilen Licht/Pumpe/DLI/Tank, Aktoren, Pflanzen-Tabs (pH/EC mit frei einstellbarem Ideal-/Akzeptanz-Bereich) |
+| 3 | **Checkup** | Ampel-Matrix über alle Zelte & Stationen (Licht/Pumpe/Auto/Eingriff/Status) |
+| 4 | **Status / Protokoll** | Ereignisprotokoll, chronologisch über mehrere Stationen, Filter (Alle/Warnungen/Infos) |
 | 5 | **History** | Klima-Verlauf (Temp/RH), 24 h / 48 h |
 | 6 | **Metric** | Einzelwert mit Sollband (z. B. Wassertemperatur) |
 | 7 | **Tank** | Füllstand mit Visual, Mindeststand-Marke, Liter |
@@ -173,10 +166,14 @@ nicht von Hand eintragen (`overrides:` als Notausgang bleibt).
 
 **Designprinzipien**
 
-- Warmes Schwarzgrün als Fläche, **ein** Akzent je Zelt (Klein grün, Mittel weinrot,
-  Groß violett) – Sonderfarben (Heizmatte orange, Befeuchter blau) bleiben themen­unabhängig.
+- Warmes Schwarzgrün als Fläche, **ein** frei wählbarer Akzent je Zelt – Sonderfarben
+  (z. B. Heizmatte orange, Befeuchter blau) bleiben themenunabhängig.
 - Status (OK/Warnung/Kritisch) ist überall gleich kodiert; Farbe ist nie der einzige Träger.
 - Zahlen in Tabellenziffern, runde Formen, weiche Schatten.
+- **Automatische Sprache**: das Dashboard und die Integration zeigen Deutsch oder Englisch
+  je nach Home-Assistant-Sprache (Deutsch ist die Quelle; fehlt eine Übersetzung, bleibt es Deutsch).
+- **Skaliert mit dem Gerät**: auf dem PC werden Schrift und Diagramm-Beschriftungen etwas größer,
+  am Handy bleibt es kompakt.
 - **Barrierearm**: 44-px-Touchziele, sichtbare Fokus-Ringe, ausreichender Kontrast,
   `prefers-reduced-motion` wird respektiert.
 
@@ -198,13 +195,10 @@ Veröffentlicht unter der **GROWCTRL Source-Available License (GC-SAL) 1.0**
 ([`LICENSE`](LICENSE), Deutsch maßgeblich, vollständige englische Fassung enthalten):
 
 - ✅ Ansehen, privat & nicht-kommerziell nutzen, Fehler melden, PRs einreichen.
-- ❗ **Namensnennung „MrDarkvoid“** ist Pflicht; Urheber-, Lizenz- und Verfolgbarkeits-
-  Vermerke dürfen nicht entfernt werden.
+- ❗ **Namensnennung „MrDarkvoid“** ist Pflicht; Urheber- und Lizenzvermerke dürfen nicht
+  entfernt werden.
 - ⛔ Kommerzielle Nutzung, Re-Hosting und das Veröffentlichen modifizierter Versionen nur mit
   schriftlicher Zustimmung. (GitHubs Plattform-Fork-Recht bleibt unberührt.)
-
-Quellcode und Build tragen einen stabilen Urheber-Fingerprint zur **Verfolgbarkeit**
-(Hex von „MrDarkvoid“). Details im Abschnitt *Traceability* der `LICENSE`.
 
 ---
 

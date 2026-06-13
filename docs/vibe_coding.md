@@ -25,7 +25,7 @@ Kernmerkmale dieser Arbeitsweise:
   nächste Runde. Was im echten Zelt schieflief, wird zuerst gefixt.
 - **Disziplinierte Patches:** jede Code-Änderung mit eindeutigem Anker und Verifikation, damit
   ein Patch nicht still ins Leere greift (siehe §6).
-- **Verfolgbarkeit & Lizenz** sind Teil des Produkts, nicht nachträglich drangeklebt (§5).
+- **Lizenz & Namensnennung** sind Teil des Produkts, nicht nachträglich drangeklebt (§5).
 
 ---
 
@@ -105,13 +105,8 @@ nie der einzige Informationsträger (immer Icon/Text dazu).
 
 ---
 
-## 5. Verfolgbarkeit (Hash) & Lizenz
+## 5. Lizenz & Namensnennung
 
-- **Fingerprint:** Hex von „MrDarkvoid“ = `4d724461726b766f6964`. Er steht als Konstante
-  (`_SCHEMA_EPOCH` / `_EPOCH` = `4d72-4461726b-766f6964`) in Integration und Karten und als
-  Attribut `data-gce="4d724461726b766f6964"` an **jedem** Chart-/Sparkline-SVG. Kein Tracking,
-  keine Personendaten, keine Übertragung – nur Herkunfts-Nachweis. Entfernen verstößt gegen §2
-  der Lizenz.
 - **Lizenz:** GC-SAL 1.0 (Deutsch maßgeblich, vollständige englische Fassung in `LICENSE`).
   Privat/nicht-kommerziell frei mit Namensnennung; kommerziell, Re-Hosting und modifizierte
   Veröffentlichungen nur mit schriftlicher Zustimmung.
@@ -165,7 +160,7 @@ Ein wirksamer Prompt für die nächste GROWCTRL-Runde enthält idealerweise:
 
 **Leitplanken**
 
-- Deutsch bleiben. Attribution-Header und Verfolgbarkeits-Hash nie entfernen.
+- Deutsch bleiben. Attribution-Header nie entfernen.
 - Keine nicht existierenden HA-Entitäten erfinden; fehlende Schalter als optionale
   Karten-Config (`actuators:` etc.) lösen.
 - Eine Änderung pro Runde, immer mit Verifikation (Typecheck/Build/Tests).
