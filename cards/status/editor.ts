@@ -13,7 +13,8 @@ const MAIN = [
   SEL.text("title", "\ud83c\udff7\ufe0f Titel"), SEL.num("limit", "\ud83d\udccb Max. Zeilen", 3, 50),
   SEL.select("min_level", "\ud83d\udd0d Anzeige", [
     { value: "alle", label: "Alle Ereignisse" },
-    { value: "warnung", label: "Nur Warnungen/Fehler" }]),
+    { value: "warnung", label: "Nur Warnungen/Fehler" },
+    { value: "info", label: "Nur Infos" }]),
 ];
 const ROW = [
   SEL.entity("entity", "\ud83d\udcdc Letztes-Ereignis-Sensor", "sensor"),

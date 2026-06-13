@@ -92,6 +92,16 @@ def test_failsafe():
     assert logic.failsafe_tripped(1440, 1440) is False
 
 
+def test_is_24h_dauerlicht_kein_failsafe():
+    # AN == AUS = 24-h-Dauerlicht -> Controller deaktiviert den Failsafe darueber.
+    assert logic.is_24h(12 * 60, 12 * 60) is True
+    assert logic.is_24h(0, 0) is True
+    assert logic.is_24h(6 * 60, 18 * 60) is False
+    assert logic.is_24h(22 * 60, 6 * 60) is False
+    # 24-h-Plan -> Licht laut Soll immer an (Failsafe-Bedingung greift nie sinnvoll).
+    assert all(logic.light_desired(m, 12 * 60, 12 * 60) for m in (0, 300, 720, 1200, 1439))
+
+
 # ════════════════ v2.2: Klima, DLI, Empfehlung, Trocknung, geteilte Lichter ════════════════
 
 def test_vpd_kpa_plausibel():

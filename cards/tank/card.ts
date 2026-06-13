@@ -35,7 +35,7 @@ export class GrowctrlTankCard extends GrowctrlBaseCard {
 
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${low ? "critical" : "ok"} style=${cardVars(c.style)}>
       <div class="hd">
-        <div class="ttl grow">${c.title ?? "Tank"}</div>
+        <div class="ttl grow">${c.title ?? this.t("Tank")}</div>
         ${low ? html`<span class="pill crit">Nachfüllen</span>` : nothing}
       </div>
       <div style="display:flex; gap:18px; align-items:center">

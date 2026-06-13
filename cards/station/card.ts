@@ -111,7 +111,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const evt = this.hass.states[this.e("event")];
     const sev = problems.length ? (problems.some(p => p.crit) ? "critical" : "warning")
       : ((evt?.attributes?.schweregrad as string) === "critical" ? "warning" : "ok");
-    const statusLabel = wart ? "Wartung aktiv" : sev === "critical" ? "Kritisch" : sev === "warning" ? "Warnung" : "Alles OK";
+    const statusLabel = wart ? this.t("Wartung aktiv") : sev === "critical" ? this.t("Kritisch") : sev === "warning" ? this.t("Warnung") : this.t("Alles OK");
 
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${sev} style="${cardVars(c.style)};position:relative">
 
@@ -125,13 +125,13 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
             ${statusLabel}
           </div>
         </div>
-        <button class="gc icbtn ${wart ? "on" : ""}" title="Wartung (System greift nicht ein)"
+        <button class="gc icbtn ${wart ? "on" : ""}" title=${this.t("Wartung (System greift nicht ein)")}
           @click=${() => this.toggle(this.e("wartung"))}>
           <ha-icon icon="mdi:wrench-outline" style="--mdc-icon-size:16px"></ha-icon></button>
-        ${c.show_settings !== false ? html`<button class="gc icbtn" title="Einstellungen" @click=${() => { this._open = !this._open; }}>
+        ${c.show_settings !== false ? html`<button class="gc icbtn" title=${this.t("Einstellungen")} @click=${() => { this._open = !this._open; }}>
           <ha-icon icon="mdi:tune-variant" style="--mdc-icon-size:16px"></ha-icon></button>` : nothing}
-        <button class="gc chip-auto ${auto ? "" : "off"}" @click=${() => this.confirmToggle(this.e("auto"), "Automatik")}>
-          AUTO ${auto ? "AN" : "AUS"}</button>
+        <button class="gc chip-auto ${auto ? "" : "off"}" @click=${() => this.confirmToggle(this.e("auto"), this.t("Automatik"))}>
+          AUTO ${auto ? this.t("AN") : this.t("AUS")}</button>
       </div>
 
       <div style="margin-bottom:10px">${this.phaseDropdown(stage, sc)}</div>
@@ -144,7 +144,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
 
       ${problems.length ? html`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px">
         ${problems.map(p => html`<span class="pbadge ${p.crit ? "crit" : "warn"}">
-          <ha-icon icon="mdi:alert" style="--mdc-icon-size:12px"></ha-icon>${p.label}</span>`)}</div>` : nothing}
+          <ha-icon icon="mdi:alert" style="--mdc-icon-size:12px"></ha-icon>${this.t(p.label)}</span>`)}</div>` : nothing}
 
       ${(c.show_event !== false && evt) ? html`
         <button class="gc event" style="margin-top:14px" @click=${() => this.moreInfo(this.e("event"))}>
@@ -166,7 +166,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
 
   private setting(entity: string, label: string) {
     return html`<button class="gc skv" @click=${() => this.moreInfo(entity)}>
-      <div class="k">${label}</div><div class="vv">${this.st(entity) ?? "\u2013"}</div></button>`;
+      <div class="k">${this.t(label)}</div><div class="vv">${this.st(entity) ?? "\u2013"}</div></button>`;
   }
 
   /** Phasen-Dropdown volle Breite. */
@@ -175,14 +175,14 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const recHint = event?.state && event.state !== stage ? event.state : null;
     return html`<div class="dd ${this._phase ? "open" : ""}">
       <button class="gc dd-btn" aria-haspopup="listbox" aria-expanded=${this._phase} @click=${() => { this._phase = !this._phase; }}>
-        <span class="pdot" style="background:${sc.color};color:${sc.color}"></span>${stage}
-        <span class="hint">${STAGE_HINT[stage] ?? ""}${recHint ? " \u00b7 Richtwert " + recHint : ""}</span>
+        <span class="pdot" style="background:${sc.color};color:${sc.color}"></span>${this.t(stage)}
+        <span class="hint">${this.t(STAGE_HINT[stage] ?? "")}${recHint ? " \u00b7 " + this.t("Richtwert") + " " + this.t(recHint) : ""}</span>
         <ha-icon icon="mdi:chevron-down" style="--mdc-icon-size:16px;color:var(--tx-3);transition:transform .2s;${this._phase ? "transform:rotate(180deg)" : ""}"></ha-icon>
       </button>
       ${this._phase ? html`<div class="dd-menu" role="listbox">
         ${STAGES.map(s => html`<button class="gc dd-it" role="option" aria-selected=${s === stage}
           @click=${() => { this._select(this.e("stage"), s); this._phase = false; }}>
-          <span class="pdot ${STAGE_PD[s]}"></span>${s}<span class="hint">${STAGE_HINT[s] ?? ""}</span></button>`)}
+          <span class="pdot ${STAGE_PD[s]}"></span>${this.t(s)}<span class="hint">${this.t(STAGE_HINT[s] ?? "")}</span></button>`)}
       </div>` : nothing}
     </div>`;
   }
@@ -209,8 +209,8 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
   private lightRow() {
     if (this.isPreview)
       return this.supplyRow({ icon: "mdi:lightbulb-on", iconColor: THEME.light, glow: true,
-        title: "Licht an", value: "5 h 40 min", valueColor: THEME.light,
-        fillPct: 62, fillColor: THEME.light, footL: "Leuchtphase", footR: "62 % verbleibend" });
+        title: this.t("Licht an"), value: "5 h 40 min", valueColor: THEME.light,
+        fillPct: 62, fillColor: THEME.light, footL: this.t("Leuchtphase"), footR: `62 % ${this.t("verbleibend")}` });
     const st = this.hass.states[this.e("lightRest")];
     if (!st) return nothing;
     const a = st.attributes ?? {};
@@ -221,11 +221,11 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const col = an === false ? "#7E9488" : THEME.light;
     return this.supplyRow({
       icon: an === false ? "mdi:lightbulb-outline" : "mdi:lightbulb-on", iconColor: col, glow: an !== false,
-      title: an === false ? "Licht aus" : "Licht an",
+      title: an === false ? this.t("Licht aus") : this.t("Licht an"),
       value: an === false ? "\u2013" : dur, valueColor: col,
       fillPct: an === false ? null : (anteil !== null ? anteil * 100 : null), fillColor: col,
-      footL: an === false ? "Licht ausgeschaltet" : "Leuchtphase",
-      footR: an === false ? "" : (anteil !== null ? `${(anteil * 100).toFixed(0)} % verbleibend` : ""),
+      footL: an === false ? this.t("Licht ausgeschaltet") : this.t("Leuchtphase"),
+      footR: an === false ? "" : (anteil !== null ? `${(anteil * 100).toFixed(0)} % ${this.t("verbleibend")}` : ""),
       onClick: () => this.moreInfo(this.e("lightRest")),
     });
   }
@@ -235,18 +235,18 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     if (!st && !demo) return nothing;
     if (demo)
       return this.supplyRow({ icon: "mdi:water-pump", iconColor: THEME.water, topMargin: true,
-        title: "Pumpe aus", value: "in 12 min", valueColor: THEME.water,
-        fillPct: 80, fillColor: THEME.water, footL: "N\u00e4chster Zyklus", footR: "80 % der Pause" });
+        title: this.t("Pumpe aus"), value: "in 12 min", valueColor: THEME.water,
+        fillPct: 80, fillColor: THEME.water, footL: this.t("N\u00e4chster Zyklus"), footR: "80 %" });
     const rest = Number(st!.state);
     const a = st!.attributes ?? {};
     const off = a.aktiv === false;                       // Zelt aus / Automatik aus
     const anteil = typeof a.anteil === "number" ? Math.min(1, Math.max(0, a.anteil)) : null;
     const an = a.zustand ? a.zustand === "an" : undefined;
     return this.supplyRow({ icon: off ? "mdi:water-pump-off" : "mdi:water-pump", iconColor: off ? "#7E9488" : THEME.water, topMargin: true,
-      title: off ? "Pumpe aus" : (an ? "Pumpe l\u00e4uft" : "Pumpe aus"),
+      title: off ? this.t("Pumpe aus") : (an ? this.t("Pumpe l\u00e4uft") : this.t("Pumpe aus")),
       value: off ? "\u2013" : (isNaN(rest) ? "\u2013" : fmtDur(rest)), valueColor: off ? "#7E9488" : THEME.water,
       fillPct: off ? null : (anteil !== null ? anteil * 100 : null), fillColor: THEME.water,
-      footL: off ? "Pumpe ausgeschaltet" : ((a.text as string) ?? "Zyklus"),
+      footL: off ? this.t("Pumpe ausgeschaltet") : ((a.text as string) ?? this.t("Zyklus")),
       footR: off ? "" : (anteil !== null ? `${(anteil * 100).toFixed(0)} %` : ""),
       onClick: () => this.moreInfo(this.e("pumpRest")) });
   }
@@ -260,11 +260,11 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const pct = target && dli !== null ? (dli / target) * 100 : null;
     const fcPct = target && fc !== null ? Math.min(100, (fc / target) * 100) : undefined;
     return this.supplyRow({ icon: "mdi:white-balance-sunny", iconColor: THEME.light, topMargin: true,
-      title: "DLI heute",
+      title: this.t("DLI heute"),
       value: dli !== null ? `${dli.toFixed(1)}${target ? ` / ${target}` : ""}` : "\u2013", valueColor: THEME.light,
       fillPct: pct, fillColor: THEME.light, minPct: fcPct,
-      footL: fc !== null ? `Prognose ${fc.toFixed(1)} mol/m\u00b2` : "",
-      footR: target ? "Marker = Prognose" : "",
+      footL: fc !== null ? `${this.t("Prognose")} ${fc.toFixed(1)} mol/m\u00b2` : "",
+      footR: target ? this.t("Marker = Prognose") : "",
       onClick: () => this.moreInfo(this.e("dli")) });
   }
 
@@ -272,7 +272,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const acts = (this._config as StationConfig).actuators ?? [];
     if (!acts.length) return nothing;
     return html`
-      <div class="seclbl">Aktoren</div>
+      <div class="seclbl">${this.t("Aktoren")}</div>
       <div class="acts">
         ${acts.map(a => {
           const on = this.isOn(a.entity);
@@ -283,7 +283,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
             @click=${() => a.confirm ? this.confirmToggle(a.entity, name) : this.toggle(a.entity)}>
             <ha-icon class="aic" icon="${icon}" style="--mdc-icon-size:18px"></ha-icon>
             <span class="anm">${name}</span>
-            <span class="ast">${on ? "AN" : "AUS"}</span></button>`;
+            <span class="ast">${on ? this.t("AN") : this.t("AUS")}</span></button>`;
         })}
       </div>`;
   }
@@ -297,15 +297,16 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const col = low ? THEME.crit : THEME.water;
     const vol = c.tank_volume;
     return this.supplyRow({ icon: "mdi:car-coolant-level", iconColor: THEME.water, topMargin: true,
-      title: "Tank", value: `${pct.toFixed(0)} %`, valueColor: col,
+      title: this.t("Tank"), value: `${pct.toFixed(0)} %`, valueColor: col,
       fillPct: pct, fillColor: col, minPct: minP,
-      footL: vol ? `\u2248 ${(pct / 100 * vol).toFixed(0)} l von ${vol} l` : (low ? "Unter Mindeststand" : ""),
-      footR: `Min ${minP} %`,
+      footL: vol ? `\u2248 ${(pct / 100 * vol).toFixed(0)} l ${this.t("von")} ${vol} l` : (low ? this.t("Unter Mindeststand") : ""),
+      footR: `${this.t("Min")} ${minP} %`,
       onClick: () => this.moreInfo(c.tank_entity!) });
   }
 
   private plantTabs() {
-    const plants = (this._config as StationConfig).plants ?? [];
+    const c = this._config as StationConfig;
+    const plants = c.plants ?? [];
     if (!plants.length) return nothing;
     const i = Math.min(this._tab, plants.length - 1);
     const pl = plants[i];
@@ -322,7 +323,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
             : html`<div class="pimg"><ha-icon icon="mdi:sprout" style="--mdc-icon-size:28px"></ha-icon></div>`}
           <div style="flex:1;min-width:0">
             <div class="pname">${pl.name}${pl.strain ? html`<span class="pstrain" style="display:inline;margin:0 0 0 7px">\u00b7 ${pl.strain}</span>` : nothing}</div>
-            ${age !== null ? html`<span class="agechip">${fmtAge(age)}</span>` : nothing}
+            ${age !== null ? html`<span class="agechip">${fmtAge(age, c.age_format ?? "auto", this._lang)}</span>` : nothing}
           </div>
         </div>
         ${this.plantSensors(this.sensorsFor(pl))}
@@ -332,8 +333,8 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
 
   private sensorsFor(pl: PlantCfg): Exclude<PlantSensor, string>[] {
     const d: Exclude<PlantSensor, string>[] = [];
-    if (pl.temp_entity) d.push({ entity: pl.temp_entity, name: "Temperatur", anzeige: "graph", color: THEME.temp, icon: "mdi:thermometer", hours: 24 });
-    if (pl.humidity_entity) d.push({ entity: pl.humidity_entity, name: "Feuchtigkeit", anzeige: "graph", color: THEME.water, icon: "mdi:water-percent", hours: 24 });
+    if (pl.temp_entity) d.push({ entity: pl.temp_entity, name: this.t("Temperatur"), anzeige: "graph", color: THEME.temp, icon: "mdi:thermometer", hours: 24 });
+    if (pl.humidity_entity) d.push({ entity: pl.humidity_entity, name: this.t("Feuchtigkeit"), anzeige: "graph", color: THEME.water, icon: "mdi:water-percent", hours: 24 });
     if (pl.ph_entity) d.push({ entity: pl.ph_entity, name: "pH", anzeige: "zone", min: 4, max: 8, ok: pl.ph_ok ?? [5.5, 6.5], ideal: pl.ph_ideal ?? [5.8, 6.3] });
     if (pl.ec_entity) d.push({ entity: pl.ec_entity, name: "EC", anzeige: "zone", min: 0, max: 3, ok: pl.ec_ok ?? [1.0, 2.4], ideal: pl.ec_ideal ?? [1.2, 2.2] });
     const extra = (pl.sensors ?? []).map(s => (typeof s === "string" ? { entity: s } as Exclude<PlantSensor, string> : s));
@@ -362,7 +363,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       </span>
       <span class="zlbl">
         <span style="width:30%;text-align:left">${min}</span>
-        <span style="width:40%;color:#4CB87E;font-weight:800">${ideal[0]}\u2013${ideal[1]} ideal</span>
+        <span style="width:40%;color:#4CB87E;font-weight:800">${ideal[0]}\u2013${ideal[1]} ${this.t("ideal")}</span>
         <span style="width:30%;text-align:right">${max}</span>
       </span>`;
   }
@@ -399,9 +400,9 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
       </span>
       ${settable
         ? html`<span class="setrow">
-            <button class="gc stepbtn" title="weniger" @click=${() => v !== null && setV(v - step)}><ha-icon icon="mdi:minus" style="--mdc-icon-size:16px"></ha-icon></button>
+            <button class="gc stepbtn" title=${this.t("weniger")} @click=${() => v !== null && setV(v - step)}><ha-icon icon="mdi:minus" style="--mdc-icon-size:16px"></ha-icon></button>
             <span class="setval" style="color:${col}">${v !== null ? v : "\u2013"}<span class="u">${unit}</span></span>
-            <button class="gc stepbtn" title="mehr" @click=${() => setV((v ?? lo ?? 0) + step)}><ha-icon icon="mdi:plus" style="--mdc-icon-size:16px"></ha-icon></button></span>`
+            <button class="gc stepbtn" title=${this.t("mehr")} @click=${() => setV((v ?? lo ?? 0) + step)}><ha-icon icon="mdi:plus" style="--mdc-icon-size:16px"></ha-icon></button></span>`
         : html`<span class="ival" style="color:${col};cursor:pointer" @click=${() => this.moreInfo(s.entity)}>
             ${v !== null ? v : (this.st(s.entity) ?? "\u2013")}<span class="u">${unit}</span></span>`}
     </div>`;
@@ -421,7 +422,7 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
     const col = low ? THEME.crit : THEME.water;
     return html`<button class="gc ind" @click=${() => this.moreInfo(entity)}>
       <div class="ihd"><span class="ilbl" style="color:${THEME.water}">
-        <ha-icon icon="mdi:car-coolant-level" style="--mdc-icon-size:14px"></ha-icon>Tank</span>
+        <ha-icon icon="mdi:car-coolant-level" style="--mdc-icon-size:14px"></ha-icon>${this.t("Tank")}</span>
         <span class="ival" style="color:${col}">${pct.toFixed(0)}<span class="u"> %</span></span></div>
       <span class="bar" style="margin-top:8px"><i style="width:${pct}%;background:linear-gradient(90deg, ${col}, ${col}cc);box-shadow:0 0 9px ${col}55"></i>
         <span class="min" style="left:${minP}%"></span></span>

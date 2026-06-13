@@ -69,14 +69,14 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
   private phaseDropdown(entity: string, current: string) {
     return html`<div class="dd ${this._phase ? "open" : ""}">
       <button class="gc dd-btn" aria-haspopup="listbox" aria-expanded=${this._phase} @click=${() => { this._phase = !this._phase; }}>
-        <span class="pdot ${PHASE_PD[current]}" style="${current === "Auto" ? "background:var(--acc);color:var(--acc)" : ""}"></span>${current}
-        <span class="hint">${PHASE_HINT[current] ?? ""}</span>
+        <span class="pdot ${PHASE_PD[current]}" style="${current === "Auto" ? "background:var(--acc);color:var(--acc)" : ""}"></span>${this.t(current)}
+        <span class="hint">${this.t(PHASE_HINT[current] ?? "")}</span>
         <ha-icon icon="mdi:chevron-down" style="--mdc-icon-size:16px;color:var(--tx-3);transition:transform .2s;${this._phase ? "transform:rotate(180deg)" : ""}"></ha-icon>
       </button>
       ${this._phase ? html`<div class="dd-menu" role="listbox">
         ${PHASES.map(s => html`<button class="gc dd-it" role="option" aria-selected=${s === current}
           @click=${() => { this._select(entity, s); this._phase = false; }}>
-          <span class="pdot ${PHASE_PD[s]}" style="${s === "Auto" ? "background:var(--acc)" : ""}"></span>${s}<span class="hint">${PHASE_HINT[s] ?? ""}</span></button>`)}
+          <span class="pdot ${PHASE_PD[s]}" style="${s === "Auto" ? "background:var(--acc)" : ""}"></span>${this.t(s)}<span class="hint">${this.t(PHASE_HINT[s] ?? "")}</span></button>`)}
       </div>` : nothing}
     </div>`;
   }
@@ -103,20 +103,20 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${level === "none" ? "ok" : level} style="${cardVars(c.style)};position:relative">
       <div class="hd">
         <div class="grow" style="min-width:0">
-          <div class="ttl">${c.name ?? `Klima Zelt ${c.tent}`}</div>
-          <div class="sub">Phase ${phaseEff}${targets ? ` · Soll ${targets.vpd_min}–${targets.vpd_max} kPa / ${targets.rh_min}–${targets.rh_max} %` : ""}</div>
+          <div class="ttl">${c.name ?? `${this.t("Klima")} ${this.t("Zelt")} ${c.tent}`}</div>
+          <div class="sub">${this.t("Phase")} ${this.t(phaseEff)}${targets ? ` · ${this.t("Soll")} ${targets.vpd_min}–${targets.vpd_max} kPa / ${targets.rh_min}–${targets.rh_max} %` : ""}</div>
         </div>
-        <span class="pill ${enabled ? pillClass(level) : "none"}">${enabled ? (level === "ok" ? "Alles OK" : level === "warning" ? "Warnung" : "Info") : "Deaktiviert"}</span>
+        <span class="pill ${enabled ? pillClass(level) : "none"}">${enabled ? (level === "ok" ? this.t("Alles OK") : level === "warning" ? this.t("Warnung") : this.t("Info")) : this.t("Deaktiviert")}</span>
       </div>
 
       <div style="display:flex; gap:8px; margin-bottom:16px">
-        ${this.tglBtn(this.e("enabled"), "Zelt", enabled)}
-        ${this.tglBtn(this.e("climate"), "Klima", climate)}
+        ${this.tglBtn(this.e("enabled"), this.t("Zelt"), enabled)}
+        ${this.tglBtn(this.e("climate"), this.t("Klima"), climate)}
       </div>
 
       <div class="kpis">
-        <button class="gc kpi c-temp" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">Temperatur</span><span class="v">${t != null ? Number(t).toFixed(1) : "–"}<span class="u">°C</span></span></button>
-        <button class="gc kpi c-hum" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">Luftfeuchte</span><span class="v">${h != null ? Math.round(Number(h)) : "–"}<span class="u">%</span></span></button>
+        <button class="gc kpi c-temp" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">${this.t("Temperatur")}</span><span class="v">${t != null ? Number(t).toFixed(1) : "–"}<span class="u">°C</span></span></button>
+        <button class="gc kpi c-hum" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">${this.t("Luftfeuchte")}</span><span class="v">${h != null ? Math.round(Number(h)) : "–"}<span class="u">%</span></span></button>
         <button class="gc kpi c-vpd" @click=${() => this.moreInfo(this.e("vpd"))}><span class="mlbl">VPD</span><span class="v" style="${v !== null && !vpdOk ? `color:${THEME.warn}` : ""}">${v !== null ? v.toFixed(2) : "–"}<span class="u">kPa</span></span></button>
       </div>
 
@@ -126,14 +126,14 @@ export class GrowctrlTentCard extends GrowctrlBaseCard {
           ${targets ? html`<span class="zband" style="left:${(targets.vpd_min / VPD_MAX) * 100}%;width:${((targets.vpd_max - targets.vpd_min) / VPD_MAX) * 100}%"></span>` : nothing}
           ${markPct !== null ? html`<span class="zmark" style="left:${markPct}%"></span>` : nothing}
         </div>
-        <div class="zlbl">${VPD_ZONES.map(z => html`<span style="width:${z.w}%">${z.lbl}</span>`)}</div>
+        <div class="zlbl">${VPD_ZONES.map(z => html`<span style="width:${z.w}%">${this.t(z.lbl)}</span>`)}</div>
       </div>
 
       <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; align-items:center">
-        <span class="mlbl">Modus</span>${this.chips(this.e("mode"), MODES, this.st(this.e("mode")) ?? "VPD")}
+        <span class="mlbl">${this.t("Modus")}</span>${this.chips(this.e("mode"), MODES, this.st(this.e("mode")) ?? "VPD")}
       </div>
       <div style="margin-top:13px">
-        <span class="mlbl" style="display:block; margin-bottom:8px">Phase</span>
+        <span class="mlbl" style="display:block; margin-bottom:8px">${this.t("Phase")}</span>
         ${this.phaseDropdown(this.e("phase"), this.st(this.e("phase")) ?? "Auto")}
       </div>
 

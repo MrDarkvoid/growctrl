@@ -17,9 +17,9 @@ import {
 interface StatusSource { entity: string; name?: string; }
 interface StatusConfig {
   type: string; title?: string; sources: StatusSource[];
-  limit?: number; min_level?: "alle" | "warnung"; style?: StyleConfig;
+  limit?: number; min_level?: "alle" | "warnung" | "info"; style?: StyleConfig;
 }
-interface Row { ts: string; text: string; level: string; src?: string; entity?: string; }
+interface Row { ts: string; t?: number; text: string; level: string; src?: string; entity?: string; }
 
 export class GrowctrlStatusCard extends GrowctrlBaseCard {
   static styles = sharedStyles;
@@ -39,22 +39,36 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
     const levels: string[] = [];
     for (const s of c.sources) {
       const st = this.hass.states[s.entity];
-      const verlauf = (st?.attributes?.verlauf as Row[]) ?? [];
+      const verlauf = (st?.attributes?.verlauf as any[]) ?? [];
       levels.push((st?.attributes?.schweregrad as string) ?? "ok");
-      verlauf.forEach(r => rows.push({ ...r, src: s.name ?? this.friendly(s.entity), entity: s.entity }));
+      verlauf.forEach((r, i) => rows.push({
+        ts: r.ts, t: typeof r.t === "number" ? r.t : undefined, text: r.text, level: r.level,
+        src: s.name ?? this.friendly(s.entity), entity: s.entity,
+        // Stabiler Tiebreak innerhalb einer Quelle ohne echten Zeitstempel:
+        _i: i,
+      } as Row & { _i: number }));
     }
-    rows.reverse();
-    const filtered = c.min_level === "warnung"
-      ? rows.filter(r => r.level === "warning" || r.level === "critical") : rows;
+    // ALLE Quellen chronologisch mischen (neueste zuerst). Echte Zeitstempel (t)
+    // gewinnen; fehlt t (Altdaten), bleibt die Quellen-Reihenfolge erhalten.
+    rows.sort((a: any, b: any) => {
+      const ta = a.t ?? -1, tb = b.t ?? -1;
+      if (ta !== tb) return tb - ta;
+      return (b._i ?? 0) - (a._i ?? 0);
+    });
+    const filtered =
+      c.min_level === "warnung" ? rows.filter(r => r.level === "warning" || r.level === "critical")
+      : c.min_level === "info" ? rows.filter(r => r.level === "info")
+      : rows;
     const shown = filtered.slice(0, c.limit ?? 12);
     const level = worstLevel(levels);
     const multi = c.sources.length > 1;
     const rowCls = (lv: string) => lv === "critical" ? "c" : lv === "warning" ? "w" : lv === "info" ? "i" : "";
+    const pillTxt = level === "ok" ? this.t("Info") : level === "warning" ? this.t("Warnung") : level === "critical" ? this.t("Kritisch") : this.t("Info");
 
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${level} style=${cardVars(c.style)}>
       <div class="hd">
-        <div class="ttl grow">${c.title ?? "Ereignisprotokoll"}</div>
-        <span class="pill ${pillClass(level)}">${level === "ok" ? "Info" : level === "warning" ? "Warnung" : level === "critical" ? "Kritisch" : "Info"}</span>
+        <div class="ttl grow">${c.title ?? this.t("Ereignisprotokoll")}</div>
+        <span class="pill ${pillClass(level)}">${pillTxt}</span>
       </div>
       <div class="log">
         ${shown.length ? shown.map(r => html`
@@ -63,7 +77,7 @@ export class GrowctrlStatusCard extends GrowctrlBaseCard {
             ${multi ? html`<span class="who">${r.src}</span>` : nothing}
             <span class="what">${r.text}</span>
           </button>`)
-        : html`<div class="lrow"><span class="what" style="color:var(--acc)">✓ Noch keine Ereignisse</span></div>`}
+        : html`<div class="lrow"><span class="what" style="color:var(--acc)">\u2713 ${this.t("Noch keine Ereignisse")}</span></div>`}
       </div>
     </div>`;
   }

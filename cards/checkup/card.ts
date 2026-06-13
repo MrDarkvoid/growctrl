@@ -50,25 +50,25 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
     const failsafe = this.isOn(this.sEnt(tent, station, "pFailsafe"));
     const lightProblem = this.isOn(this.sEnt(tent, station, "pPower")) || this.isOn(this.sEnt(tent, station, "pTime"));
     const licht = failsafe ? "critical" : lightProblem ? "warning" : lightSt ? (lichtAn ? "ok" : "off") : "off";
-    const lichtText = failsafe ? "Licht-Failsafe ausgel\u00f6st"
-      : this.isOn(this.sEnt(tent, station, "pPower")) ? "Licht AN ohne Leistung"
-      : this.isOn(this.sEnt(tent, station, "pTime")) ? "Lichtzeiten unvollst\u00e4ndig"
-      : lightSt ? (lichtAn ? "Licht an" : (lightSt.attributes?.aktiv === false ? "Licht ausgeschaltet" : "Licht aus")) : "\u2014";
+    const lichtText = failsafe ? this.t("Licht-Failsafe ausgel\u00f6st")
+      : this.isOn(this.sEnt(tent, station, "pPower")) ? this.t("Licht AN ohne Leistung")
+      : this.isOn(this.sEnt(tent, station, "pTime")) ? this.t("Lichtzeiten unvollst\u00e4ndig")
+      : lightSt ? (lichtAn ? this.t("Licht an") : (lightSt.attributes?.aktiv === false ? this.t("Licht ausgeschaltet") : this.t("Licht aus"))) : "\u2014";
 
     const pumpBlocked = this.isOn(this.sEnt(tent, station, "pPump"));
     const pumpSt = this.hass.states[this.sEnt(tent, station, "pumpRest")];
     const pumpe = pumpBlocked ? "critical" : pumpSt ? "ok" : "off";
-    const pumpeText = pumpBlocked ? "Pumpe gesperrt (F\u00fcllstand)"
-      : pumpSt ? (pumpSt.attributes?.aktiv === false ? "Pumpe ausgeschaltet" : ((pumpSt.attributes?.text as string) ?? "Zyklus l\u00e4uft")) : "\u2014";
+    const pumpeText = pumpBlocked ? this.t("Pumpe gesperrt (F\u00fcllstand)")
+      : pumpSt ? (pumpSt.attributes?.aktiv === false ? this.t("Pumpe ausgeschaltet") : ((pumpSt.attributes?.text as string) ?? this.t("Zyklus l\u00e4uft"))) : "\u2014";
 
     const autoOn = this.isOn(this.sEnt(tent, station, "auto"));
     const maint = this.isOn(this.sEnt(tent, station, "wartung"));
     const auto = maint ? "info" : autoOn ? "ok" : "warning";
-    const autoText = maint ? "Wartungsmodus aktiv" : autoOn ? "Automatik AN" : "Automatik AUS (manuell)";
+    const autoText = maint ? this.t("Wartungsmodus aktiv") : autoOn ? this.t("Automatik AN") : this.t("Automatik AUS (manuell)");
 
     const ovr = this.isOn(this.sEnt(tent, station, "pOverride"));
     const eingriff = ovr ? "warning" : "ok";
-    const eingriffText = ovr ? "Manueller Eingriff aktiv" : "Kein Eingriff";
+    const eingriffText = ovr ? this.t("Manueller Eingriff aktiv") : this.t("Kein Eingriff");
 
     const evt = this.hass.states[this.sEnt(tent, station, "event")];
     const sev = (evt?.attributes?.schweregrad as string) ?? "ok";
@@ -88,23 +88,23 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
   private tentCells(tent: string) {
     const enabledOn = this.isOn(this.tEnt(tent, "enabled"));
     const aktiv = enabledOn ? "ok" : "warning";
-    const aktivText = enabledOn ? "Zelt aktiv" : "Zelt deaktiviert";
+    const aktivText = enabledOn ? this.t("Zelt aktiv") : this.t("Zelt deaktiviert");
 
     const climateOn = this.isOn(this.tEnt(tent, "climate"));
     const klima = climateOn ? "ok" : "off";
-    const klimaText = climateOn ? "Klima-Automatik AN" : "Klima-Automatik AUS";
+    const klimaText = climateOn ? this.t("Klima-Automatik AN") : this.t("Klima-Automatik AUS");
 
     const vpdSt = this.hass.states[this.tEnt(tent, "vpd")];
     const v = num(vpdSt?.state);
     const tg = vpdSt?.attributes?.sollwerte as { vpd_min: number; vpd_max: number } | undefined;
     const vpd = (v !== null && tg) ? (v >= tg.vpd_min && v <= tg.vpd_max ? "ok" : "warning") : (vpdSt ? "ok" : "off");
-    const vpdText = v !== null ? `VPD ${v.toFixed(2)} kPa${tg ? ` (Soll ${tg.vpd_min}\u2013${tg.vpd_max})` : ""}` : "\u2014";
+    const vpdText = v !== null ? `VPD ${v.toFixed(2)} kPa${tg ? ` (${this.t("Soll")} ${tg.vpd_min}\u2013${tg.vpd_max})` : ""}` : "\u2014";
 
     const statusSt = this.hass.states[this.tEnt(tent, "status")];
     const problem = (statusSt?.state ?? "").toLowerCase() === "problem";
     const probleme = (statusSt?.attributes?.probleme as string[]) ?? [];
     const status = problem ? "warning" : "ok";
-    const statusText = problem ? (probleme[0] ?? "Problem erkannt") : "Alles OK";
+    const statusText = problem ? (probleme[0] ?? this.t("Problem erkannt")) : this.t("Alles OK");
 
     return { aktiv, klima, vpd, status, aktivText, klimaText, vpdText, statusText,
       ent: { aktiv: this.tEnt(tent, "enabled"), klima: this.tEnt(tent, "climate"), vpd: this.tEnt(tent, "vpd"), status: this.tEnt(tent, "status") } };
@@ -115,6 +115,10 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
   }
   private mc(level: string, title: string, ent?: string) {
     return html`<button class="gc mc" title=${title} @click=${() => ent && this.moreInfo(ent)}>${this.dot(level)}</button>`;
+  }
+  /** Spaltenkopf als Icon (Text ueberlappt sonst bei 5 Spalten auf dem Handy). */
+  private mh(icon: string, label: string) {
+    return html`<span class="mh" title=${this.t(label)}><ha-icon icon=${icon}></ha-icon></span>`;
   }
 
   render() {
@@ -133,16 +137,16 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" data-level=${level} style=${cardVars(c.style)}>
       <div class="hd">
         <div class="grow">
-          <div class="ttl">${c.title ?? "Checkup"}</div>
-          <div class="sub">${stations.length} ${stations.length === 1 ? "Station" : "Stationen"}${showTent ? " \u00b7 1 Zelt" : ""}</div>
+          <div class="ttl">${c.title ?? this.t("Checkup")}</div>
+          <div class="sub">${stations.length} ${stations.length === 1 ? this.t("Station") : this.t("Stationen")}${showTent ? ` \u00b7 1 ${this.t("Zelt")}` : ""}</div>
         </div>
-        <span class="pill ${pillClass(level)}">${level === "ok" ? "Alles OK" : level === "warning" ? "Warnung" : level === "critical" ? "Kritisch" : "Info"}</span>
+        <span class="pill ${pillClass(level)}">${level === "ok" ? this.t("Alles OK") : level === "warning" ? this.t("Warnung") : level === "critical" ? this.t("Kritisch") : this.t("Info")}</span>
       </div>
 
-      <div class="seclbl" style="margin-top:2px">Stationen</div>
+      <div class="seclbl" style="margin-top:2px">${this.t("Stationen")}</div>
       <div class="matrix m5">
         <span></span>
-        <span class="mh">Licht</span><span class="mh">Pumpe</span><span class="mh">Auto</span><span class="mh">Eingriff</span><span class="mh">Status</span>
+        ${this.mh("mdi:lightbulb-outline", "Licht")}${this.mh("mdi:water-pump", "Pumpe")}${this.mh("mdi:robot-outline", "Auto")}${this.mh("mdi:hand-back-right-outline", "Eingriff")}${this.mh("mdi:heart-pulse", "Status")}
         ${rows.map(r => html`
           <div class="mn">${r.name}</div>
           ${this.mc(r.licht, r.lichtText, r.ent.licht)}
@@ -153,11 +157,11 @@ export class GrowctrlCheckupCard extends GrowctrlBaseCard {
       </div>
 
       ${t ? html`
-        <div class="seclbl">Zelt</div>
+        <div class="seclbl">${this.t("Zelt")}</div>
         <div class="matrix m4">
           <span></span>
-          <span class="mh">Aktiv</span><span class="mh">Klima</span><span class="mh">VPD</span><span class="mh">Status</span>
-          <div class="mn">${c.tent_name ?? `Zelt ${tent}`}</div>
+          ${this.mh("mdi:power", "Aktiv")}${this.mh("mdi:air-conditioner", "Klima")}${this.mh("mdi:water-percent", "VPD")}${this.mh("mdi:heart-pulse", "Status")}
+          <div class="mn">${c.tent_name ?? `${this.t("Zelt")} ${tent}`}</div>
           ${this.mc(t.aktiv, t.aktivText, t.ent.aktiv)}
           ${this.mc(t.klima, t.klimaText, t.ent.klima)}
           ${this.mc(t.vpd, t.vpdText, t.ent.vpd)}

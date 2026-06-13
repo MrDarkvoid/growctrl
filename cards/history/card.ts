@@ -50,7 +50,7 @@ export class GrowctrlHistoryCard extends GrowctrlBaseCard {
     }));
     return html`<div class="card ${c.style?.glass ? "glass" : ""}" style=${cardVars(c.style)}>
       <div class="hd">
-        <div class="ttl grow">${c.title ?? "Verlauf"}</div>
+        <div class="ttl grow">${c.title ?? this.t("Verlauf")}</div>
         <button class="gc icbtn" style="width:auto; padding:0 13px; font:800 11px var(--f-num)">${c.hours ?? 24}h</button>
       </div>
       ${lineChart(series, { w: this.chartW(), h: c.height ?? 120, grid: 3 })}

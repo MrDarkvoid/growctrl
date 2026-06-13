@@ -8,6 +8,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { HomeAssistant } from "./types";
+import { gcT, gcLang, type GcLang } from "./i18n";
 
 export abstract class GrowctrlBaseCard extends LitElement {
   static properties = { hass: { attribute: false }, _config: { state: true }, _confirm: { state: true }, _cw: { state: true } };
@@ -44,6 +45,9 @@ export abstract class GrowctrlBaseCard extends LitElement {
 
   protected st(eid?: string): string | undefined { return eid ? this.hass?.states[eid]?.state : undefined; }
   protected isOn(eid?: string): boolean { return this.st(eid) === "on"; }
+  /** Uebersetzt einen deutschen Quelltext nach HA-Sprache (Deutsch ist Standard). */
+  protected t(de: string): string { return gcT(this.hass, de); }
+  protected get _lang(): GcLang { return gcLang(this.hass); }
   protected friendly(eid?: string): string {
     return (eid && this.hass?.states[eid]?.attributes?.friendly_name) || eid || "";
   }

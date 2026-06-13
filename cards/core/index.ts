@@ -10,6 +10,7 @@ export * from "./types";
 export * from "./format";
 export * from "./vpd";
 export * from "./loglang";
+export * from "./i18n";
 export * from "./resolver";
 export * from "./data";
 export * from "./theme";

@@ -1,5 +1,32 @@
 # Changelog – GROWCTRL
 
+## [3.4.0] — Failsafe-24h-Fix, Ereignisprotokoll chronologisch + Info-Filter, Checkup-Icon-Header, PC-Skalierung (Viewport + Chart), automatische DE/EN-Sprache
+
+### Integration
+- **Licht-Failsafe bei 24-h-Dauerlicht behoben**: Bei Lichtzeit AN == AUS (z. B. 12:00 → 12:00)
+  läuft das Licht gewollt 24 h durch. Vorher schlug der Failsafe nach 24 h fälschlich an
+  (Not-Aus). Jetzt ist der Failsafe bei 24-h-Plänen deaktiviert (neuer testbarer Helfer `logic.is_24h`).
+- **Ereignis-Zeitstempel**: jeder Log-Eintrag bekommt zusätzlich einen sortierbaren Zeitstempel,
+  damit mehrere Quellen sauber chronologisch gemischt werden können.
+- **Automatische Sprache (Deutsch/Englisch)**: Event-/Logtexte und Entity-Namen erscheinen auf
+  Englisch, wenn Home Assistant auf Englisch läuft – sonst Deutsch. Deutsch ist die Quelle und
+  bleibt garantiert vollständig (fehlt eine Übersetzung, wird Deutsch gezeigt).
+
+### Karten
+- **Ereignisprotokoll-Karte – Sortierung repariert**: Einträge aus mehreren Stationen werden jetzt
+  korrekt **nach Zeit gemischt** (neueste zuerst) statt nach Quelle gruppiert. (Wirkt vollständig
+  nach einem HA-Neustart, weil die neuen Zeitstempel erst dann entstehen.)
+- **Ereignisprotokoll – neuer Filter „Nur Infos“** (zusätzlich zu „Alle“ und „Nur Warnungen/Fehler“).
+- **Checkup – Spaltenköpfe als Icons** statt Text (Licht/Pumpe/Auto/Eingriff/Status bzw.
+  Aktiv/Klima/VPD/Status). Behebt das Überlappen der Beschriftungen auf dem Handy; Klartext
+  weiterhin per Tipp/Hover.
+- **PC-Skalierung zuverlässiger**: Schrift/Elemente vergrößern sich jetzt anhand der **Fensterbreite**
+  (ab 900 px, nochmals ab 1400 px) statt der Kartenbreite. Am Handy bleibt alles unverändert.
+- **Chart-Beschriftung skaliert mit**: die kleinen Achsentexte unter dem VPD-Verlauf (z. B. 0.90 / 0.72
+  und −24h / jetzt) werden auf dem PC ebenfalls größer.
+- **Automatische Sprache (Deutsch/Englisch)** für alle sichtbaren Kartentexte – automatisch nach
+  HA-Sprache, Deutsch als Standard.
+
 ## [3.3.2] — Lesbarkeit (PC-Skalierung + Einheiten), Pumpen-Gate, Checkup Zelt/Stationen, Editoren
 
 ### Karten

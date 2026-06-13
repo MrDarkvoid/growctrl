@@ -13,10 +13,11 @@ export function fmtDur(minutes: number | null | undefined): string {
 }
 
 /** Alter formatieren: auto = unter 7 Tagen in Tagen, sonst Wochen-Zaehlung. */
-export function fmtAge(days: number, mode: "auto" | "tage" | "wochen" = "auto"): string {
+export function fmtAge(days: number, mode: "auto" | "tage" | "wochen" = "auto", lang: "de" | "en" = "de"): string {
   const w = Math.floor(days / 7) + 1, d = (days % 7) + 1;
-  if (mode === "tage" || (mode === "auto" && days < 7)) return `${days} Tage`;
-  return `Wo ${w} \u00b7 Tag ${d}`;
+  if (mode === "tage" || (mode === "auto" && days < 7))
+    return lang === "en" ? `${days} days` : `${days} Tage`;
+  return lang === "en" ? `Wk ${w} \u00b7 Day ${d}` : `Wo ${w} \u00b7 Tag ${d}`;
 }
 
 /** State-String -> Zahl oder null ("unknown"/"unavailable" sicher abgefangen). */

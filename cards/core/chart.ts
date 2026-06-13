@@ -60,7 +60,7 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
       return svg`
         <line x1="${PADL}" y1="${Y(v)}" x2="${w - PADR}" y2="${Y(v)}"
           stroke="rgba(255,255,255,.10)" stroke-width="1"/>
-        <text x="${PADL - 4}" y="${Y(v) + 3}" text-anchor="end"
+        <text x="${PADL - 4}" y="${Y(v) + 3}" text-anchor="end" class="c-axl"
           font-size="9.5" fill="rgba(255,255,255,.68)">${fmt(v)}</text>`;
     })}
     ${series.map((s, si) => {
@@ -85,8 +85,8 @@ export function lineChart(series: Series[], o: ChartOpts = {}): TemplateResult {
         <circle cx="${lx}" cy="${ly}" r="3" fill="${s.color}"/>
         <circle cx="${lx}" cy="${ly}" r="1.3" fill="rgba(10,14,18,.9)"/>`;
     })}
-    <text x="${PADL}" y="${h - 3}" font-size="9" fill="rgba(255,255,255,.5)">-24h</text>
-    <text x="${w - PADR}" y="${h - 3}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.5)">jetzt</text>
+    <text x="${PADL}" y="${h - 3}" class="c-axl" font-size="9" fill="rgba(255,255,255,.5)">-24h</text>
+    <text x="${w - PADR}" y="${h - 3}" text-anchor="end" class="c-axl" font-size="9" fill="rgba(255,255,255,.5)">jetzt</text>
   </svg>`;
 }
 
