@@ -1,5 +1,20 @@
 # Changelog – GROWCTRL
 
+## [3.1.1] — Pflanzen-Werte setzbar + Diagnose
+
+### Stations-Karte · Pflanzen-Sensoren
+- **Setzbare Werte:** Ist ein Sensor ein `number` oder `input_number` (z. B. manuell
+  gemessener pH/EC/Temperatur), erscheint im Pflanzen-Block ein **−/＋-Stepper** zum
+  direkten Setzen (Schrittweite aus dem Entity oder `step:`), plus ✎-Hinweis. `sensor`
+  bleibt schreibgeschützt (nur Anzeige).
+- Jeder Sensor (Temp, pH, EC, …) ist ein eigener, sauberer Block – kein gequetschtes
+  „EC 0 PH 0" mehr.
+
+### Diagnose
+- Das Konsolen-Banner zeigt jetzt die tatsächlich geladene Bundle-Version
+  (`GROWCTRL Cards v3.1.1`) – so lässt sich ein veraltetes, zwischengespeichertes
+  Bundle sofort erkennen.
+
 ## [3.1.0] — Design „Soft Garden“ (Release)
 
 ### Komplettes Karten-Redesign
