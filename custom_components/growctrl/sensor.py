@@ -60,26 +60,27 @@ class _RestBase(GrowctrlEntity, SensorEntity):
         n = datetime.now()
         return n.hour * 60 + n.minute
 
+    def _plan_off(self) -> bool:
+        """True, wenn der Zeitplan ruht: Zelt-Gate (zelt_aktiv) aus ODER
+        Stations-Automatik aus. Dann gibt es keine sinnvolle Restzeit
+        (gilt fuer Licht- UND Pumpenplan, inkl. Zirkulationspumpen)."""
+        rt = self.rt
+        tent = self.hass.data.get(DOMAIN, {}).get(DATA_TENTS, {}).get(getattr(rt, "tent", None))
+        if tent is not None and not tent.enabled:
+            return True
+        if not getattr(rt, "auto", True):
+            return True
+        return False
+
 
 class LightRest(_RestBase):
     def __init__(self, entry_id, rt):
         super().__init__(entry_id, rt, "light_rest", "Licht Restzeit")
 
-    def _light_off_gate(self) -> bool:
-        """True, wenn der Lichtplan ruht: Zelt-Gate (zelt_aktiv) aus ODER
-        Station-Automatik aus. Dann gibt es keine sinnvolle Restzeit."""
-        rt = self.rt
-        tent = self.hass.data.get(DOMAIN, {}).get(DATA_TENTS, {}).get(rt.tent)
-        if tent is not None and not tent.enabled:
-            return True
-        if not rt.auto:
-            return True
-        return False
-
     @property
     def native_value(self) -> int | None:
         rt = self.rt
-        if self._light_off_gate():
+        if self._plan_off():
             return 0
         if rt.light_on_min is None or rt.light_off_sv_min is None or rt.light_off_bloom_min is None:
             return None
@@ -91,8 +92,8 @@ class LightRest(_RestBase):
         attrs = dict(super().extra_state_attributes)
         rt = self.rt
         # Lichtplan ruht (Zelt aus / Automatik aus) -> Karte zeigt "Licht ausgeschaltet"
-        if self._light_off_gate():
-            attrs.update({"zustand": "aus", "text": "Licht ausgeschaltet", "anteil": 0.0})
+        if self._plan_off():
+            attrs.update({"aktiv": False, "zustand": "aus", "text": "Licht ausgeschaltet", "anteil": 0.0})
             return attrs
         # Defensiv: ein Fehler hier darf die Entity NIE unavailable machen
         on_min = rt.light_on_min
@@ -121,9 +122,21 @@ class PumpRest(_RestBase):
 
     @property
     def native_value(self) -> int:
+        if self._plan_off():
+            return 0
         key = STAGE_KEYS.get(self.rt.stage, "veg")
         return logic.pump_rest_min(self._now_min(),
                                    self.rt.pump[f"on_{key}"], self.rt.pump[f"off_{key}"])
+
+    @property
+    def extra_state_attributes(self):
+        attrs = dict(super().extra_state_attributes)
+        # Pumpenplan ruht (Zelt aus / Automatik aus) -> Karte zeigt "Pumpe ausgeschaltet"
+        if self._plan_off():
+            attrs.update({"aktiv": False, "zustand": "aus", "text": "Pumpe ausgeschaltet", "anteil": 0.0})
+        else:
+            attrs.update({"aktiv": True})
+        return attrs
 
 
 # ════════════ v2.2: Stations-Sensoren (Keimstart-Auswertung) ════════════

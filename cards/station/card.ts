@@ -239,12 +239,15 @@ export class GrowctrlStationCard extends GrowctrlBaseCard {
         fillPct: 80, fillColor: THEME.water, footL: "N\u00e4chster Zyklus", footR: "80 % der Pause" });
     const rest = Number(st!.state);
     const a = st!.attributes ?? {};
+    const off = a.aktiv === false;                       // Zelt aus / Automatik aus
     const anteil = typeof a.anteil === "number" ? Math.min(1, Math.max(0, a.anteil)) : null;
     const an = a.zustand ? a.zustand === "an" : undefined;
-    return this.supplyRow({ icon: "mdi:water-pump", iconColor: THEME.water, topMargin: true,
-      title: an ? "Pumpe l\u00e4uft" : "Pumpe aus", value: isNaN(rest) ? "\u2013" : fmtDur(rest), valueColor: THEME.water,
-      fillPct: anteil !== null ? anteil * 100 : null, fillColor: THEME.water,
-      footL: (a.text as string) ?? "Zyklus", footR: anteil !== null ? `${(anteil * 100).toFixed(0)} %` : "",
+    return this.supplyRow({ icon: off ? "mdi:water-pump-off" : "mdi:water-pump", iconColor: off ? "#7E9488" : THEME.water, topMargin: true,
+      title: off ? "Pumpe aus" : (an ? "Pumpe l\u00e4uft" : "Pumpe aus"),
+      value: off ? "\u2013" : (isNaN(rest) ? "\u2013" : fmtDur(rest)), valueColor: off ? "#7E9488" : THEME.water,
+      fillPct: off ? null : (anteil !== null ? anteil * 100 : null), fillColor: THEME.water,
+      footL: off ? "Pumpe ausgeschaltet" : ((a.text as string) ?? "Zyklus"),
+      footR: off ? "" : (anteil !== null ? `${(anteil * 100).toFixed(0)} %` : ""),
       onClick: () => this.moreInfo(this.e("pumpRest")) });
   }
 

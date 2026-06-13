@@ -98,7 +98,7 @@ export const sharedStyles = css`
   /* ── Karte ── */
   .card{position:relative; background:var(--gc-bg, linear-gradient(180deg,#202C25,var(--card) 30%));
     border:1px solid var(--line-soft); border-radius:var(--gc-radius,22px); padding:20px;
-    box-shadow:0 10px 30px -12px rgba(0,0,0,.45)}
+    box-shadow:0 10px 30px -12px rgba(0,0,0,.45); container-type:inline-size; container-name:gccard}
   .card.glass{backdrop-filter:blur(14px) saturate(1.2); -webkit-backdrop-filter:blur(14px) saturate(1.2)}
   .card[data-level="warning"]{border-color:color-mix(in srgb, var(--warn) 35%, var(--line-soft))}
   .card[data-level="critical"]{border-color:color-mix(in srgb, var(--crit) 42%, var(--line-soft))}
@@ -142,7 +142,7 @@ export const sharedStyles = css`
   .kpi:hover{border-color:color-mix(in srgb, var(--acc) 40%, transparent); background:#27362E}
   .kpi .mlbl{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:9.5px; letter-spacing:.5px}
   .kpi .v{font:700 26px/1.05 var(--f-num); letter-spacing:-1px; margin-top:5px; font-variant-numeric:tabular-nums; display:block}
-  .kpi .u{font:600 12px var(--f-num); color:var(--tx-2); margin-left:2px}
+  .kpi .u{font:600 12px var(--f-num); color:var(--tx-2); margin-left:6px; letter-spacing:0}
   .kpi.c-temp .v{color:var(--temp)} .kpi.c-hum .v{color:var(--water)} .kpi.c-vpd .v{color:var(--acc)}
 
   /* ── Zonen-Balken (VPD / pH / EC) ── */
@@ -233,7 +233,7 @@ export const sharedStyles = css`
   .ind .ihd{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px}
   .ind .ilbl{font:800 11px var(--f-ui); letter-spacing:1.1px; text-transform:uppercase; display:inline-flex; align-items:center; gap:7px; min-width:0}
   .ind .ival{font:700 19px var(--f-num); font-variant-numeric:tabular-nums; flex-shrink:0; white-space:nowrap}
-  .ind .ival .u{font-size:11px; color:var(--tx-2)}
+  .ind .ival .u{font-size:11px; color:var(--tx-2); margin-left:5px; letter-spacing:0}
   .spark{display:block; width:100%; height:38px; margin-top:6px}
 
   /* setzbare Werte (number/input_number): −/＋-Stepper */
@@ -241,7 +241,7 @@ export const sharedStyles = css`
   .stepbtn{width:32px; height:32px; border-radius:10px; display:grid; place-items:center; cursor:pointer; color:var(--acc); background:var(--acc-soft); border:1px solid color-mix(in srgb, var(--acc) 35%, transparent)}
   .stepbtn:hover{background:color-mix(in srgb, var(--acc) 24%, transparent)}
   .setval{font:700 19px var(--f-num); font-variant-numeric:tabular-nums; min-width:58px; text-align:center}
-  .setval .u{font-size:11px; color:var(--tx-2); margin-left:1px}
+  .setval .u{font-size:11px; color:var(--tx-2); margin-left:5px; letter-spacing:0}
 
   /* ── Ereignisfeld ── */
   .event{display:flex; align-items:center; gap:12px; border-radius:var(--r-s); cursor:pointer; width:100%; text-align:left; color:inherit; background:var(--card-3); border:1px dashed var(--line); padding:12px; min-height:46px}
@@ -263,6 +263,8 @@ export const sharedStyles = css`
 
   /* ── Checkup-Matrix ── */
   .matrix{display:grid; grid-template-columns:1fr repeat(4,52px); gap:3px; font-size:12px}
+  .matrix.m4{grid-template-columns:1fr repeat(4,minmax(0,52px))}
+  .matrix.m5{grid-template-columns:1fr repeat(5,minmax(0,46px))}
   .matrix .mh{font:800 9.5px var(--f-ui); letter-spacing:.8px; text-transform:uppercase; color:var(--tx-3); text-align:center; padding:6px 2px}
   .matrix .mn{padding:12px 11px; background:var(--card-2); border-radius:12px 0 0 12px; font-weight:800; display:flex; align-items:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis}
   .matrix .mc{display:grid; place-items:center; background:var(--card-2); cursor:pointer; border:none; min-height:46px; color:inherit}
@@ -296,12 +298,49 @@ export const sharedStyles = css`
   .settings-grid .skv .k{font:800 10px var(--f-ui); letter-spacing:.8px; text-transform:uppercase; color:var(--tx-3)}
   .settings-grid .skv .vv{font:800 14px var(--f-num); color:var(--tx); margin-top:3px}
 
+  /* ── Dynamische Skalierung: groessere Schrift in breiten Karten (PC/Tablet) ── */
+  @container gccard (min-width: 460px){
+    .hd .ttl{font-size:20px} .hd .sub{font-size:14px}
+    .badge-ic{width:52px; height:52px; font-size:25px}
+    .pill{font-size:13px; padding:8px 16px}
+    .mlbl{font-size:12px}
+    .tgl{font-size:14px; min-height:48px} .tgl .sw{width:34px; height:19px}
+    .tgl .sw::after{width:15px; height:15px} .tgl.on .sw::after{left:17px}
+    .kpi .mlbl{font-size:11px} .kpi .v{font-size:31px} .kpi .u{font-size:14px}
+    .zones{height:13px} .zlbl{font-size:11.5px}
+    .bar{height:12px}
+    .supply .sic{font-size:23px; width:30px} .supply .stt{font-size:16px} .supply .stm{font-size:16px} .supply .sft{font-size:12px}
+    .ind .ilbl{font-size:12.5px} .ind .ival{font-size:22px} .ind .ival .u{font-size:13px}
+    .setval{font-size:22px} .setval .u{font-size:13px} .stepbtn{width:36px; height:36px}
+    .dd-btn{font-size:15.5px; min-height:52px} .dd-it{font-size:15px; min-height:50px}
+    .dd-btn .hint, .dd-it .hint{font-size:12px}
+    .lrow .tm{font-size:12.5px; width:48px} .lrow .who{font-size:12.5px; width:128px} .lrow .what{font-size:14px}
+    .matrix .mh{font-size:11px} .matrix .mn{font-size:14px} .dot{width:13px; height:13px}
+    .seclbl{font-size:12px} .legend{font-size:13px}
+    .ptab{font-size:14px; min-height:46px} .chip-auto{font-size:14px; min-height:46px}
+    .agechip{font-size:12.5px}
+    .plant .pname{font-size:19px} .plant .pstrain{font-size:14px}
+    .plant .pimg{width:68px; height:68px; font-size:31px}
+    .event .etx{font-size:14px} .event .etm{font-size:12px}
+    .settings-grid .skv .k{font-size:11.5px} .settings-grid .skv .vv{font-size:16px}
+    .stat .sv{font-size:18px} .stat .sl{font-size:10.5px}
+    .act .aic{font-size:21px} .act .anm{font-size:11.5px} .act .ast{font-size:9.5px}
+  }
+  @container gccard (min-width: 680px){
+    .hd .ttl{font-size:22px} .kpi .v{font-size:34px} .kpi .u{font-size:15px}
+    .ind .ival{font-size:24px} .setval{font-size:24px}
+    .supply .stt{font-size:17px} .supply .stm{font-size:17px}
+    .lrow .what{font-size:15px} .plant .pname{font-size:21px}
+  }
+
   @media (max-width: 480px){
     .card{padding:15px 14px}
     .kpis{grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px}
     .kpi .v{font-size:21px}
     .settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     .matrix{grid-template-columns:1fr repeat(4,44px)}
+    .matrix.m4{grid-template-columns:1fr repeat(4,40px)}
+    .matrix.m5{grid-template-columns:1fr repeat(5,33px)}
     .lrow .who{width:84px}
   }
 `;
