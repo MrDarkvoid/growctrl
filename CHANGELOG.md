@@ -1,5 +1,26 @@
 # Changelog – GROWCTRL
 
+## [3.3.0] — Layout-Regression behoben (Karten sehen jetzt wie der v6-Entwurf aus)
+
+### Fix (Ursache gefunden)
+- **Alle Button-Komponenten verloren ihr Layout.** Der globale Reset
+  `button.gc { all: unset }` hatte hoehere CSS-Spezifitaet (0-1-1) als die
+  Komponenten-Klassen `.supply`, `.dd-btn`, `.act`, `.event`, `.stepbtn`,
+  `.ptab`, `.ind` (je 0-1-0) und ueberschrieb damit `display:block`/`width:100%`
+  und die Hintergruende. Folge: Licht/Pumpe/DLI/Tank flossen auf breiten Karten
+  **nebeneinander** statt als volle Zeilen, das Phasen-Dropdown, das Aktor-Raster,
+  das Ereignisfeld und der Pflanzen-Tank waren ungestylt/gequetscht.
+- Reset auf `.gc { all: unset }` (0-1-0) gesenkt -> die Komponenten-Klassen gewinnen
+  wieder per Reihenfolge. Damit rendert die Stations-Karte wie der Design-Preview:
+  **volle Zeilen, Dropdown als Box, 4er-Aktor-Raster, sauberer Pflanzen-Tank.**
+
+### GUI-Editor
+- Pflanzen-Editor: zusaetzlich zu Temp/Feuchte/pH/EC lassen sich nun **weitere
+  Sensoren** hinzufuegen (Mehrfachauswahl) – sie erscheinen als Werte-Felder.
+
+### Diagnose
+- Konsolen-Banner: `GROWCTRL Cards v3.3.0`.
+
 ## [3.2.0] — Pflanzen-Messwerte dediziert (GUI) + setzbar
 
 ### Stations-Karte & GUI-Editor
