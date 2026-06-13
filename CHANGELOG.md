@@ -1,5 +1,15 @@
 # Changelog – GROWCTRL
 
+## [3.1.2] — Render-Crash bei deaktiviertem Zelt behoben
+
+### Fix
+- **Karten stürzten beim Rendern ab** (`TypeError: can't access property "bg"`),
+  sobald ein Zelt **deaktiviert** war: die Zelt-Karte setzte den Status `none`,
+  für den es in `STATUS_PILL` keinen Eintrag gab → die ganze Karte (und damit Teile
+  des Dashboards) brach ab. Behoben durch einen neutralen `none`-Eintrag („Inaktiv",
+  grau) und abgesicherte Zugriffe in Hero-, Checkup- und Status-Karte.
+- Das Konsolen-Banner meldet jetzt `GROWCTRL Cards v3.1.2`.
+
 ## [3.1.1] — Pflanzen-Werte setzbar + Diagnose
 
 ### Stations-Karte · Pflanzen-Sensoren
