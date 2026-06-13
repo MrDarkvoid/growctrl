@@ -1,5 +1,22 @@
 # Changelog – GROWCTRL
 
+## [3.2.0] — Pflanzen-Messwerte dediziert (GUI) + setzbar
+
+### Stations-Karte & GUI-Editor
+- **Vier dedizierte Felder je Pflanze** im GUI-Editor: **Temperatur**, **Feuchtigkeit**,
+  **pH**, **EC** – jede beliebige Entity waehlbar (Sensor *oder* `number`/`input_number`).
+- Darstellung wie im Design-Preview: **Temp & Feuchte als Mini-Verlauf**, **pH & EC als
+  Zonen-Balken** (Ideal/akzeptiert/schlecht) mit sinnvollen Standard-Bereichen
+  (pH 5.8–6.3, EC 1.2–2.2; per YAML `ph_ideal`/`ec_ideal` anpassbar).
+- Ist das gewaehlte Entity ein `input_number`/`number`, erscheint ein **−/＋-Stepper** zum
+  Setzen direkt in der Pflanze (Handmessungen ohne Sonde eintragen).
+- **Aktoren-Builder im GUI-Editor**: das 4er-Aktor-Raster (Licht/Pumpe/O₂/Lüfter/Heizmatte/
+  Befeuchter) laesst sich jetzt klickbar konfigurieren, inklusive Bestaetigung.
+- Erweiterte `sensors: [...]`-Liste bleibt fuer Spezialfaelle (YAML) erhalten.
+
+### Diagnose
+- Konsolen-Banner: `GROWCTRL Cards v3.2.0`.
+
 ## [3.1.2] — Render-Crash bei deaktiviertem Zelt behoben
 
 ### Fix
