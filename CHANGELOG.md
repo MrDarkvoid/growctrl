@@ -1,5 +1,37 @@
 # Changelog – GROWCTRL
 
+## [3.1.0] — Design „Soft Garden“ (Release)
+
+### Komplettes Karten-Redesign
+- Neues Design-System **„Soft Garden“** in `cards/core/theme.ts`: warmes Schwarzgrün,
+  weiche Schatten, runde Radien (22/15 px), Tabellenziffern, freundliche Schrift-Stacks.
+  Eine zentrale Stelle reskint **alle** Karten konsistent.
+- **Ein Akzent je Zelt** über `style.accent` (Klein grün · Mittel weinrot · Groß violett);
+  Status- und Sonderfarben (Heizmatte orange, Befeuchter blau) bleiben themenunabhängig.
+- Geteilte Komponenten neu: Versorgungszeile, Phasen-Dropdown, 4er-Aktor-Raster,
+  Pflanzen-Panel, Sensor-Indikatoren – als wiederverwendbare Klassen.
+
+### Stations-Karte
+- Phasen-Chips → **Dropdown über die volle Breite** (mit Richtwert-Hinweis).
+- Licht, **Pumpe**, **DLI** und **Tank** jetzt einheitlich als **Versorgungszeilen** voller
+  Breite. **DLI-Fix:** Fortschrittsbalken zum Tagesziel + Marker für die Prognose (vorher
+  gequetschte Drei-Spalten-Leiste).
+- Neues, optionales **Aktor-Raster** (`actuators:`), fest 4 nebeneinander.
+- Pflanzen-Sensoren als einheitliche `.ind`-Blöcke; je Sensor optional `color`/`icon`.
+
+### Barrierefreiheit & Robustheit
+- 44-px-Touchziele, sichtbare Fokus-Ringe, `prefers-reduced-motion`, Farbe nie alleiniger
+  Informationsträger.
+- Verfolgbarkeits-Fingerprint (`4d72…766f6964`) in Integration und Karten bestätigt; an jedem
+  Chart-SVG als `data-gce`.
+
+### Doku & Lizenz
+- Haupt-`README` neu (erklärt die Integration vollständig), beide Karten-READMEs angeglichen.
+- `LICENSE`: vollständige englische Fassung aller Klauseln + Traceability-Abschnitt ergänzt.
+- Neu: `docs/vibe_coding.md` (Funktion, Umfang, Prompt-Spezifikation).
+
+---
+
 ## [3.0.0-dev]
 
 ### BREAKING

@@ -1,181 +1,221 @@
-<p align="center"><img src="assets/logo/logo.png" alt="GROWCTRL" width="170"/></p>
+<div align="center">
 
-# GROWCTRL
+# 🌱 GROWCTRL
 
-**Komplette Growzelt-Steuerung für Home Assistant** — eine native Integration
-(Zelte + Stationen, Klima, DLI, Failsafe, Informationssystem) plus elf aufeinander
-abgestimmte Dashboard-Karten. Keine YAML-Helfer, keine Blueprints nötig.
+**Ein vollständiges Steuer- und Visualisierungs-System für hydroponische Growzelte – nativ in Home Assistant.**
 
-> Entwickelt von **MrDarkvoid** in Zusammenarbeit mit Claude (Anthropic), Vibe Coding · Lizenz GC-SAL 1.0
+Automatik für Licht, Pumpen, Klima und O₂ · phasenabhängige Sollwerte · DLI-Tracking ·
+Handschaltungs-Erkennung · mehrstufige Schutzfunktionen · persistentes Ereignisprotokoll ·
+ein durchgestyltes Dashboard im Design **„Soft Garden“**.
+
+![Lizenz](https://img.shields.io/badge/Lizenz-GC--SAL%201.0-7BE8A8)
+![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-41BDF5)
+![HACS](https://img.shields.io/badge/HACS-Custom-orange)
+![Status](https://img.shields.io/badge/Version-3.1.0-7BE8A8)
+
+*MrDarkvoid – entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding*
+
+</div>
 
 ---
 
-## 1. Architektur
+## Was ist GROWCTRL?
 
-```
-Zelt (Master)                      Station (1..n je Zelt)
-├─ Zelt aktiv  ── Gate ──────────► stoppt ALLE Stationen
-├─ Klima-Automatik (VPD/RH)        ├─ Licht (Zeitplan, phasenabh. AUS-Zeit)
-├─ Klima-Phase (Auto/manuell)      ├─ Pumpe (Intervall oder 24/7)
-├─ Status + Ereignisprotokoll      ├─ O₂ / Umluft (dauerhaft AN)
-└─ Aufgabenliste (ToDo)            ├─ DLI aus eigenem Lux-Sensor
-                                   ├─ Keimstart → Alter → Phasen-Empfehlung
-                                   └─ Fehlererkennung + Ereignisprotokoll
-```
+GROWCTRL verwandelt Home Assistant in eine vollwertige Growzelt-Steuerung. Statt dutzender
+loser Automationen, Helfer und Template-Sensoren installierst du **eine Integration**, legst
+deine Zelte und Stationen über den Konfigurations-Dialog an – und bekommst eine konsistente
+Menge an Entitäten, eine robuste Regel-Logik und ein dazu passendes Dashboard.
 
-- **Aktoren sind beliebige HA-Switches** — nichts wird geraten, alles wird explizit zugeordnet.
-- **Geteilte Lichter erlaubt:** derselbe Switch darf in mehreren Stationen stehen;
-  die Integration verodert die Anforderungen (ODER-Votes).
-- **Lux-Sensoren** sind Stations-Sache und dürfen ebenfalls geteilt werden.
+Das System ist um drei Zelte herum gedacht, lässt sich aber frei erweitern:
 
-## 2. Installation
+| Zelt | Rolle | Theme |
+|------|-------|-------|
+| **Klein** | Anzucht / Sämlinge / Propagation | Grün |
+| **Mittel** | spezielle Pflanzen | Weinrot / Burgunder |
+| **Groß** | Hauptanbau | Violett |
 
-**HACS (empfohlen):** HACS → Custom Repositories → `MrDarkvoid/growctrl`
-(Kategorie *Integration*) hinzufügen → installieren → HA neu starten.
-Karten: `MrDarkvoid/growctrl-cards` (Kategorie *Dashboard*).
+Jedes Zelt enthält eine oder mehrere **Stationen** (z. B. ein DWC-Becken oder ein Beet), und
+jede Station steuert ihre eigenen Aktoren und kennt ihre eigene Wachstumsphase.
 
-**Manuell:** Ordner `custom_components/growctrl/` nach `/config/custom_components/`
-kopieren, HA neu starten. Karten: `cards/dist/growctrl-cards.js` nach `/config/www/`
-und als Ressource `/local/growctrl-cards.js` (JavaScript-Modul) eintragen.
+---
 
-## 3. Einrichtung (Reihenfolge wichtig)
+## Was die Integration tut
 
-1. Einstellungen → Geräte & Dienste → **GROWCTRL** hinzufügen → **„Zelt anlegen"**:
-   **Pflicht ist nur der Name** — Sensoren und Klima-Aktoren sind optional und jederzeit
-   über „Konfigurieren" (Options-Dialog) nachrüstbar.
-2. Erneut hinzufügen → **„Station anlegen"**: Zelt im Dropdown wählen, Licht-Switches
-   (Pflicht), optional Pumpe/O₂/Umluft, Lux-Sensor (für DLI), Systemtyp DWC/Erde mit Sensoren.
-3. Pro Station: Lichtzeiten setzen, Phase wählen, ggf. Keimstart-Datum → **Automatik AN**.
-4. Am Zelt: **Klima-Automatik AN**, Modus (VPD/RH) und Phasen-Sollwerte prüfen.
+GROWCTRL ist kein reines „Anzeige-Paket“ – der Kern ist ein **Controller**, der pro Station
+und pro Zelt im Takt arbeitet und Entscheidungen trifft.
 
-Test-Leitfaden vor dem Echtbetrieb: **`docs/testplan.md`**.
+### 💡 Lichtsteuerung
+- Phasenabhängige **AN/AUS-Zeiten**: getrennte Ausschaltzeiten für Seedling/Veg und für
+  Bloom/Flush, damit der Lichtzyklus beim Phasenwechsel automatisch umschaltet.
+- **24-Stunden-Licht** wird korrekt erkannt (AN-Zeit = AUS-Zeit) und durchgehalten.
+- Live-Sensor **„Licht-Restzeit“** mit Klartext („Licht an für 5 h 40 min“), Zustand und
+  prozentualem Fortschritt der laufenden Phase.
 
-## 4. Entitäten-Referenz
+### 💧 Pumpen & Bewässerung
+- **Zyklische Pumpensteuerung** (z. B. 30 s alle 60 min) mit Restzeit-Sensor.
+- **Trockenlauf-Schutz**: ist ein Tank-Füllstand konfiguriert und fällt unter den
+  Mindeststand, wird die Pumpe gesperrt und ein Diagnose-Hinweis gesetzt.
 
-### Zelt (`GROWCTRL Zelt <name>`)
-| Entität | Typ | Funktion |
-|---|---|---|
-| Zelt aktiv | switch | **Master-Gate** – AUS stoppt alle Stationen des Zelts |
-| Klima-Automatik | switch | Klima-Regelung zuschalten |
-| Klima-Modus | select | **VPD** oder **RH** geführt |
-| Klima-Phase | select | **Auto** (führende Stations-Phase) oder fest |
-| `<Phase>` VPD/RH Min/Max | number ×16 | Sollwerte je Phase (Seedling/Veg/Bloom/Trocknung; Flush nutzt Bloom) |
-| Blatt-Offset | number | Blatttemperatur-Korrektur für VPD |
-| VPD | sensor | aktueller VPD; Attribute: temp, rh, phase_effektiv, sollwerte |
-| Status | sensor | ok/problem + Attribut `probleme` (alle Stationen gesammelt) |
-| Letztes Ereignis | sensor | Klartext + Attribut `verlauf` (30 Einträge) |
-| Aufgaben | todo | Liste; Phasen-Empfehlungen landen automatisch hier |
-| Letzte Regelung | sensor | Watchdog-Heartbeat (Timestamp) |
-| Zeit im Sollband heute | sensor | % der Klima-Laufzeit innerhalb der Phasen-Sollwerte |
+### 🌡️ Klima pro Phase
+- Pro Zelt **16 Sollwert-Zahlen** (VPD- und RH-Min/Max für Seedling, Veg, Bloom, Trocknung;
+  Flush erbt die Bloom-Werte).
+- Eine **„Klima-Phase“-Auswahl**: *Auto* folgt der führenden Stationsphase, oder du setzt die
+  Phase manuell.
+- Der **VPD-Sensor** legt die aktuell wirksame Phase (`phase_effektiv`) und die zugehörigen
+  Sollwerte (`sollwerte`) als Attribute offen – das Dashboard zeigt daraus den Zonen-Balken.
 
-### Station (`GROWCTRL <zelt> <station>`)
-| Entität | Typ | Funktion |
-|---|---|---|
-| Automatik / Wartung | switch | Regelung an/aus · Wartung = System greift nicht ein |
-| Wachstumsphase | select | Seedling/Veg/Bloom/Flush/**Trocknung** |
-| Licht AN / AUS Seed-Veg / AUS Bloom-Flush | time | Lichtplan (Mitternachtsüberlauf ok) |
-| Pumpe AN/AUS je Phase | number ×6 | Intervall in Minuten (nur mit Pumpe) |
-| Manuelle Übernahme | number | Minuten, die Handschaltungen respektiert werden (0 = sofort zurück) |
-| Lux→PPFD-Faktor | number | nur mit Lux-Sensor; Default 0.015 |
-| Licht/Pumpe Restzeit | sensor | Minuten bis zum nächsten Schaltpunkt |
-| DLI heute / DLI Prognose | sensor | aus Lux; Prognose über den **konfigurierten Lichtplan** |
-| Alter seit Keimung / Phasen-Empfehlung | sensor | aus Keimstart (Richtwerte, sortenabhängig) |
-| Letztes Ereignis | sensor | Klartext + `verlauf` + `schweregrad` |
-| Manueller Eingriff / Licht-Failsafe / Zeiten unvollständig | binary_sensor | Problem-Melder |
-| Keimstart | date | Startdatum der Pflanze |
-| Letzte Regelung | sensor | Watchdog-Heartbeat (Timestamp) |
-| Füllstand Minimum | number | Trockenlauf-Schutz (nur mit Füllstand-Sensor) |
-| Bodenfeuchte-Schwelle | number | Erde: bewässern nur unterhalb (nur mit Sensor) |
-| Pumpe gesperrt (Füllstand) | binary_sensor | Trockenlauf-Schutz aktiv (nur mit Füllstand-Sensor) |
-| Licht ohne Leistung | binary_sensor | Plausibilitäts-Alarm (nur mit Leistungssensor) |
+### ☀️ DLI (Daily Light Integral)
+- DLI wird **auf Zelt-Ebene** aus dem Lux-Sensor und dem konfigurierten Lichtplan berechnet.
+- **Prognose** für das Tagesende auf Basis des Plans, dazu ein phasenabhängiges Ziel.
 
-## 5. Was das System überwacht und absichert
+### ✋ Manuelle Übernahme (Handschaltung)
+- Schaltest du einen Aktor von Hand, erkennt GROWCTRL das (zwei aufeinanderfolgende Zyklen,
+  in denen Ist- und Soll-Zustand auseinanderlaufen) und **respektiert deinen Eingriff**.
+- Nach einer einstellbaren Dauer („Manuelle Übernahme“, Standard 60 min; `0` = sofort)
+  kehrt die Automatik selbsttätig zum Lichtplan zurück.
+- Bei geteilten Lichtern wird der manuelle Zustand während des Fensters über die ODER-Logik
+  korrekt mitgeführt.
 
-### Fehlererkennungen
-| Erkennung | Auslöser | Reaktion |
-|---|---|---|
-| **Manueller Eingriff** | Licht-Ist weicht 2 Regelzyklen vom Soll ab | Automatik **respektiert** die Handschaltung für „Manuelle Übernahme"-Minuten, dann Rückkehr zum Plan; binary_sensor + Log |
-| **Licht-Failsafe** | Licht länger AN als Maximum (Default 1440 min) | **Not-Aus** aller Licht-Switches, Critical-Eintrag, binary_sensor |
-| **Lichtzeiten unvollständig** | AN/AUS-Zeit fehlt | Automatik pausiert (kein blindes Schalten), Warnung |
-| **Klima-Sensorausfall** | Klima AN, Temp/RH liefern nichts | Problem im Zelt-Status |
+### 🛡️ Schutz- & Diagnosefunktionen
+- **Sensor-Stale-Erkennung**: eingefrorene Klima-Sensoren werden nach einer einstellbaren
+  Frist erkannt; die Karte zeigt „—“ statt veralteter Werte.
+- **Leistungs-Plausibilität**: Licht „an“, aber keine Leistungsaufnahme → Hinweis.
+- **Licht-Failsafe** und **Watchdog/Heartbeat** überwachen den Regelbetrieb.
+- **Wartungsmodus**: die Automatik greift bewusst nicht ein, alle Aktoren bleiben von Hand
+  schaltbar.
+- **Zelt-Schalter (Gate)**: deaktiviert ein Zelt komplett (Licht, Pumpe, O₂, Lüfter, Klima-
+  Aktoren aus). Die **Klima-Automatik-Einstellung bleibt erhalten**, damit das Klima beim
+  Reaktivieren sofort weiterläuft.
 
-### Failsafe-Maßnahmen (by design)
-| Maßnahme | Wirkung |
-|---|---|
-| Zelt-Gate | „Zelt aktiv" AUS → alle Stations-Aktoren aus |
-| Wartungsmodus | Station wird vom System komplett in Ruhe gelassen |
-| Trocknung | Licht + Pumpe zwangsweise aus, Umluft bleibt an |
-| Befeuchter/Entfeuchter-Sperre | nie gleichzeitig; Konflikt → beide aus |
-| Hysterese | 0.05 kPa / 2 % RH gegen Schalt-Flattern |
-| ODER-Votes | keine Station schaltet einer anderen das geteilte Licht aus |
-| Idempotenz | Service-Calls nur bei tatsächlicher Abweichung |
+### 📓 Ereignisprotokoll
+- Jede relevante Aktion wird in einem **persistenten Log** festgehalten (übersteht Neustarts).
+- Drei Schweregrade (Info / Warnung / Kritisch); das Dashboard kann ab einer Stufe filtern.
+- Der Sensor **„Letztes Ereignis“** trägt den Schweregrad des **jüngsten** Eintrags – die
+  Statusfarbe einer Station spiegelt also den aktuellen Zustand, nicht die schlimmste je
+  aufgetretene Meldung.
 
-Details und Log-Kanäle: **`docs/informationssystem.md`**.
+---
 
-## 6. Dashboard-Karten (11)
+## Entitäten im Überblick
 
-Hero · Zelt-Klima · Station · Ereignisprotokoll · Checkup · Sensoren · Aktoren ·
-Pflanzen · Tank · Verlauf · Metric — alle mit GUI-Editor und `style:`-Anpassung.
-Die GROWCTRL-Karten (Hero/Zelt/Station/Protokoll/Checkup) leiten ihre Entity-IDs
-**automatisch aus Zelt-/Stationsnamen** ab. Referenz: **`cards/README.md`**,
-fertiges Beispiel: **`examples/zelt_gross_komplett.yaml`**.
+GROWCTRL legt die Entitäten deterministisch nach dem Muster
+`<domain>.growctrl_<zelt>_<station>_<funktion>` an (z. B.
+`switch.growctrl_gross_main1_automatik`). Auf Zelt-Ebene entfällt der Stationsteil.
 
-## 7. Dokumentation
+**Pro Station**
 
-| Datei | Inhalt |
-|---|---|
-| `docs/testplan.md` | Schritt-für-Schritt-Test der gesamten Steuerung |
-| `docs/informationssystem.md` | Erkennungen, Failsafes, Log-Kanäle |
-| `docs/migration.md` | Legacy-Blueprints → Integration, Release-Checkliste |
-| `docs/branding.md` | Logo in HA (brands-PR) und in den Karten |
-| `docs/integration_konzept.md`, `docs/karten_cluster_konzept.md` | Architektur-Entscheidungen |
+| Plattform | Funktion | Zweck |
+|-----------|----------|-------|
+| `switch` | Automatik | Regelbetrieb der Station an/aus |
+| `switch` | Wartung | Automatik pausieren, manuell schalten |
+| `select` | Wachstumsphase | Seedling · Veg · Bloom · Flush · Trocknung |
+| `time` | Licht AN / AUS (Seed-Veg) / AUS (Bloom) | Lichtplan je Phase |
+| `date` | Keimstart | Basis für die Altersberechnung |
+| `number` | Manuelle Übernahme | Rückkehr-Dauer der Automatik (min) |
+| `sensor` | Licht-Restzeit, Pumpe-Restzeit | Live-Status mit Klartext & Fortschritt |
+| `sensor` | Alter seit Keimung, Phasen-Empfehlung | „Wo 8 · Tag 52“, Richtwert-Hinweis |
+| `sensor` | Letztes Ereignis | jüngster Log-Eintrag inkl. Schweregrad |
+| `binary_sensor` | Manueller Eingriff, Licht-Failsafe, Zeiten unvollständig, Pumpe gesperrt, Licht ohne Leistung | Diagnose |
 
-## 8. Troubleshooting
+**Pro Zelt**
 
-- **Integration taucht nicht auf:** `custom_components/` muss im Repo-/Config-Root liegen
-  (nicht in einem Wrapper-Ordner); HA neu starten.
-- **„Invalid handler specified":** installierte `manifest.json` prüfen (Version aktuell?
-  `"config_flow": true`?), HA **vollständig** neu starten; danach Protokolle nach
-  `growctrl` filtern — „Error occurred loading flow…" enthält den echten Traceback.
-- **Karten „Entität nicht gefunden":** Entity-IDs in Entwicklertools prüfen; weicht eine
-  ID ab → `overrides:` in der Karte setzen.
+| Plattform | Funktion | Zweck |
+|-----------|----------|-------|
+| `switch` | Zelt aktiv | Gate für das ganze Zelt |
+| `switch` | Klima-Automatik | VPD/RH-Regelung an/aus |
+| `select` | Klima-Modus, Klima-Phase | Betriebsart & Phasenquelle (Auto/manuell) |
+| `number` | 16× VPD/RH Min/Max je Phase, Sensor-Timeout | phasenabhängige Sollwerte & Stale-Frist |
+| `sensor` | VPD, DLI heute, DLI-Prognose, Status, Letztes Ereignis | Klima- & Lichtkennzahlen |
+| `binary_sensor` | Klima-Sensoren eingefroren | Stale-Diagnose |
 
-## 9. Status
+---
 
-| Phase | Inhalt | Status |
-|---|---|---|
-| 0–2 | Bestandsaufnahme · Monorepo · Karten-Cluster | ✅ |
-| 3 | Integration (Zelt+Station, Klima, DLI, Informationssystem) | ✅ v2.4, 22 Tests grün — **Live-HA-Test ausstehend** |
-| 4 | Doku, Migration, Release-Vorbereitung | ✅ Doku fertig; Release-Schritte: `docs/migration.md` |
+## Installation
 
-## Credits & Lizenz
+GROWCTRL besteht aus **zwei HACS-Repositories**: der Integration (Backend) und den
+Dashboard-Karten (Frontend).
 
-GC-SAL 1.0 — © MrDarkvoid. Entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding.
+### 1. Integration
 
+1. HACS → drei Punkte → **Benutzerdefinierte Repositories**.
+2. `https://github.com/MrDarkvoid/growctrl` als **Integration** hinzufügen.
+3. „GROWCTRL“ installieren, Home Assistant neu starten.
+4. **Einstellungen → Geräte & Dienste → Integration hinzufügen → GROWCTRL** und dem
+   Dialog folgen (Zelt anlegen, Stationen, Sensoren zuordnen).
 
-## Entitäten-Organisation
-Jedes Gerät trennt seine Entitäten in drei Bereiche: **Steuerung** (Automatik, Wartung,
-Phase, Zelt/Klima-Schalter), **Konfiguration** (Lichtzeiten, Pumpenzyklen, Keimstart,
-Schwellen, Sollwerte) und **Diagnose** (Problem-Sensoren, Watchdog). So bleibt die
-Geräteseite aufgeräumt und Dashboards zeigen nur, was täglich gebraucht wird.
+### 2. Karten
 
+1. `https://github.com/MrDarkvoid/growctrl-cards` als **Dashboard** (Lovelace) hinzufügen.
+2. Installieren – die Ressource wird von HACS automatisch eingebunden.
 
-## Lizenz
-GROWCTRL steht unter der **GROWCTRL Source-Available License (GC-SAL 1.0)**:
-privat und nicht-kommerziell frei nutzbar mit Namensnennung (**MrDarkvoid**) -
-kommerzielle Nutzung, Re-Hosting und veröffentlichte Modifikationen nur mit
-schriftlicher Zustimmung. Details: [`LICENSE`](LICENSE) · Anleitung &
-ehrliche Hinweise zu GitHub-Forks: [`docs/lizenz.md`](docs/lizenz.md).
+Details zu Konfiguration und Migration stehen in [`docs/migration.md`](docs/migration.md).
 
-## Highlights v2.6/v2.7
-- Zelt AUS = wirklich aus: Licht, Pumpen, O₂, Lüfter, Klima-Aktoren UND
-  Klima-Schalter; alle Schalter zeigen Controller-Änderungen sofort an
-- Sofort-Reaktion: Regelzyklus läuft beim Start und nach jeder Nutzeraktion;
-  Zelt-Schaltungen stoßen alle Stationen direkt an
-- Schutzpaket: Stale-Erkennung (Timeout einstellbar), Trockenlauf-Sperre,
-  Bedarfs-Bewässerung, Leistungs-Plausibilität - alles als Diagnose-Sensoren
-- Watchdog „Letzte Regelung“ + „Zeit im Sollband heute“, persistentes
-  Ereignisprotokoll, Options-Flow zum Nachrüsten
-- Karten: umbenennungssichere Auflösung + echte Dropdowns, Licht-Balken,
-  VPD-Zonen-Balken, Apex-Style-Charts, Vorschau im Kartenwähler,
-  Mobil-Layout, großzügigere Typografie
+---
+
+## Das Dashboard – Design „Soft Garden“
+
+Das Frontend besteht aus **zehn aufeinander abgestimmten Karten**. Alle sind
+integrations-nativ: Entity-IDs werden aus Zelt- und Stationsname abgeleitet, du musst sie
+nicht von Hand eintragen (`overrides:` als Notausgang bleibt).
+
+| # | Karte | Aufgabe |
+|---|-------|---------|
+| 1 | **Hero** | Zelt-Übersicht: Schalter, Klima-KPIs, VPD-Zone, Stationsliste, Infosystem |
+| 2 | **Station** | Herzstück: Phasen-Dropdown, Versorgungszeilen Licht/Pumpe/DLI/Tank, Aktoren, Pflanzen-Tabs |
+| 3 | **Checkup** | Ampel-Matrix über alle Zelte & Stationen (Licht/Pumpe/Klima/Status) |
+| 4 | **Status / Protokoll** | Ereignisprotokoll mit Schweregrad-Filter |
+| 5 | **History** | Klima-Verlauf (Temp/RH), 24 h / 48 h |
+| 6 | **Metric** | Einzelwert mit Sollband (z. B. Wassertemperatur) |
+| 7 | **Tank** | Füllstand mit Visual, Mindeststand-Marke, Liter |
+| 8 | **Controls** | Aktoren-Raster pro Zelt (inkl. Heizmatte/Befeuchter) |
+| 9 | **Sensors** | freie Wertübersicht |
+| 10 | **Tent (kompakt)** | platzsparende Zelt-Karte mit VPD-Zone |
+
+**Designprinzipien**
+
+- Warmes Schwarzgrün als Fläche, **ein** Akzent je Zelt (Klein grün, Mittel weinrot,
+  Groß violett) – Sonderfarben (Heizmatte orange, Befeuchter blau) bleiben themen­unabhängig.
+- Status (OK/Warnung/Kritisch) ist überall gleich kodiert; Farbe ist nie der einzige Träger.
+- Zahlen in Tabellenziffern, runde Formen, weiche Schatten.
+- **Barrierearm**: 44-px-Touchziele, sichtbare Fokus-Ringe, ausreichender Kontrast,
+  `prefers-reduced-motion` wird respektiert.
+
+Per-Karte-Konfiguration mit Beispielen: [`cards/README.md`](cards/README.md).
+
+---
+
+## Sicherheit & Haftung
+
+GROWCTRL schaltet **Pumpen, Licht und Heizung**. Für sichere Installation, elektrische
+Sicherheit (Fehlerstromschutz, geeignete Relais/Schütze) und die Aufsicht bist allein **du**
+verantwortlich. Das System wird ohne Gewähr bereitgestellt – siehe [`LICENSE`](LICENSE).
+
+---
+
+## Lizenz & Namensnennung
+
+Veröffentlicht unter der **GROWCTRL Source-Available License (GC-SAL) 1.0**
+([`LICENSE`](LICENSE), Deutsch maßgeblich, vollständige englische Fassung enthalten):
+
+- ✅ Ansehen, privat & nicht-kommerziell nutzen, Fehler melden, PRs einreichen.
+- ❗ **Namensnennung „MrDarkvoid“** ist Pflicht; Urheber-, Lizenz- und Verfolgbarkeits-
+  Vermerke dürfen nicht entfernt werden.
+- ⛔ Kommerzielle Nutzung, Re-Hosting und das Veröffentlichen modifizierter Versionen nur mit
+  schriftlicher Zustimmung. (GitHubs Plattform-Fork-Recht bleibt unberührt.)
+
+Quellcode und Build tragen einen stabilen Urheber-Fingerprint zur **Verfolgbarkeit**
+(Hex von „MrDarkvoid“). Details im Abschnitt *Traceability* der `LICENSE`.
+
+---
+
+## Hinter dem Projekt: Vibe Coding
+
+GROWCTRL ist „Vibe Coding“ – iterativ entworfen und gebaut im Dialog zwischen **MrDarkvoid**
+und **Claude (Anthropic)**. Funktionsumfang, Arbeitsweise und die Spezifikation der Prompts
+sind ausführlich dokumentiert in **[`docs/vibe_coding.md`](docs/vibe_coding.md)**.
+
+<div align="center">
+
+*🌱 GROWCTRL · GC-SAL 1.0 · MrDarkvoid — „Soft Garden“*
+
+</div>

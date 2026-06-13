@@ -1,8 +1,11 @@
 GROWCTRL Source-Available License (GC-SAL) v1.0
 Copyright (c) 2026 MrDarkvoid
 Entwickelt in Zusammenarbeit mit Claude (Anthropic), Vibe Coding.
+Developed in collaboration with Claude (Anthropic), Vibe Coding.
 
-DEUTSCH (massgeblich)
+================================================================================
+DEUTSCH (rechtlich massgeblich / legally authoritative)
+================================================================================
 
 1. GESTATTET ist jedermann unentgeltlich:
    a) das Ansehen und Studieren des Quellcodes,
@@ -39,8 +42,68 @@ DEUTSCH (massgeblich)
 6. Verstoesse gegen diese Lizenz beenden alle eingeraeumten Rechte
    automatisch.
 
-ENGLISH (informative summary)
-Free to view and use privately and non-commercially with attribution to
-"MrDarkvoid". Commercial use, redistribution, re-hosting and publishing
-modified versions require prior written permission. GitHub's platform
-fork right remains untouched. Provided "AS IS", no warranty.
+================================================================================
+ENGLISH (full translation - informative; the German text above governs)
+================================================================================
+
+This is a source-available license. The source code is published so that it can
+be read, studied and used privately, but it is NOT open source in the OSI sense:
+commercial use, redistribution and the publication of modified versions are
+reserved to the author.
+
+1. PERMITTED, free of charge, to everyone:
+   a) viewing and studying the source code;
+   b) installing and using the software privately and for NON-COMMERCIAL
+      purposes (e.g. in your own Home Assistant system);
+   c) reporting bugs and submitting improvement suggestions (pull requests)
+      to the original repository.
+
+2. ATTRIBUTION: Any permitted use must credit the author "MrDarkvoid" and,
+   where technically reasonable, link back to the original repository.
+   Existing copyright and license notices must not be removed or altered.
+   This includes the in-code authorship markers and the embedded
+   traceability identifier (see "Traceability" below).
+
+3. NOT PERMITTED without the author's prior written consent:
+   a) any COMMERCIAL use of any kind (sale, rental, paid services,
+      bundling into commercial products, monetisation through advertising
+      or subscriptions);
+   b) REDISTRIBUTING the work or modified versions of it outside GitHub's
+      built-in platform features (e.g. re-hosting, publishing your own
+      releases, or maintaining/advertising forks as independent projects);
+   c) PUBLISHING MODIFIED versions.
+
+4. PLATFORM NOTICE: While this repository is public on GitHub, the GitHub
+   Terms of Service grant other users the right to view and fork the
+   repository WITHIN the platform. That platform right remains untouched;
+   Section 3 applies to any use, distribution or publication BEYOND it.
+
+5. WARRANTY: THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+   THE AUTHOR SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM THE USE OF
+   THE WORK, IN PARTICULAR NOT FOR CROP LOSS, EQUIPMENT DAMAGE OR WATER
+   DAMAGE. GROWCTRL CONTROLS PUMPS, LIGHTS AND HEATING; THE OPERATOR IS
+   SOLELY RESPONSIBLE FOR SAFE INSTALLATION, ELECTRICAL SAFETY AND
+   SUPERVISION.
+
+6. TERMINATION: Any breach of this license automatically terminates all
+   rights granted herein.
+
+7. PERMISSIONS: Requests for commercial use, redistribution or publication
+   of modified versions can be directed to the author via the original
+   GitHub repository (issue or profile contact).
+
+--------------------------------------------------------------------------------
+TRACEABILITY / VERFOLGBARKEIT
+--------------------------------------------------------------------------------
+The source and the built artifacts carry a stable authorship fingerprint
+derived from the author's name (hex encoding of "MrDarkvoid"). It appears,
+among other places, as the constant value "4d72-4461726b-766f6964" in the
+integration and the cards, and as the attribute data-gce="4d724461726b766f6964"
+on every chart/sparkline SVG the cards render. Removing or altering this
+fingerprint constitutes a breach of Section 2.
+
+In English: this fingerprint exists solely to make the origin of copies and
+forks verifiable. It contains no personal data and no telemetry; nothing is
+transmitted anywhere.
